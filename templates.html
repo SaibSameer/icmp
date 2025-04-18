@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICMP Template Management</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #ddd;
+            --bg-light: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6; 
+            padding: 0;
+            margin: 0;
+            display: flex;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            padding: 20px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input[type="text"], 
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        textarea { 
+            height: 120px; 
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+        }
+
+        button:hover { 
+            background-color: var(--primary-hover);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .error { 
+            color: var(--error-color);
+            border-color: var(--error-color);
+            background-color: #fff5f5;
+        }
+
+        .success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+        
+        .info {
+            color: #0275d8;
+            border-color: #0275d8;
+            background-color: #e6f3ff;
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: var(--text-color);
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+
+        .section-divider {
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .templates-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .template-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+            transition: box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .template-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .template-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .template-item-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .template-item-type {
+            padding: 3px 8px;
+            border-radius: 4px;
+            background-color: #e9ecef;
+            font-size: 0.8em;
+        }
+        
+        .template-item-content {
+            margin-bottom: 10px;
+            color: #666;
+            font-family: monospace;
+            white-space: pre-wrap;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        
+        .template-item-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .variable-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            margin: 2px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+        
+        .variables-container {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>ICMP Template Management</h1>
+        
+        <!-- Configuration Section -->
+        <div id="configSection">
+            <h2>Configuration</h2>
+            <div class="config-section">
+                <div class="form-group">
+                    <label for="businessId">Business ID</label>
+                    <input id="businessId" type="text" placeholder="Enter Business ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="apiKey">Business API Key</label>
+                    <input id="apiKey" type="password" placeholder="Enter Business API Key">
+                </div>
+                
+                <div class="form-group">
+                    <label for="agentId">Agent ID (optional)</label>
+                    <input id="agentId" type="text" placeholder="Enter Agent ID (optional)">
+                </div>
+                
+                <div class="button-group">
+                    <button id="loginButton" onclick="login()">Login</button>
+                    <span id="loginStatus" class="logged-out">Not logged in</span>
+                </div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('templatesList')">Templates List</div>
+            <div class="tab" onclick="showTab('createTemplate')">Create Template</div>
+            <div class="tab" onclick="showTab('editTemplate')">Edit Template</div>
+        </div>
+        
+        <!-- Templates List Content -->
+        <div id="templatesListContent" class="tab-content active">
+            <h2>Templates</h2>
+            <div class="form-group">
+                <label for="templateTypeFilter">Filter by Type</label>
+                <select id="templateTypeFilter" onchange="filterTemplates()">
+                    <option value="all">All Types</option>
+                    <option value="stage_selection">Stage Selection</option>
+                    <option value="data_extraction">Data Extraction</option>
+                    <option value="response_generation">Response Generation</option>
+                    <option value="default_stage_selection">Default Stage Selection</option>
+                    <option value="default_data_extraction">Default Data Extraction</option>
+                    <option value="default_response_generation">Default Response Generation</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button onclick="fetchTemplates()">Refresh Templates</button>
+            </div>
+            <div id="templatesList"></div>
+        </div>
+        
+        <!-- Create Template Content -->
+        <div id="createTemplateContent" class="tab-content">
+            <h2>Create Template</h2>
+            <div class="form-group">
+                <label for="templateName">Template Name</label>
+                <input id="templateName" type="text" placeholder="Enter template name">
+            </div>
+            
+            <div class="form-group">
+                <label for="templateType">Template Type</label>
+                <select id="templateType">
+                    <option value="stage_selection">Stage Selection</option>
+                    <option value="data_extraction">Data Extraction</option>
+                    <option value="response_generation">Response Generation</option>
+                    <option value="default_stage_selection">Default Stage Selection</option>
+                    <option value="default_data_extraction">Default Data Extraction</option>
+                    <option value="default_response_generation">Default Response Generation</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="templateContent">Template Content (use {variable_name} or {{variable_name}} for variables)</label>
+                <textarea id="templateContent" placeholder="Enter template content with variables in curly braces, e.g. {variable_name} or {{variable_name}}" rows="10"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="systemPrompt">System Prompt (optional)</label>
+                <textarea id="systemPrompt" placeholder="Enter system prompt (optional)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Detected Variables</label>
+                <div id="detectedVariables" class="variables-container">
+                    <span class="text-muted">Variables will appear here as you type</span>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="createTemplate()">Create Template</button>
+            </div>
+        </div>
+        
+        <!-- Edit Template Content -->
+        <div id="editTemplateContent" class="tab-content">
+            <h2>Edit Template</h2>
+            <div class="form-group">
+                <label for="editTemplateId">Template ID</label>
+                <input id="editTemplateId" type="text" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="editTemplateName">Template Name</label>
+                <input id="editTemplateName" type="text" placeholder="Enter template name">
+            </div>
+            
+            <div class="form-group">
+                <label for="editTemplateType">Template Type</label>
+                <select id="editTemplateType">
+                    <option value="stage_selection">Stage Selection</option>
+                    <option value="data_extraction">Data Extraction</option>
+                    <option value="response_generation">Response Generation</option>
+                    <option value="default_stage_selection">Default Stage Selection</option>
+                    <option value="default_data_extraction">Default Data Extraction</option>
+                    <option value="default_response_generation">Default Response Generation</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="editTemplateContent">Template Content (use {variable_name} or {{variable_name}} for variables)</label>
+                <textarea id="editTemplateContent" placeholder="Enter template content with variables in curly braces, e.g. {variable_name} or {{variable_name}}" rows="10"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="editSystemPrompt">System Prompt (optional)</label>
+                <textarea id="editSystemPrompt" placeholder="Enter system prompt (optional)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Detected Variables</label>
+                <div id="editDetectedVariables" class="variables-container">
+                    <span class="text-muted">Variables will appear here as you type</span>
+                </div>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="updateTemplate()">Update Template</button>
+                <button onclick="duplicateTemplate()">Duplicate Template</button>
+                <button onclick="cancelEdit()">Cancel</button>
+                <button onclick="debugTemplate()" style="background-color: #6c757d;">Debug Template</button>
+            </div>
+            
+            <div id="debugInfo" class="card" style="margin-top: 15px; display: none;">
+                <div class="card-header">Debug Information</div>
+                <pre id="debugContent" style="max-height: 300px; overflow-y: auto;"></pre>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Status Section -->
+        <div id="statusSection">
+            <h2>Status</h2>
+            <div id="statusArea">
+                <div id="networkStatus" class="text-muted">No network activity yet</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Handle both file:// protocol and http:// protocol
+        const isFileProtocol = window.location.protocol === 'file:';
+        const API_BASE_URL = isFileProtocol 
+            ? 'http://localhost:5000' 
+            : window.location.protocol + '//' + window.location.hostname + ':5000';
+            
+        const DEFAULT_BUSINESS_ID = '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
+        const DEFAULT_API_KEY = 'da828cae6a3e46228aa09d65ba9066e3';
+        
+        // State management
+        let isLoggedIn = false;
+        let templates = [];
+        let filteredTemplates = [];
+        let selectedTemplateId = null;
+        
+        // Initialize the app
+        function init() {
+            console.log("Initializing with API_BASE_URL:", API_BASE_URL);
+            
+            // Check for URL parameters (when opened from stages.html)
+            const urlParams = new URLSearchParams(window.location.search);
+            const templateIdParam = urlParams.get('template_id');
+            const businessIdParam = urlParams.get('business_id');
+            const apiKeyParam = urlParams.get('api_key');
+            
+            console.log("URL parameters:", { 
+                templateId: templateIdParam,
+                businessId: businessIdParam,
+                hasApiKey: apiKeyParam ? true : false
+            });
+            
+            // If parameters are provided, use them
+            if (businessIdParam) {
+                document.getElementById('businessId').value = businessIdParam;
+            }
+            
+            if (apiKeyParam) {
+                document.getElementById('apiKey').value = apiKeyParam;
+            }
+            
+            // Store the template ID for later use after login
+            if (templateIdParam) {
+                console.log("Template ID param found:", templateIdParam);
+                localStorage.setItem('pendingTemplateId', templateIdParam);
+            }
+            
+            // Check if we're already logged in
+            const savedApiKey = localStorage.getItem('businessApiKey');
+            if (savedApiKey && !apiKeyParam) {
+                // Pre-fill the form with the saved values
+                document.getElementById('apiKey').value = savedApiKey;
+                
+                const savedBusinessId = localStorage.getItem('businessId');
+                const savedAgentId = localStorage.getItem('agentId');
+                
+                if (savedBusinessId && !businessIdParam) {
+                    document.getElementById('businessId').value = savedBusinessId;
+                }
+                
+                if (savedAgentId) {
+                    document.getElementById('agentId').value = savedAgentId;
+                }
+                
+                // Assume we're logged in if we have all the values
+                if (savedApiKey && savedBusinessId) {
+                    isLoggedIn = true;
+                    document.getElementById('loginStatus').textContent = 'Logged in';
+                    document.getElementById('loginStatus').className = 'logged-in';
+                    document.getElementById('loginButton').textContent = 'Logged In';
+                    document.getElementById('loginButton').disabled = true;
+                    
+                    // When using file:// protocol, don't auto-fetch to avoid CORS issues
+                    if (!isFileProtocol) {
+                        // If template ID is provided in URL, fetch it directly
+                        if (templateIdParam) {
+                            fetchTemplateById(templateIdParam);
+                        } else {
+                            // Otherwise fetch all templates
+                            fetchTemplates();
+                        }
+                    } else {
+                        showInfo("Using file:// protocol - click 'Login' to manually load data");
+                    }
+                }
+            } else if (businessIdParam && apiKeyParam) {
+                // Auto-login with provided parameters
+                isLoggedIn = true;
+                document.getElementById('loginStatus').textContent = 'Logged in';
+                document.getElementById('loginStatus').className = 'logged-in';
+                document.getElementById('loginButton').textContent = 'Logged In';
+                document.getElementById('loginButton').disabled = true;
+                
+                // Store credentials
+                localStorage.setItem('businessApiKey', apiKeyParam);
+                localStorage.setItem('businessId', businessIdParam);
+                
+                // When using file:// protocol, don't auto-fetch to avoid CORS issues
+                if (!isFileProtocol) {
+                    // If template ID is provided in URL, fetch it directly
+                    if (templateIdParam) {
+                        fetchTemplateById(templateIdParam);
+                    } else {
+                        // Otherwise fetch all templates
+                        fetchTemplates();
+                    }
+                } else {
+                    showInfo("Using file:// protocol - click 'Login' to manually load data");
+                }
+            }
+            
+            // Set default values if not already set
+            if (!document.getElementById('businessId').value) {
+                document.getElementById('businessId').value = DEFAULT_BUSINESS_ID;
+            }
+            
+            // Set up event listeners for variable detection
+            document.getElementById('templateContent').addEventListener('input', detectVariables);
+            document.getElementById('editTemplateContent').addEventListener('input', detectEditVariables);
+        }
+        
+        // Call init when the page loads
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Utility function to generate a UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // Normalize UUID
+        function normalizeUUID(uuid) {
+            if (!uuid) return null;
+            
+            try {
+                // Convert to lowercase and trim whitespace
+                const normalizedUUID = uuid.toLowerCase().trim();
+                // Check if it's a valid UUID format
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+                
+                if (uuidRegex.test(normalizedUUID)) {
+                    return normalizedUUID;
+                }
+                console.warn('Invalid UUID format:', uuid);
+                return uuid; // Return original if not matching pattern
+            } catch (error) {
+                console.error('Error normalizing UUID:', error);
+                return uuid; // Return original on error
+            }
+        }
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // Truncate text with ellipsis
+        function truncateText(text, maxLength) {
+            if (!text) return '';
+            if (text.length <= maxLength) return text;
+            return text.slice(0, maxLength) + '...';
+        }
+        
+        // Extract variables from content
+        function extractVariables(content) {
+            if (!content) return [];
+            
+            // Support both single and double curly braces
+            const singleCurlyRegex = /{([^{}]+)}/g;
+            const doubleCurlyRegex = /{{([^{}]+)}}/g;
+            
+            const singleMatches = content.match(singleCurlyRegex) || [];
+            const doubleMatches = content.match(doubleCurlyRegex) || [];
+            
+            // Process single curly brace matches
+            const singleVars = singleMatches.map(match => match.slice(1, -1));
+            
+            // Process double curly brace matches
+            const doubleVars = doubleMatches.map(match => match.slice(2, -2));
+            
+            // Combine and filter out duplicates
+            const allVars = [...singleVars, ...doubleVars];
+            const uniqueVars = [...new Set(allVars)];
+            
+            return uniqueVars;
+        }
+        
+        // Login function
+        function login() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to login');
+                return;
+            }
+            
+            updateStatus('Logging in...');
+            
+            // Store credentials
+            localStorage.setItem('businessApiKey', apiKey);
+            localStorage.setItem('businessId', businessId);
+            
+            const agentId = document.getElementById('agentId').value.trim();
+            if (agentId) {
+                localStorage.setItem('agentId', agentId);
+            }
+            
+            isLoggedIn = true;
+            document.getElementById('loginStatus').textContent = 'Logged in';
+            document.getElementById('loginStatus').className = 'logged-in';
+            document.getElementById('loginButton').textContent = 'Logged In';
+            document.getElementById('loginButton').disabled = true;
+            
+            // Check if we have a pending template ID from URL parameters
+            const pendingTemplateId = localStorage.getItem('pendingTemplateId');
+            if (pendingTemplateId) {
+                console.log("Found pending template ID:", pendingTemplateId);
+                fetchTemplateById(pendingTemplateId);
+                localStorage.removeItem('pendingTemplateId'); // Clear it after use
+            } else {
+                // Otherwise, fetch all templates
+                fetchTemplates();
+            }
+            
+            showSuccess('Logged in successfully');
+        }
+        
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Deactivate all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activate the selected tab
+            document.getElementById(tabName + 'Content').classList.add('active');
+            
+            // Find and activate the tab button
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(button => {
+                if (button.textContent.toLowerCase().includes(tabName.toLowerCase())) {
+                    button.classList.add('active');
+                }
+            });
+        }
+        
+        // Fetch templates
+        async function fetchTemplates() {
+            if (!isLoggedIn) {
+                showError('You must login first before fetching templates');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const agentId = document.getElementById('agentId').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required');
+                return;
+            }
+            
+            console.log("Fetch Templates - Parameters:", {
+                businessId,
+                apiKeyProvided: !!apiKey,
+                agentId: agentId || "none"
+            });
+            
+            // Format URL parameters
+            const urlParams = new URLSearchParams();
+            urlParams.append('business_id', businessId);
+            if (agentId) {
+                urlParams.append('agent_id', agentId);
+            }
+            
+            updateStatus('Fetching templates...');
+            
+            try {
+                const url = `${API_BASE_URL}/templates?${urlParams.toString()}`;
+                console.log("Fetch Templates - Request URL:", url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include'
+                });
+                
+                console.log("Fetch Templates - Response Status:", response.status);
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                        console.error("Fetch Templates - Error Data:", errorData);
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                        console.error("Fetch Templates - Error Text:", errorText);
+                    }
+                    
+                    throw new Error(`Failed to fetch templates! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                console.log("Fetch Templates - Retrieved templates:", data);
+                
+                // Store templates and update display
+                templates = data || [];
+                filterTemplates(); // Apply any active filters
+                
+                updateStatus(`Loaded ${templates.length} templates`);
+            } catch (error) {
+                console.error('Error fetching templates:', error);
+                showError(`Failed to fetch templates: ${error.message}`);
+            }
+        }
+        
+        // Filter templates by type
+        function filterTemplates() {
+            const filterType = document.getElementById('templateTypeFilter').value;
+            
+            if (filterType === 'all') {
+                filteredTemplates = templates;
+            } else {
+                filteredTemplates = templates.filter(template => template.template_type === filterType);
+            }
+            
+            // Display the filtered templates
+            displayTemplates(filteredTemplates);
+        }
+        
+        // Display templates
+        function displayTemplates(templatesList) {
+            const templatesListElement = document.getElementById('templatesList');
+            
+            if (!templatesList || templatesList.length === 0) {
+                templatesListElement.innerHTML = '<div class="no-templates">No templates found</div>';
+                return;
+            }
+            
+            let html = '<ul class="templates-list">';
+            
+            templatesList.forEach(template => {
+                const variables = extractVariables(template.content || '');
+                const variablesHtml = variables.length > 0
+                    ? variables.map(v => `<span class="variable-tag">${v}</span>`).join(' ')
+                    : '<span class="text-muted">No variables</span>';
+                
+                html += `
+                    <li class="template-item" onclick="selectTemplate('${template.template_id}')">
+                        <div class="template-item-header">
+                            <div class="template-item-name">${template.template_name}</div>
+                            <div class="template-item-type">${template.template_type}</div>
+                        </div>
+                        <div class="template-item-content">${escapeHtml(truncateText(template.content, 200))}</div>
+                        <div class="variables-container">
+                            ${variablesHtml}
+                        </div>
+                        <div class="template-item-meta">
+                            <div>ID: ${template.template_id}</div>
+                        </div>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            
+            templatesListElement.innerHTML = html;
+        }
+        
+        // Select a template
+        function selectTemplate(templateId) {
+            selectedTemplateId = templateId;
+            
+            // Find the template in our list
+            const template = templates.find(t => t.template_id === templateId);
+            if (!template) {
+                showError(`Template not found: ${templateId}`);
+                return;
+            }
+            
+            console.log("Selected template content:", template.content);
+            
+            // Populate the edit form
+            document.getElementById('editTemplateId').value = template.template_id;
+            document.getElementById('editTemplateName').value = template.template_name || '';
+            document.getElementById('editTemplateType').value = template.template_type || '';
+            
+            // Handle content display - use the raw content directly
+            let displayContent = template.content || '';
+            document.getElementById('editTemplateContent').value = displayContent;
+            
+            // Handle system prompt
+            document.getElementById('editSystemPrompt').value = template.system_prompt || '';
+            
+            // Detect variables in the content
+            detectEditVariables();
+            
+            // Switch to edit tab
+            showTab('editTemplate');
+            
+            // Show success message
+            showSuccess(`Selected template: ${template.template_name}`);
+            
+            return template;
+        }
+        
+        // Create a new template
+        async function createTemplate() {
+            if (!isLoggedIn) {
+                showError('You must login first before creating a template');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const agentId = document.getElementById('agentId').value.trim();
+            
+            const templateName = document.getElementById('templateName').value.trim();
+            const templateType = document.getElementById('templateType').value;
+            const templateContent = document.getElementById('templateContent').value.trim();
+            const systemPrompt = document.getElementById('systemPrompt').value.trim();
+            
+            if (!businessId || !apiKey || !templateName || !templateContent || !templateType) {
+                showError('Business ID, API Key, template name, content, and type are required');
+                return;
+            }
+            
+            updateStatus('Creating template...');
+            
+            try {
+                const templateData = {
+                    business_id: businessId,
+                    template_name: templateName,
+                    template_type: templateType,
+                    content: templateContent,
+                    system_prompt: systemPrompt
+                };
+                
+                // Add agent_id if provided
+                if (agentId) {
+                    templateData.agent_id = agentId;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/templates`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(templateData)
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to create template! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const newTemplate = await response.json();
+                
+                // Clear form
+                document.getElementById('templateName').value = '';
+                document.getElementById('templateContent').value = '';
+                document.getElementById('systemPrompt').value = '';
+                document.getElementById('detectedVariables').innerHTML = '<span class="text-muted">Variables will appear here as you type</span>';
+                
+                // Refresh templates
+                fetchTemplates();
+                
+                showSuccess('Template created successfully!');
+                
+                // Switch to templates list tab
+                showTab('templatesList');
+            } catch (error) {
+                console.error('Error creating template:', error);
+                showError(`Failed to create template: ${error.message}`);
+            }
+        }
+        
+        // Update a template
+        async function updateTemplate() {
+            if (!isLoggedIn || !selectedTemplateId) {
+                showError('You must login and select a template before updating');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const agentId = document.getElementById('agentId').value.trim();
+            
+            const templateId = document.getElementById('editTemplateId').value;
+            const templateName = document.getElementById('editTemplateName').value.trim();
+            const templateType = document.getElementById('editTemplateType').value;
+            const templateContent = document.getElementById('editTemplateContent').value.trim();
+            const systemPrompt = document.getElementById('editSystemPrompt').value.trim();
+            
+            console.log("Update Template - Input values:", {
+                businessId,
+                apiKey: apiKey ? "API KEY PROVIDED" : "MISSING",
+                agentId,
+                templateId,
+                templateName,
+                templateType,
+                templateContent,
+                systemPrompt
+            });
+            
+            if (!businessId || !apiKey || !templateName || !templateContent || !templateType) {
+                showError('Business ID, API Key, template name, content, and type are required');
+                return;
+            }
+            
+            updateStatus('Updating template...');
+            
+            try {
+                const templateData = {
+                    business_id: businessId,
+                    template_name: templateName,
+                    template_type: templateType,
+                    content: templateContent,
+                    system_prompt: systemPrompt || ""  // Ensure empty string instead of null/undefined
+                };
+                
+                // Add agent_id if provided
+                if (agentId) {
+                    templateData.agent_id = agentId;
+                }
+                
+                console.log("Update Template - Request Payload:", JSON.stringify(templateData));
+                console.log("Update Template - Request URL:", `${API_BASE_URL}/templates/${templateId}`);
+                
+                // Force a direct update without any caching
+                const response = await fetch(`${API_BASE_URL}/templates/${templateId}?_nocache=${Date.now()}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(templateData)
+                });
+                
+                console.log("Update Template - Response Status:", response.status);
+                console.log("Update Template - Response Headers:", Object.fromEntries([...response.headers]));
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                        console.error("Update Template - Error Data:", errorData);
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                        console.error("Update Template - Error Text:", errorText);
+                    }
+                    
+                    throw new Error(`Failed to update template! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const responseData = await response.json();
+                console.log("Update Template - Response Data:", responseData);
+                
+                // Force a refresh of templates to get the latest data
+                console.log("Forcing template refresh...");
+                
+                // Clear the templates array to force a complete refetch
+                templates = [];
+                
+                // Forcefully fetch all templates again with cache-busting
+                const refreshResponse = await fetch(`${API_BASE_URL}/templates?business_id=${businessId}&_nocache=${Date.now()}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    },
+                    credentials: 'include'
+                });
+                
+                if (refreshResponse.ok) {
+                    const freshTemplates = await refreshResponse.json();
+                    templates = freshTemplates;
+                    filterTemplates();
+                    console.log("Templates refreshed successfully:", templates.length);
+                }
+                
+                showSuccess('Template updated successfully!');
+                
+                // Switch to templates list tab
+                showTab('templatesList');
+            } catch (error) {
+                console.error('Error updating template:', error);
+                showError(`Failed to update template: ${error.message}`);
+            }
+        }
+        
+        // Duplicate a template
+        async function duplicateTemplate() {
+            if (!isLoggedIn || !selectedTemplateId) {
+                showError('You must login and select a template before duplicating');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const agentId = document.getElementById('agentId').value.trim();
+            
+            const templateName = document.getElementById('editTemplateName').value.trim();
+            const templateType = document.getElementById('editTemplateType').value;
+            const templateContent = document.getElementById('editTemplateContent').value.trim();
+            const systemPrompt = document.getElementById('editSystemPrompt').value.trim();
+            
+            if (!businessId || !apiKey || !templateName || !templateContent || !templateType) {
+                showError('Business ID, API Key, template name, content, and type are required');
+                return;
+            }
+            
+            updateStatus('Duplicating template...');
+            
+            try {
+                const templateData = {
+                    business_id: businessId,
+                    template_name: `${templateName} (Copy)`,
+                    template_type: templateType,
+                    content: templateContent,
+                    system_prompt: systemPrompt
+                };
+                
+                // Add agent_id if provided
+                if (agentId) {
+                    templateData.agent_id = agentId;
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/templates`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(templateData)
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to duplicate template! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                // Refresh templates
+                fetchTemplates();
+                
+                showSuccess('Template duplicated successfully!');
+                
+                // Switch to templates list tab
+                showTab('templatesList');
+            } catch (error) {
+                console.error('Error duplicating template:', error);
+                showError(`Failed to duplicate template: ${error.message}`);
+            }
+        }
+        
+        // Cancel editing
+        function cancelEdit() {
+            selectedTemplateId = null;
+            
+            // Clear edit form
+            document.getElementById('editTemplateId').value = '';
+            document.getElementById('editTemplateName').value = '';
+            document.getElementById('editTemplateContent').value = '';
+            document.getElementById('editSystemPrompt').value = '';
+            document.getElementById('editDetectedVariables').innerHTML = '<span class="text-muted">Variables will appear here as you type</span>';
+            
+            // Switch to templates list tab
+            showTab('templatesList');
+        }
+        
+        // Detect variables in template content
+        function detectVariables() {
+            const content = document.getElementById('templateContent').value;
+            const variables = extractVariables(content);
+            
+            const variablesContainer = document.getElementById('detectedVariables');
+            
+            if (variables.length === 0) {
+                variablesContainer.innerHTML = '<span class="text-muted">No variables detected</span>';
+                return;
+            }
+            
+            variablesContainer.innerHTML = variables.map(variable => 
+                `<span class="variable-tag">${variable}</span>`
+            ).join(' ');
+        }
+        
+        // Detect variables in edit template content
+        function detectEditVariables() {
+            const content = document.getElementById('editTemplateContent').value;
+            const variables = extractVariables(content);
+            
+            const variablesContainer = document.getElementById('editDetectedVariables');
+            
+            if (variables.length === 0) {
+                variablesContainer.innerHTML = '<span class="text-muted">No variables detected</span>';
+                return;
+            }
+            
+            variablesContainer.innerHTML = variables.map(variable => 
+                `<span class="variable-tag">${variable}</span>`
+            ).join(' ');
+        }
+        
+        // Helper functions for UI updates
+        function formatDateTime(dateStr) {
+            if (!dateStr) return 'Unknown';
+            
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleString();
+            } catch (e) {
+                return dateStr;
+            }
+        }
+        
+        // Update status
+        function updateStatus(message, isError = false, isInfo = false) {
+            const statusElement = document.getElementById('networkStatus');
+            statusElement.textContent = message;
+            if (isError) {
+                statusElement.className = 'error';
+            } else if (isInfo) {
+                statusElement.className = 'info';
+            } else {
+                statusElement.className = 'success';
+            }
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            updateStatus(message, false, false);
+            console.log('Success:', message);
+        }
+        
+        // Show error message
+        function showError(message) {
+            updateStatus(message, true, false);
+            console.error('Error:', message);
+        }
+        
+        // Show info message
+        function showInfo(message) {
+            updateStatus(message, false, true);
+            console.log('Info:', message);
+        }
+        
+        // Fetch a single template by ID
+        async function fetchTemplateById(templateId) {
+            if (!isLoggedIn) {
+                showError('You must login first before fetching templates');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey || !templateId) {
+                showError('Business ID, API Key, and Template ID are required');
+                return;
+            }
+            
+            const normalizedTemplateId = normalizeUUID(templateId);
+            const normalizedBusinessId = normalizeUUID(businessId);
+            
+            const url = `${API_BASE_URL}/templates/${normalizedTemplateId}?business_id=${normalizedBusinessId}`;
+            console.log("Fetching template from URL:", url);
+            
+            updateStatus(`Fetching template ${normalizedTemplateId}...`);
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include'
+                });
+                
+                console.log("Response status:", response.status);
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                        console.error("Error data:", errorData);
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                        console.error("Error text:", errorText);
+                    }
+                    
+                    throw new Error(`Failed to fetch template! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const template = await response.json();
+                console.log("Fetched template:", template);
+                
+                // Add this template to our list
+                templates = [template];
+                filteredTemplates = templates;
+                
+                // Display it
+                displayTemplates(templates);
+                
+                // Also select it for editing
+                selectTemplate(template.template_id);
+                
+                showSuccess('Template fetched successfully!');
+            } catch (error) {
+                console.error('Error fetching template:', error);
+                showError(`Failed to fetch template: ${error.message}`);
+            }
+        }
+        
+        // Debug template function
+        function debugTemplate() {
+            if (!selectedTemplateId) {
+                showError('No template selected for debugging');
+                return;
+            }
+            
+            const template = templates.find(t => t.template_id === selectedTemplateId);
+            if (!template) {
+                showError(`Template not found: ${selectedTemplateId}`);
+                return;
+            }
+            
+            // Get current form values
+            const formData = {
+                templateId: document.getElementById('editTemplateId').value,
+                templateName: document.getElementById('editTemplateName').value.trim(),
+                templateType: document.getElementById('editTemplateType').value,
+                templateContent: document.getElementById('editTemplateContent').value.trim(),
+                systemPrompt: document.getElementById('editSystemPrompt').value.trim()
+            };
+            
+            // Compare original and current values
+            const differences = {
+                name: template.template_name !== formData.templateName,
+                type: template.template_type !== formData.templateType,
+                content: template.content !== formData.templateContent,
+                systemPrompt: template.system_prompt !== formData.systemPrompt
+            };
+            
+            // Prepare debug info
+            const debugInfo = {
+                selectedTemplate: {
+                    id: template.template_id,
+                    name: template.template_name,
+                    type: template.template_type,
+                    content: template.content,
+                    systemPrompt: template.system_prompt
+                },
+                formValues: formData,
+                differences: differences,
+                anyChanges: Object.values(differences).some(diff => diff === true)
+            };
+            
+            // Display debug info
+            const debugElement = document.getElementById('debugContent');
+            debugElement.textContent = JSON.stringify(debugInfo, null, 2);
+            document.getElementById('debugInfo').style.display = 'block';
+            
+            // Log to console as well for inspection
+            console.log('Debug Template Information:', debugInfo);
+        }
+    </script>
+</body>
+</html> 

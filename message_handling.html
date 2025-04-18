@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICMP Message Processing Debugger</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #ddd;
+            --bg-light: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6; 
+            padding: 0;
+            margin: 0;
+            display: flex;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            padding: 20px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input[type="text"], 
+        input[type="password"], 
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        textarea { 
+            height: 120px; 
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+        }
+
+        button:hover { 
+            background-color: var(--primary-hover);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        #responseArea {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .error { 
+            color: var(--error-color);
+            border-color: var(--error-color);
+            background-color: #fff5f5;
+        }
+
+        .success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: var(--text-color);
+            margin-top: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-divider {
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .process-step {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+        }
+        
+        .step-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .step-content {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .prompt-box, .response-box {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .prompt-box {
+            background-color: #f0f8ff;
+            border: 1px solid #b8daff;
+        }
+        
+        .response-box {
+            background-color: #f0fff4;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .system-prompt {
+            font-style: italic;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .logged-in {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .logged-out {
+            color: var(--error-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .process-log {
+            margin-top: 20px;
+        }
+        
+        .no-logs {
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .log-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .log-item {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .log-item:hover {
+            background-color: #f0f8ff;
+        }
+        
+        /* New styles for flow diagram */
+        .flow-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        
+        .stage-node {
+            padding: 15px;
+            background-color: white;
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+        }
+        
+        .stage-node.active {
+            background-color: #e6f7ff;
+            border-color: #0056b3;
+            box-shadow: 0 0 10px rgba(0,123,255,0.3);
+        }
+        
+        .stage-node.completed {
+            background-color: #f0fff4;
+            border-color: #28a745;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin: 0 10px;
+        }
+        
+        /* New styles for variable substitution */
+        .variable-substitution {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .original-template, .context-data, .substituted-template {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+        }
+        
+        .variable-highlight {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        /* New styles for API inspector */
+        .api-inspector {
+            margin: 20px 0;
+        }
+        
+        .request-details, .response-details {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+        
+        .api-inspector pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+        }
+        
+        /* New styles for performance metrics */
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .process-step {
+                margin: 10px 0;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .variable-substitution {
+                grid-template-columns: 1fr;
+            }
+            
+            .performance-metrics {
+                grid-template-columns: 1fr;
+            }
+            
+            .flow-diagram {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .stage-node {
+                margin-bottom: 10px;
+            }
+            
+            .arrow {
+                transform: rotate(90deg);
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>ICMP Message Processing Debugger</h1>
+        
+        <!-- Login Section -->
+        <h2>Login</h2>
+        <div class="login-section">
+            <div class="form-group">
+                <label for="businessId">Business ID</label>
+                <input id="businessId" type="text" placeholder="Enter Business ID">
+            </div>
+            
+            <div class="form-group">
+                <label for="ownerId">Owner ID</label>
+                <input id="ownerId" type="text" placeholder="Enter Owner ID">
+                <button onclick="lookupOwner()">Look Up Owner</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input id="apiKey" type="password" placeholder="Enter API Key">
+            </div>
+            
+            <div class="button-group">
+                <button id="loginButton" onclick="login()">Login</button>
+                <span id="loginStatus" class="logged-out">Not logged in</span>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Message Sending Section -->
+        <h2>Send Message</h2>
+        <div class="message-section">
+            <div class="form-group">
+                <label for="userId">Message Sender ID (different user)</label>
+                <input id="userId" type="text" placeholder="Enter User ID or generate new">
+                <button onclick="document.getElementById('userId').value = generateUUID()">Generate New</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="messageContent">Message Content</label>
+                <textarea id="messageContent" placeholder="Enter your message"></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="sendButton" onclick="sendMessageAndDebug()">Send & Debug</button>
+            </div>
+            
+            <div id="responseArea">
+                <div class="text-muted">Send a message to see the response</div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Flow Diagram Section (New) -->
+        <h2>Message Processing Flow</h2>
+        <div class="flow-diagram">
+            <div class="stage-node" id="stage-selection-node">Stage Selection</div>
+            <div class="arrow">→</div>
+            <div class="stage-node" id="data-extraction-node">Data Extraction</div>
+            <div class="arrow">→</div>
+            <div class="stage-node" id="response-generation-node">Response Generation</div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Processing Details Section -->
+        <h2>Processing Details</h2>
+        <div id="processLogArea" class="process-log">
+            <div class="no-logs">No processing data available yet</div>
+        </div>
+        
+        <!-- Variable Substitution Section (New) -->
+        <h2>Variable Substitution</h2>
+        <div id="variableSubstitutionArea" class="variable-substitution">
+            <div class="original-template">
+                <h4>Original Template</h4>
+                <pre id="originalTemplate">No template data available</pre>
+            </div>
+            <div class="context-data">
+                <h4>Context Data</h4>
+                <pre id="contextData">No context data available</pre>
+            </div>
+            <div class="substituted-template">
+                <h4>Substituted Template</h4>
+                <pre id="substitutedTemplate">No substituted template available</pre>
+            </div>
+        </div>
+        
+        <!-- Performance Metrics Section (New) -->
+        <h2>Performance Metrics</h2>
+        <div id="performanceMetricsArea" class="performance-metrics">
+            <div class="metric">
+                <div class="metric-label">Total Processing Time</div>
+                <div class="metric-value" id="totalProcessingTime">-</div>
+                <div class="metric-unit">milliseconds</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Token Usage</div>
+                <div class="metric-value" id="tokenUsage">-</div>
+                <div class="metric-unit">tokens</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Estimated Cost</div>
+                <div class="metric-value" id="estimatedCost">-</div>
+                <div class="metric-unit">USD</div>
+            </div>
+        </div>
+        
+        <!-- API Inspector Section (New) -->
+        <h2>API Inspector</h2>
+        <div id="apiInspectorArea" class="api-inspector">
+            <div class="request-details">
+                <h4>Request</h4>
+                <pre id="apiRequest">No request data available</pre>
+            </div>
+            <div class="response-details">
+                <h4>Response</h4>
+                <pre id="apiResponse">No response data available</pre>
+            </div>
+            <div class="button-group">
+                <button id="resendButton" onclick="resendRequest()" disabled>Resend Request</button>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Recent Logs Section -->
+        <h2>Recent Process Logs</h2>
+        <div class="button-group">
+            <button onclick="fetchRecentLogs()">Refresh Logs</button>
+        </div>
+        <div id="recentLogsArea">
+            <div class="no-logs">No recent logs available</div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Status Section -->
+        <h2>Status</h2>
+        <div id="statusArea">
+            <div id="networkStatus" class="text-muted">No network activity yet</div>
+        </div>
+        
+        <div class="process-steps">
+            <div class="process-step">
+                <div class="step-header">Stage 1: Intent Detection</div>
+                <div class="step-content">
+                    <div class="prompt-box" id="intentPrompt"></div>
+                    <div class="response-box" id="intentResponse"></div>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-header">Stage 2: Data Extraction</div>
+                <div class="step-content">
+                    <div class="prompt-box" id="extractionPrompt"></div>
+                    <div class="response-box" id="extractionResponse"></div>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-header">Stage 3: Response Generation</div>
+                <div class="step-content">
+                    <div class="prompt-box" id="responsePrompt"></div>
+                    <div class="response-box" id="responseResponse"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+        const DEFAULT_BUSINESS_ID = '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
+        const DEFAULT_API_KEY = 'da828cae6a3e46228aa09d65ba9066e3';
+        
+        // State management
+        let isLoggedIn = false;
+        let currentLogId = null;
+        let lastRequestData = null;
+        let lastResponseData = null;
+        
+        // Initialize the app
+        function init() {
+            // Check if we're already logged in
+            const savedApiKey = localStorage.getItem('businessApiKey');
+            if (savedApiKey) {
+                // Pre-fill the form with the saved values
+                document.getElementById('apiKey').value = savedApiKey;
+                
+                const savedBusinessId = localStorage.getItem('businessId');
+                const savedOwnerId = localStorage.getItem('ownerId');
+                
+                if (savedBusinessId) {
+                    document.getElementById('businessId').value = savedBusinessId;
+                }
+                
+                if (savedOwnerId) {
+                    document.getElementById('ownerId').value = savedOwnerId;
+                }
+                
+                // Assume we're logged in if we have all the values
+                if (savedApiKey && savedBusinessId && savedOwnerId) {
+                    isLoggedIn = true;
+                    document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                    document.getElementById('loginStatus').className = 'logged-in';
+                    document.getElementById('loginButton').textContent = 'Logged In';
+                    document.getElementById('loginButton').disabled = true;
+                }
+            }
+            
+            // Set default values if not already set
+            if (!document.getElementById('businessId').value) {
+                document.getElementById('businessId').value = DEFAULT_BUSINESS_ID;
+            }
+            
+            // Generate a UUID for user_id if not already set
+            if (!document.getElementById('userId').value) {
+                document.getElementById('userId').value = generateUUID();
+            }
+            
+            // Initialize flow diagram
+            resetFlowDiagram();
+        }
+        
+        // Call init when the page loads
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Utility function to generate a UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // Login function
+        async function login() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const ownerId = document.getElementById('ownerId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !ownerId || !apiKey) {
+                showError('Business ID, Owner ID, and API Key are required to login');
+                return;
+            }
+            
+            // Prepare login data
+            const loginData = {
+                userId: ownerId,
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
+            
+            updateStatus('Logging in...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/verify-owner`;
+                console.log('Verifying business owner with URL:', url);
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(loginData),
+                    credentials: 'include', // Include cookies
+                    mode: 'cors'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        // Check response content type to determine how to parse it
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json().then(errorData => {
+                                throw new Error(`Login failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+                            });
+                        } else {
+                            return response.text().then(text => {
+                                throw new Error(`Login failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
+                            });
+                        }
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        isLoggedIn = true;
+                        showSuccess('Login successful! Owner verification confirmed.');
+                        document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                        document.getElementById('loginStatus').className = 'logged-in';
+                        document.getElementById('loginButton').textContent = 'Logged In';
+                        document.getElementById('loginButton').disabled = true;
+                        
+                        // Store credentials for subsequent requests
+                        localStorage.setItem('businessApiKey', apiKey);
+                        localStorage.setItem('businessId', businessId);
+                        localStorage.setItem('ownerId', ownerId);
+                        
+                        // Fetch recent logs after successful login
+                        fetchRecentLogs();
+                    } else {
+                        isLoggedIn = false;
+                        throw new Error(data.error || 'Login failed: Not a business owner');
+                    }
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    isLoggedIn = false;
+                    showError(`Login failed: ${error.message}`);
+                    document.getElementById('loginStatus').textContent = 'Not logged in';
+                    document.getElementById('loginStatus').className = 'logged-out';
+                });
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                isLoggedIn = false;
+                showError(`Login failed: ${error.message}`);
+                document.getElementById('loginStatus').textContent = 'Not logged in';
+                document.getElementById('loginStatus').className = 'logged-out';
+            }
+        }
+        
+        // Send message and debug function
+        async function sendMessageAndDebug() {
+            if (!isLoggedIn) {
+                showError('You must login first before sending messages');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const userId = document.getElementById('userId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const message = document.getElementById('messageContent').value.trim();
+            
+            if (!businessId || !userId || !apiKey || !message) {
+                showError('Business ID, User ID, API Key, and message content are required');
+                return;
+            }
+            
+            // Prepare message data
+            const messageData = {
+                business_id: businessId,
+                user_id: userId,
+                message: message
+            };
+            
+            // Store request data for API inspector
+            lastRequestData = messageData;
+            document.getElementById('apiRequest').textContent = JSON.stringify(messageData, null, 2);
+            
+            // Reset flow diagram
+            resetFlowDiagram();
+            
+            updateStatus('Sending message...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/message`;
+                console.log('Sending message to URL:', url);
+                
+                const startTime = performance.now();
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey // Header for authentication
+                    },
+                    body: JSON.stringify(messageData),
+                    credentials: 'include', // Include cookies
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Message failed! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Store response data for API inspector
+                lastResponseData = data;
+                document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('resendButton').disabled = false;
+                
+                // Calculate performance metrics
+                const endTime = performance.now();
+                const totalTime = Math.round(endTime - startTime);
+                document.getElementById('totalProcessingTime').textContent = totalTime;
+                
+                // Estimate token usage (this is a placeholder - actual implementation would need to parse the response)
+                const estimatedTokens = Math.round(message.length / 4) + Math.round((data.response || '').length / 4);
+                document.getElementById('tokenUsage').textContent = estimatedTokens;
+                
+                // Estimate cost (this is a placeholder - actual implementation would need to use real pricing)
+                const estimatedCost = (estimatedTokens / 1000) * 0.002; // $0.002 per 1K tokens
+                document.getElementById('estimatedCost').textContent = estimatedCost.toFixed(4);
+                
+                if (data.success) {
+                    showSuccess('Message sent successfully!');
+                    
+                    const responseArea = document.getElementById('responseArea');
+                    if (data.chat_window) {
+                        const { user_message, ai_response } = data.chat_window;
+                        responseArea.innerHTML = `
+                            <div class="process-step">
+                                <div class="step-header">User Message:</div>
+                                <div class="prompt-box">${user_message.content}</div>
+                            </div>
+                            <div class="process-step">
+                                <div class="step-header">AI Response:</div>
+                                <div class="response-box">${data.response}</div>
+                            </div>
+                        `;
+                    } else {
+                        responseArea.innerHTML = `
+                            <div class="response-box">${data.response}</div>
+                        `;
+                    }
+                    
+                    if (data.process_log_id) {
+                        currentLogId = data.process_log_id;
+                        setTimeout(() => fetchProcessLog(data.process_log_id), 500);
+                    } else {
+                        showError('No process log ID returned. Detailed debugging not available.');
+                    }
+                    
+                    // If processing steps are included directly in the response, update the view
+                    if (data.processing_steps && Array.isArray(data.processing_steps)) {
+                        console.log('Processing steps found in response, updating view');
+                        updateProcessingSteps(data);
+                    }
+                    
+                    setTimeout(fetchRecentLogs, 1000);
+                } else {
+                    showError(data.error || 'Unknown error sending message');
+                }
+                
+            } catch (error) {
+                console.error('Message error:', error);
+                showError(`Failed to send message: ${error.message}`);
+            }
+        }
+        
+        // Fetch process log details
+        async function fetchProcessLog(logId) {
+            if (!isLoggedIn) {
+                showError('You must login first before fetching logs');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey || !logId) {
+                showError('Business ID, API Key, and Log ID are required to fetch processing details');
+                return;
+            }
+            
+            updateStatus('Fetching process log...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/message/logs/${logId}?business_id=${encodeURIComponent(businessId)}`;
+                console.log('Fetching process log from URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey // Header for authentication
+                    },
+                    credentials: 'include', // Include cookies
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to fetch process log! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const logData = await response.json();
+                console.log('Process log data received:', logData);
+                
+                // Display the process log
+                displayProcessLog(logData);
+                
+                // Update flow diagram based on processing steps
+                updateFlowDiagram(logData);
+                
+                // Display variable substitution if available
+                displayVariableSubstitution(logData);
+                
+                // Also update the simple view stages
+                updateProcessingSteps(logData);
+                
+            } catch (error) {
+                console.error('Error fetching process log:', error);
+                showError(`Failed to fetch process log: ${error.message}`);
+            }
+        }
+        
+        // Fetch recent process logs
+        async function fetchRecentLogs() {
+            if (!isLoggedIn) {
+                showError('You must login first before fetching logs');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to fetch recent logs');
+                return;
+            }
+            
+            updateStatus('Fetching recent logs...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/message/logs/recent?business_id=${encodeURIComponent(businessId)}&limit=10`;
+                console.log('Fetching recent logs from URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey // Header for authentication
+                    },
+                    credentials: 'include', // Include cookies
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to fetch recent logs! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const logs = await response.json();
+                
+                // Display the recent logs
+                displayRecentLogs(logs);
+                
+                showSuccess('Recent logs fetched successfully!');
+                
+            } catch (error) {
+                console.error('Error fetching recent logs:', error);
+                showError(`Failed to fetch recent logs: ${error.message}`);
+            }
+        }
+        
+        // Display process log details
+        function displayProcessLog(log) {
+            const processLogArea = document.getElementById('processLogArea');
+            
+            if (!log) {
+                processLogArea.innerHTML = '<div class="no-logs">No processing data available</div>';
+                return;
+            }
+            
+            let html = `
+                <h3>Process Log Details</h3>
+                <div class="process-step">
+                    <div class="step-header">Original Message</div>
+                    <div class="prompt-box">${log.original_message || 'N/A'}</div>
+                    <div class="text-muted">
+                        Log ID: ${log.log_id || 'N/A'}<br>
+                        Conversation ID: ${log.conversation_id || 'N/A'}<br>
+                        Time: ${formatDateTime(log.start_time) || 'N/A'}
+                    </div>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-header">Current Stage Information</div>
+                    <div class="step-content">
+                        <div><strong>Stage ID:</strong> ${log.stage_id || 'No specific stage'}</div>
+                        <div><strong>Stage Name:</strong> ${log.current_stage_name || 'Default'}</div>
+                        ${log.agent_id ? `<div><strong>Agent ID:</strong> ${log.agent_id}</div>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // Process each step
+            if (log.processing_steps && log.processing_steps.length > 0) {
+                html += `<h3>Processing Steps</h3>`;
+                
+                log.processing_steps.forEach((step, index) => {
+                    html += `
+                        <div class="process-step">
+                            <div class="step-header">${formatStepName(step.step)} (Step ${index + 1})</div>
+                            
+                            <div class="step-content">
+                                <div class="template-info">
+                                    <strong>Template:</strong> ${step.template_name || 'Unknown Template'} (${step.template_id || 'N/A'})<br>
+                                    <strong>Time:</strong> ${formatDateTime(step.timestamp) || 'N/A'}
+                                </div>
+                                
+                                ${step.system_prompt ? `
+                                <div class="system-prompt-container">
+                                    <strong>System Prompt:</strong>
+                                    <div class="system-prompt">${step.system_prompt}</div>
+                                </div>
+                                ` : ''}
+                                
+                                <div class="prompt-container">
+                                    <strong>Prompt:</strong>
+                                    <div class="prompt-box" style="white-space: pre-wrap;">${step.prompt || 'N/A'}</div>
+                                </div>
+                                
+                                <div class="response-container">
+                                    <strong>Response:</strong>
+                                    <div class="response-box" style="white-space: pre-wrap;">${step.response || 'N/A'}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                html += '<div class="no-logs">No processing steps recorded</div>';
+            }
+            
+            // Final response
+            html += `
+                <h3>Final Result</h3>
+                <div class="process-step">
+                    <div class="step-header">Final Response</div>
+                    <div class="response-box" style="white-space: pre-wrap;">${
+                        log.processing_steps
+                            .find(step => step.step === 'response_generation')?.response || 'N/A'
+                    }</div>
+                </div>
+            `;
+            
+            processLogArea.innerHTML = html;
+        }
+        
+        // Display recent logs list
+        function displayRecentLogs(logs) {
+            const recentLogsArea = document.getElementById('recentLogsArea');
+            
+            if (!logs || logs.length === 0) {
+                recentLogsArea.innerHTML = '<div class="no-logs">No recent logs available</div>';
+                return;
+            }
+            
+            let html = '<ul class="log-list">';
+            
+            logs.forEach(log => {
+                html += `
+                    <li class="log-item" onclick="fetchProcessLog('${log.log_id}')">
+                        <strong>Message:</strong> ${truncateText(log.original_message, 50)}<br>
+                        <strong>Time:</strong> ${formatDateTime(log.start_time)}<br>
+                        <span class="text-muted">Log ID: ${log.log_id}</span>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            
+            recentLogsArea.innerHTML = html;
+        }
+        
+        // Display variable substitution
+        function displayVariableSubstitution(log) {
+            if (!log || !log.processing_steps || log.processing_steps.length === 0) {
+                document.getElementById('originalTemplate').textContent = 'No template data available';
+                document.getElementById('contextData').textContent = 'No context data available';
+                document.getElementById('substitutedTemplate').textContent = 'No substituted template available';
+                return;
+            }
+            
+            // Find the first step with template data
+            const step = log.processing_steps[0];
+            
+            if (step.template_content) {
+                // Extract variables from template (simple regex for demonstration)
+                const variables = step.template_content.match(/\{\{([^}]+)\}\}/g) || [];
+                let highlightedTemplate = step.template_content;
+                
+                // Highlight variables
+                variables.forEach(variable => {
+                    highlightedTemplate = highlightedTemplate.replace(
+                        variable, 
+                        `<span class="variable-highlight">${variable}</span>`
+                    );
+                });
+                
+                document.getElementById('originalTemplate').innerHTML = highlightedTemplate;
+            } else {
+                document.getElementById('originalTemplate').textContent = 'No template content available';
+            }
+            
+            // Display context data if available
+            if (step.context) {
+                document.getElementById('contextData').textContent = JSON.stringify(step.context, null, 2);
+            } else {
+                document.getElementById('contextData').textContent = 'No context data available';
+            }
+            
+            // Display substituted template if available
+            if (step.substituted_template) {
+                document.getElementById('substitutedTemplate').textContent = step.substituted_template;
+            } else if (step.prompt) {
+                document.getElementById('substitutedTemplate').textContent = step.prompt;
+            } else {
+                document.getElementById('substitutedTemplate').textContent = 'No substituted template available';
+            }
+        }
+        
+        // Reset flow diagram
+        function resetFlowDiagram() {
+            const nodes = document.querySelectorAll('.stage-node');
+            nodes.forEach(node => {
+                node.classList.remove('active', 'completed');
+            });
+        }
+        
+        // Update flow diagram based on processing steps
+        function updateFlowDiagram(log) {
+            if (!log || !log.processing_steps || log.processing_steps.length === 0) {
+                return;
+            }
+            
+            // Reset the diagram
+            resetFlowDiagram();
+            
+            // Mark completed steps
+            const completedSteps = new Set();
+            log.processing_steps.forEach(step => {
+                completedSteps.add(step.step);
+            });
+            
+            // Update nodes based on completed steps
+            if (completedSteps.has('stage_selection')) {
+                document.getElementById('stage-selection-node').classList.add('completed');
+            }
+            
+            if (completedSteps.has('data_extraction')) {
+                document.getElementById('data-extraction-node').classList.add('completed');
+            }
+            
+            if (completedSteps.has('response_generation')) {
+                document.getElementById('response-generation-node').classList.add('completed');
+            }
+            
+            // Mark the current active step (last step in the list)
+            const lastStep = log.processing_steps[log.processing_steps.length - 1];
+            if (lastStep) {
+                const activeNode = document.getElementById(`${lastStep.step}-node`);
+                if (activeNode) {
+                    activeNode.classList.add('active');
+                }
+            }
+        }
+        
+        // Resend request function
+        function resendRequest() {
+            if (!lastRequestData) {
+                showError('No request data available to resend');
+                return;
+            }
+            
+            // Reuse the sendMessageAndDebug function with the stored request data
+            document.getElementById('messageContent').value = lastRequestData.message;
+            sendMessageAndDebug();
+        }
+        
+        // Helper functions
+        function formatStepName(stepName) {
+            if (!stepName) return 'Unknown Step';
+            
+            const names = {
+                'stage_selection': 'Stage Selection (Determining Conversation Flow)',
+                'data_extraction': 'Data Extraction (Extracting Key Information)',
+                'response_generation': 'Response Generation (Creating Final Response)'
+            };
+            
+            return names[stepName] || stepName;
+        }
+        
+        function formatDateTime(dateStr) {
+            if (!dateStr) return 'Unknown';
+            
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleString();
+            } catch (e) {
+                return dateStr;
+            }
+        }
+        
+        function truncateText(text, maxLength) {
+            if (!text) return 'N/A';
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+        
+        function showError(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.innerHTML = `<div class="error">${message}</div>`;
+            updateStatus(`Error: ${message}`, true);
+        }
+        
+        function showSuccess(message) {
+            updateStatus(message, false);
+        }
+        
+        function updateStatus(message, isError = false) {
+            const statusElement = document.getElementById('networkStatus');
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'error' : 'success';
+        }
+        
+        // Look up owner ID function
+        async function lookupOwner() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to look up owner');
+                return;
+            }
+            
+            // Prepare lookup data
+            const lookupData = {
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
+            
+            updateStatus('Looking up owner...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/lookup-owner`;
+                console.log('Looking up owner with URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(lookupData),
+                    credentials: 'include', // Include cookies
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+                    } else {
+                        const text = await response.text();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
+                    }
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('ownerId').value = data.owner_id;
+                    showSuccess(`Owner ID found: ${data.owner_id}`);
+                } else {
+                    throw new Error(data.error || 'Failed to find owner ID');
+                }
+                
+            } catch (error) {
+                console.error('Lookup error:', error);
+                showError(`Failed to look up owner ID: ${error.message}`);
+            }
+        }
+        
+        // Add this function to save LLM calls to localStorage
+        function saveLLMCallToStorage(prompt, response) {
+            try {
+                const STORAGE_KEY = 'icmp_llm_calls';
+                
+                // Get existing calls
+                let calls = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                
+                // Add new call
+                calls.unshift({
+                    timestamp: new Date().toISOString(),
+                    prompt: prompt,
+                    response: response
+                });
+                
+                // Keep only the last 20 calls
+                if (calls.length > 20) {
+                    calls = calls.slice(0, 20);
+                }
+                
+                // Save back to localStorage
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(calls));
+                
+                console.log('LLM call saved to localStorage');
+            } catch (error) {
+                console.error('Error saving LLM call to storage:', error);
+            }
+        }
+        
+        // Find the function that makes the LLM call and add the saveLLMCallToStorage call
+        // This is a generic example - you'll need to adapt it to your specific code
+        
+        // Example: If you have a function like this:
+        async function makeLLMCall(prompt) {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required');
+                return;
+            }
+            
+            try {
+                const url = `${API_BASE_URL}/api/llm/generate`;
+                console.log('Making LLM call to URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey
+                    },
+                    body: JSON.stringify({
+                        business_id: businessId,
+                        input_text: prompt,
+                        call_type: 'message_handling'
+                    }),
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to make LLM call');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Save to localStorage
+                    saveLLMCallToStorage(prompt, data.response);
+                    
+                    // Display the response
+                    const responseArea = document.getElementById('responseArea');
+                    responseArea.innerHTML = `
+                        <div class="llm-call">
+                            <div class="call-header">LLM Response</div>
+                            <div class="response-box">${data.response}</div>
+                        </div>
+                    `;
+                    
+                    showSuccess('LLM call successful!');
+                    return data.response;
+                } else {
+                    throw new Error(data.error || 'Unknown error making LLM call');
+                }
+                
+            } catch (error) {
+                console.error('LLM call error:', error);
+                showError(`Failed to make LLM call: ${error.message}`);
+                return null;
+            }
+        }
+        
+        // Display debug info on processing steps
+        function updateProcessingSteps(log) {
+            if (!log || !log.processing_steps || !Array.isArray(log.processing_steps)) {
+                console.log('No processing steps found in log data');
+                return;
+            }
+            
+            console.log('Updating simple view with processing steps:', log.processing_steps);
+            
+            // Find each step
+            const intentStep = log.processing_steps.find(step => 
+                step.step === 'intent_detection' || step.step === 'stage_selection');
+            
+            const extractionStep = log.processing_steps.find(step => 
+                step.step === 'data_extraction');
+            
+            const responseStep = log.processing_steps.find(step => 
+                step.step === 'response_generation');
+            
+            // Update intent detection section
+            if (intentStep) {
+                console.log('Intent step found:', intentStep);
+                document.getElementById('intentPrompt').textContent = intentStep.prompt || 'No prompt data';
+                document.getElementById('intentResponse').textContent = intentStep.response || 'No response data';
+            }
+            
+            // Update data extraction section (with detailed debugging)
+            if (extractionStep) {
+                console.log('Data extraction step found:', extractionStep);
+                
+                // Display template info if available
+                let templateInfo = '';
+                if (extractionStep.template_name) {
+                    templateInfo = `Template: ${extractionStep.template_name} (${extractionStep.template_id || 'No ID'})`;
+                    
+                    // Add template info to the data extraction section header
+                    const extractionHeader = document.querySelector('.process-step:nth-child(2) .step-header');
+                    if (extractionHeader) {
+                        extractionHeader.innerHTML = `Stage 2: Data Extraction <span style="font-size: 0.8em; color: #666;">${templateInfo}</span>`;
+                    }
+                }
+                
+                // Prioritize data within extracted_data if it exists
+                let promptContent = '';
+                let responseContent = '';
+                let foundInData = false;
+                
+                if (extractionStep.extracted_data && typeof extractionStep.extracted_data === 'object') {
+                    console.log('Checking for prompt/response in extracted_data:', extractionStep.extracted_data);
+                    
+                    promptContent = extractionStep.extracted_data.prompt || '';
+                    responseContent = extractionStep.extracted_data.response || extractionStep.extracted_data.raw_extraction || '';
+                    
+                    if (promptContent || responseContent) {
+                        foundInData = true;
+                        console.log('Found prompt/response in extracted_data:', promptContent, responseContent);
+                    } else {
+                         // Fallback if extracted_data exists but has no prompt/response
+                        console.log('extracted_data exists but no prompt/response found within it. Trying top-level.');
+                        promptContent = extractionStep.prompt || '';
+                        responseContent = extractionStep.response || '';
+                        // Use entire extracted_data as fallback response if top-level response is empty
+                        if ((!responseContent || responseContent === 'N/A') && typeof extractionStep.extracted_data === 'object') {
+                             const displayData = {...extractionStep.extracted_data};
+                             delete displayData._template_info; // Don't show internal metadata
+                             responseContent = JSON.stringify(displayData, null, 2);
+                             console.log('Using cleaned extracted_data object as fallback response.');
+                        }
+                    }
+                } else {
+                    // Fallback to top-level prompt/response if extracted_data is missing
+                    console.log('extracted_data missing or not an object. Using top-level prompt/response.');
+                    promptContent = extractionStep.prompt || '';
+                    responseContent = extractionStep.response || '';
+                }
+                
+                // Clean the response content before displaying
+                const cleanedResponse = cleanExtractionResponse(responseContent);
+                
+                // Display the content we found/derived
+                document.getElementById('extractionPrompt').textContent = promptContent || "No prompt data available";
+                document.getElementById('extractionResponse').textContent = cleanedResponse || "No response data available";
+
+                // Handle UI feedback (warnings/success messages)
+                const extractionContent = document.querySelector('.process-step:nth-child(2) .step-content');
+                if (extractionContent) {
+                    // Remove any existing status messages first
+                    const existingMessages = extractionContent.querySelectorAll('.feedback-message');
+                    existingMessages.forEach(msg => msg.remove());
+
+                    if (promptContent && cleanedResponse && cleanedResponse !== 'No response data available') {
+                        // Add success message if we successfully displayed data
+                        const successDiv = document.createElement('div');
+                        successDiv.className = 'feedback-message'; // Add class for easier removal
+                        successDiv.style.color = '#28a745';
+                        successDiv.style.fontWeight = 'bold';
+                        successDiv.style.marginBottom = '10px';
+                        successDiv.innerHTML = `<p>✅ Data extraction details displayed successfully.</p>`;
+                        if (extractionContent.firstChild) {
+                            extractionContent.insertBefore(successDiv, extractionContent.firstChild);
+                        } else {
+                            extractionContent.appendChild(successDiv);
+                        }
+                    } else {
+                        // Add warning if data seems missing or incomplete
+                        const warningDiv = document.createElement('div');
+                        warningDiv.className = 'feedback-message'; // Add class for easier removal
+                        warningDiv.style.color = '#dc3545';
+                        warningDiv.style.fontWeight = 'bold';
+                        warningDiv.style.marginBottom = '10px';
+                        warningDiv.innerHTML = `<p>⚠️ WARNING: Could not display complete data extraction details.</p>
+                            <p>Check the following:</p>
+                            <ul>
+                                <li>Review the raw 'processing_steps' data in the browser console.</li>
+                                <li>Verify the data extraction template (ID: ${extractionStep.template_id || 'None'}) is configured correctly.</li>
+                                <li>Ensure the backend service ('data_extraction_service.py' or similar) returns data in the expected format.</li>
+                            </ul>`;
+                        if (extractionContent.firstChild) {
+                            extractionContent.insertBefore(warningDiv, extractionContent.firstChild);
+                        } else {
+                            extractionContent.appendChild(warningDiv);
+                        }
+                    }
+                }
+            }
+            
+            // Update response generation section
+            if (responseStep) {
+                console.log('Response step found:', responseStep);
+                document.getElementById('responsePrompt').textContent = responseStep.prompt || 'No prompt data';
+                document.getElementById('responseResponse').textContent = responseStep.response || 'No response data';
+            }
+        }
+        
+        // Display message response
+        function displayMessageResponse(data) {
+            if (data.success) {
+                // Check if processing_steps exists before trying to access it
+                if (data.processing_steps && Array.isArray(data.processing_steps)) {
+                    // Display Stage 1: Intent Detection
+                    const intentStep = data.processing_steps.find(step => step.step === 'intent_detection');
+                    document.getElementById('intentPrompt').textContent = intentStep?.prompt || '';
+                    document.getElementById('intentResponse').textContent = intentStep?.response || '';
+                    
+                    // Display Stage 2: Data Extraction
+                    const extractionStep = data.processing_steps.find(step => step.step === 'data_extraction');
+                    document.getElementById('extractionPrompt').textContent = extractionStep?.prompt || '';
+                    document.getElementById('extractionResponse').textContent = cleanExtractionResponse(extractionStep?.response || '');
+                    
+                    // Display Stage 3: Response Generation
+                    const responseStep = data.processing_steps.find(step => step.step === 'response_generation');
+                    document.getElementById('responsePrompt').textContent = responseStep?.prompt || '';
+                    document.getElementById('responseResponse').textContent = responseStep?.response || '';
+                } else {
+                    // If no processing steps, display a message
+                    document.getElementById('intentPrompt').textContent = 'No processing steps available';
+                    document.getElementById('intentResponse').textContent = '';
+                    document.getElementById('extractionPrompt').textContent = 'No processing steps available';
+                    document.getElementById('extractionResponse').textContent = '';
+                    document.getElementById('responsePrompt').textContent = 'No processing steps available';
+                    document.getElementById('responseResponse').textContent = '';
+                }
+                
+                // Update chat window
+                if (data.chat_window) {
+                    updateChatWindow(data.chat_window);
+                }
+            } else {
+                document.getElementById('responseArea').textContent = 'Error: ' + data.error;
+                document.getElementById('responseArea').classList.add('error');
+            }
+        }
+        
+        // Helper function to clean up extraction responses
+        function cleanExtractionResponse(response) {
+            if (!response) return '';
+            
+            try {
+                // If it's a JSON string, try to parse it
+                if (typeof response === 'string' && 
+                    (response.trim().startsWith('{') || response.trim().startsWith('['))) {
+                    
+                    const parsed = JSON.parse(response);
+                    
+                    // If it contains basic_info and contact_info, focus on those
+                    if (parsed.basic_info || parsed.contact_info) {
+                        // Create a clean object with just the extracted data
+                        const cleanData = {};
+                        if (parsed.basic_info) cleanData.basic_info = parsed.basic_info;
+                        if (parsed.contact_info) cleanData.contact_info = parsed.contact_info;
+                        
+                        return JSON.stringify(cleanData, null, 2);
+                    }
+                    
+                    // Remove metadata fields if present
+                    if (typeof parsed === 'object') {
+                        const cleanData = {...parsed};
+                        delete cleanData._template_info;
+                        delete cleanData.prompt;
+                        delete cleanData.processed_content;
+                        delete cleanData.processed_system_prompt;
+                        
+                        return JSON.stringify(cleanData, null, 2);
+                    }
+                    
+                    // Otherwise, just return the formatted JSON
+                    return JSON.stringify(parsed, null, 2);
+                }
+            } catch (e) {
+                console.log('Error cleaning extraction response:', e);
+            }
+            
+            // Return the original response if not JSON or if parsing fails
+            return response;
+        }
+    </script>
+</body>
+</html>

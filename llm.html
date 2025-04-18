@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICMP LLM API Debugger</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #ddd;
+            --bg-light: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6; 
+            padding: 0;
+            margin: 0;
+            display: flex;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            padding: 20px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input[type="text"], 
+        input[type="password"], 
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        textarea { 
+            height: 120px; 
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+        }
+
+        button:hover { 
+            background-color: var(--primary-hover);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        #responseArea {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .error { 
+            color: var(--error-color);
+            border-color: var(--error-color);
+            background-color: #fff5f5;
+        }
+
+        .success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: var(--text-color);
+            margin-top: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-divider {
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .llm-call {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+        }
+        
+        .call-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .call-content {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .prompt-box, .response-box {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .prompt-box {
+            background-color: #f0f8ff;
+            border: 1px solid #b8daff;
+        }
+        
+        .response-box {
+            background-color: #f0fff4;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .system-prompt {
+            font-style: italic;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .logged-in {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .logged-out {
+            color: var(--error-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .llm-calls-log {
+            margin-top: 20px;
+        }
+        
+        .no-calls {
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .call-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .call-item {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .call-item:hover {
+            background-color: #f0f8ff;
+        }
+        
+        /* Performance metrics */
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 10px 0;
+        }
+        
+        /* API Inspector */
+        .api-inspector {
+            margin: 20px 0;
+        }
+        
+        .request-details, .response-details {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+        
+        .api-inspector pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .llm-call {
+                margin: 10px 0;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .performance-metrics {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>ICMP LLM API Debugger</h1>
+        
+        <!-- Login Section -->
+        <h2>Login</h2>
+        <div class="login-section">
+            <div class="form-group">
+                <label for="businessId">Business ID</label>
+                <input id="businessId" type="text" placeholder="Enter Business ID">
+            </div>
+            
+            <div class="form-group">
+                <label for="ownerId">Owner ID</label>
+                <input id="ownerId" type="text" placeholder="Enter Owner ID">
+                <button onclick="lookupOwner()">Look Up Owner</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input id="apiKey" type="password" placeholder="Enter API Key">
+            </div>
+            
+            <div class="button-group">
+                <button id="loginButton" onclick="login()">Login</button>
+                <span id="loginStatus" class="logged-out">Not logged in</span>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- LLM Call Section -->
+        <h2>Make LLM Call</h2>
+        <div class="llm-section">
+            <div class="form-group">
+                <label for="inputText">Input Text</label>
+                <textarea id="inputText" placeholder="Enter text to send to LLM"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="systemPrompt">System Prompt (Optional)</label>
+                <textarea id="systemPrompt" placeholder="Enter system prompt"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="callType">Call Type</label>
+                <select id="callType">
+                    <option value="general">General</option>
+                    <option value="stage_selection">Stage Selection</option>
+                    <option value="data_extraction">Data Extraction</option>
+                    <option value="response_generation">Response Generation</option>
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button id="sendButton" onclick="makeLLMCall()" disabled>Make LLM Call</button>
+            </div>
+            
+            <div id="responseArea">
+                <div class="text-muted">Make an LLM call to see the response</div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Performance Metrics Section -->
+        <h2>Performance Metrics</h2>
+        <div id="performanceMetricsArea" class="performance-metrics">
+            <div class="metric">
+                <div class="metric-label">Total Processing Time</div>
+                <div class="metric-value" id="totalProcessingTime">-</div>
+                <div class="metric-unit">milliseconds</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Token Usage</div>
+                <div class="metric-value" id="tokenUsage">-</div>
+                <div class="metric-unit">tokens</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Estimated Cost</div>
+                <div class="metric-value" id="estimatedCost">-</div>
+                <div class="metric-unit">USD</div>
+            </div>
+        </div>
+        
+        <!-- API Inspector Section -->
+        <h2>API Inspector</h2>
+        <div id="apiInspectorArea" class="api-inspector">
+            <div class="request-details">
+                <h4>Request</h4>
+                <pre id="apiRequest">No request data available</pre>
+            </div>
+            <div class="response-details">
+                <h4>Response</h4>
+                <pre id="apiResponse">No response data available</pre>
+            </div>
+            <div class="button-group">
+                <button id="resendButton" onclick="resendRequest()" disabled>Resend Request</button>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Recent LLM Calls Section -->
+        <h2>Recent LLM Calls</h2>
+        <div class="button-group">
+            <button onclick="fetchRecentCalls()">Refresh Calls</button>
+        </div>
+        <div id="recentCallsArea">
+            <div class="no-calls">No recent LLM calls available</div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Status Section -->
+        <h2>Status</h2>
+        <div id="statusArea">
+            <div id="networkStatus" class="text-muted">No network activity yet</div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+        const DEFAULT_BUSINESS_ID = '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
+        const DEFAULT_API_KEY = 'da828cae6a3e46228aa09d65ba9066e3';
+        
+        // State management
+        let isLoggedIn = false;
+        let lastRequestData = null;
+        let lastResponseData = null;
+        
+        // Initialize the app
+        function init() {
+            // Check if we're already logged in
+            const savedApiKey = localStorage.getItem('businessApiKey');
+            if (savedApiKey) {
+                // Pre-fill the form with the saved values
+                document.getElementById('apiKey').value = savedApiKey;
+                
+                const savedBusinessId = localStorage.getItem('businessId');
+                const savedOwnerId = localStorage.getItem('ownerId');
+                
+                if (savedBusinessId) {
+                    document.getElementById('businessId').value = savedBusinessId;
+                }
+                
+                if (savedOwnerId) {
+                    document.getElementById('ownerId').value = savedOwnerId;
+                }
+                
+                // Assume we're logged in if we have all the values
+                if (savedApiKey && savedBusinessId && savedOwnerId) {
+                    isLoggedIn = true;
+                    document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                    document.getElementById('loginStatus').className = 'logged-in';
+                    document.getElementById('loginButton').textContent = 'Logged In';
+                    document.getElementById('loginButton').disabled = true;
+                    document.getElementById('sendButton').disabled = false;
+                }
+            }
+            
+            // Set default values if not already set
+            if (!document.getElementById('businessId').value) {
+                document.getElementById('businessId').value = DEFAULT_BUSINESS_ID;
+            }
+            
+            // Check if API server is running
+            checkApiServer();
+        }
+        
+        // Call init when the page loads
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Check if API server is running
+        async function checkApiServer() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showSuccess(`API server is running. Database: ${data.database}`);
+                } else {
+                    showError(`API server returned status: ${response.status}`);
+                }
+            } catch (error) {
+                showError(`API server check failed: ${error.message}`);
+            }
+        }
+        
+        // Login function
+        async function login() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const ownerId = document.getElementById('ownerId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !ownerId || !apiKey) {
+                showError('Business ID, Owner ID, and API Key are required to login');
+                return;
+            }
+            
+            // Prepare login data
+            const loginData = {
+                userId: ownerId,
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
+            
+            updateStatus('Logging in...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/verify-owner`;
+                console.log('Verifying business owner with URL:', url);
+                
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(loginData),
+                    mode: 'cors',
+                    credentials: 'omit'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        // Check response content type to determine how to parse it
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
+                            return response.json().then(errorData => {
+                                throw new Error(`Login failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+                            });
+                        } else {
+                            return response.text().then(text => {
+                                throw new Error(`Login failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
+                            });
+                        }
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        isLoggedIn = true;
+                        showSuccess('Login successful! Owner verification confirmed.');
+                        document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                        document.getElementById('loginStatus').className = 'logged-in';
+                        document.getElementById('loginButton').textContent = 'Logged In';
+                        document.getElementById('loginButton').disabled = true;
+                        document.getElementById('sendButton').disabled = false;
+                        
+                        // Store credentials for subsequent requests
+                        localStorage.setItem('businessApiKey', apiKey);
+                        localStorage.setItem('businessId', businessId);
+                        localStorage.setItem('ownerId', ownerId);
+                        
+                        // Fetch recent calls after successful login
+                        fetchRecentCalls();
+                    } else {
+                        isLoggedIn = false;
+                        throw new Error(data.error || 'Login failed: Not a business owner');
+                    }
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    isLoggedIn = false;
+                    showError(`Login failed: ${error.message}`);
+                    document.getElementById('loginStatus').textContent = 'Not logged in';
+                    document.getElementById('loginStatus').className = 'logged-out';
+                });
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                isLoggedIn = false;
+                showError(`Login failed: ${error.message}`);
+                document.getElementById('loginStatus').textContent = 'Not logged in';
+                document.getElementById('loginStatus').className = 'logged-out';
+            }
+        }
+        
+        // Make LLM call function
+        async function makeLLMCall() {
+            if (!isLoggedIn) {
+                showError('You must login first before making LLM calls');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const inputText = document.getElementById('inputText').value.trim();
+            const systemPrompt = document.getElementById('systemPrompt').value.trim();
+            const callType = document.getElementById('callType').value;
+            
+            if (!businessId || !apiKey || !inputText) {
+                showError('Business ID, API Key, and input text are required');
+                return;
+            }
+            
+            // Prepare LLM call data
+            const llmData = {
+                business_id: businessId,
+                input_text: inputText,
+                system_prompt: systemPrompt || null,
+                call_type: callType
+            };
+            
+            // Store request data for API inspector
+            lastRequestData = llmData;
+            document.getElementById('apiRequest').textContent = JSON.stringify(llmData, null, 2);
+            
+            updateStatus('Making LLM call...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/llm/generate`;
+                console.log('Making LLM call to URL:', url);
+                
+                const startTime = performance.now();
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey // Header for authentication
+                    },
+                    body: JSON.stringify(llmData),
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`LLM call failed! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                
+                // Store response data for API inspector
+                lastResponseData = data;
+                document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
+                document.getElementById('resendButton').disabled = false;
+                
+                // Calculate performance metrics
+                const endTime = performance.now();
+                const totalTime = Math.round(endTime - startTime);
+                document.getElementById('totalProcessingTime').textContent = totalTime;
+                
+                // Estimate token usage (this is a placeholder - actual implementation would need to parse the response)
+                const estimatedTokens = Math.round(inputText.length / 4) + Math.round((data.response || '').length / 4);
+                document.getElementById('tokenUsage').textContent = estimatedTokens;
+                
+                // Estimate cost (this is a placeholder - actual implementation would need to use real pricing)
+                const estimatedCost = (estimatedTokens / 1000) * 0.002; // $0.002 per 1K tokens
+                document.getElementById('estimatedCost').textContent = estimatedCost.toFixed(4);
+                
+                if (data.success) {
+                    showSuccess('LLM call successful!');
+                    
+                    // Display the response
+                    const responseArea = document.getElementById('responseArea');
+                    responseArea.innerHTML = `
+                        <div class="llm-call">
+                            <div class="call-header">LLM Response</div>
+                            <div class="response-box">${data.response}</div>
+                        </div>
+                    `;
+                    
+                    // Save this call to localStorage
+                    saveCallToStorage(inputText, data, callType, systemPrompt, totalTime, estimatedTokens, estimatedCost);
+                    
+                    // Refresh the recent calls
+                    setTimeout(fetchRecentCalls, 1000);
+                } else {
+                    showError(data.error || 'Unknown error making LLM call');
+                }
+                
+            } catch (error) {
+                console.error('LLM call error:', error);
+                showError(`Failed to make LLM call: ${error.message}`);
+            }
+        }
+        
+        // Function to save a call to localStorage
+        function saveCallToStorage(prompt, response, callType, systemPrompt, processingTime, tokenUsage, estimatedCost) {
+            try {
+                const STORAGE_KEY = 'icmp_llm_calls';
+                
+                // Get existing calls
+                let calls = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                
+                // Create a call object
+                const callData = {
+                    call_id: 'local_' + Date.now(),
+                    timestamp: new Date().toISOString(),
+                    input_text: prompt,
+                    response: response,
+                    call_type: callType,
+                    system_prompt: systemPrompt,
+                    processing_time_ms: processingTime,
+                    token_usage: tokenUsage,
+                    estimated_cost: estimatedCost
+                };
+                
+                // Add new call to the beginning of the array
+                calls.unshift(callData);
+                
+                // Keep only the last 20 calls
+                if (calls.length > 20) {
+                    calls = calls.slice(0, 20);
+                }
+                
+                // Save back to localStorage
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(calls));
+                
+                console.log('LLM call saved to localStorage');
+            } catch (error) {
+                console.error('Error saving call to storage:', error);
+            }
+        }
+        
+        // Fetch recent LLM calls
+        async function fetchRecentCalls() {
+            if (!isLoggedIn) {
+                showError('You must login first before fetching recent calls');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to fetch recent calls');
+                return;
+            }
+            
+            updateStatus('Fetching recent LLM calls...');
+            
+            try {
+                // Try to get calls from localStorage first
+                const STORAGE_KEY = 'icmp_llm_calls';
+                const storedCalls = localStorage.getItem(STORAGE_KEY);
+                
+                if (storedCalls) {
+                    const calls = JSON.parse(storedCalls);
+                    displayRecentCalls(calls);
+                    showSuccess('Recent LLM calls loaded from local storage');
+                    return;
+                }
+                
+                // If no calls in localStorage, try the API
+                const url = `${API_BASE_URL}/api/llm/calls/recent?business_id=${encodeURIComponent(businessId)}&limit=10`;
+                console.log('Fetching recent LLM calls from URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey // Header for authentication
+                    },
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to fetch recent calls! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const calls = await response.json();
+                
+                // Save calls to localStorage for future use
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(calls));
+                
+                // Display the recent calls
+                displayRecentCalls(calls);
+                
+                showSuccess('Recent LLM calls fetched successfully!');
+                
+            } catch (error) {
+                console.error('Error fetching recent calls:', error);
+                showError(`Failed to fetch recent calls: ${error.message}`);
+                
+                // Show a message about using localStorage
+                const recentCallsArea = document.getElementById('recentCallsArea');
+                recentCallsArea.innerHTML = `
+                    <div class="error">
+                        <p>Could not fetch recent calls from the API. This may be because:</p>
+                        <ul>
+                            <li>The API endpoint is not available</li>
+                            <li>You don't have permission to access the calls</li>
+                            <li>The server is experiencing issues</li>
+                        </ul>
+                        <p>Please try making a new LLM call to see the results.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Display recent calls list
+        function displayRecentCalls(calls) {
+            const recentCallsArea = document.getElementById('recentCallsArea');
+            
+            if (!calls || calls.length === 0) {
+                recentCallsArea.innerHTML = '<div class="no-calls">No recent LLM calls available</div>';
+                return;
+            }
+            
+            let html = '<ul class="call-list">';
+            
+            calls.forEach(call => {
+                html += `
+                    <li class="call-item" onclick="displayCallDetails('${call.call_id || 'local'}')">
+                        <strong>Input:</strong> ${truncateText(call.input_text || call.prompt, 50)}<br>
+                        <strong>Type:</strong> ${call.call_type || 'general'}<br>
+                        <strong>Time:</strong> ${formatDateTime(call.timestamp)}<br>
+                        <span class="text-muted">Call ID: ${call.call_id || 'local'}</span>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            
+            recentCallsArea.innerHTML = html;
+        }
+        
+        // Display call details
+        async function displayCallDetails(callId) {
+            if (!isLoggedIn) {
+                showError('You must login first before viewing call details');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to view call details');
+                return;
+            }
+            
+            updateStatus('Fetching call details...');
+            
+            try {
+                // First check if we have this call in localStorage
+                const STORAGE_KEY = 'icmp_llm_calls';
+                const storedCalls = localStorage.getItem(STORAGE_KEY);
+                
+                if (storedCalls) {
+                    const calls = JSON.parse(storedCalls);
+                    const callData = calls.find(call => call.call_id === callId);
+                    
+                    if (callData) {
+                        // Display the call details from localStorage
+                        displayCallDetailsUI(callData);
+                        
+                        // Update API inspector
+                        document.getElementById('apiRequest').textContent = JSON.stringify({
+                            business_id: businessId,
+                            input_text: callData.input_text || callData.prompt,
+                            system_prompt: callData.system_prompt,
+                            call_type: callData.call_type
+                        }, null, 2);
+                        
+                        document.getElementById('apiResponse').textContent = JSON.stringify(callData, null, 2);
+                        document.getElementById('resendButton').disabled = false;
+                        
+                        // Update performance metrics
+                        document.getElementById('totalProcessingTime').textContent = callData.processing_time_ms || '-';
+                        document.getElementById('tokenUsage').textContent = callData.token_usage || '-';
+                        document.getElementById('estimatedCost').textContent = callData.estimated_cost || '-';
+                        
+                        showSuccess('Call details loaded from local storage');
+                        return;
+                    }
+                }
+                
+                // If not in localStorage, try the API
+                const url = `${API_BASE_URL}/api/llm/calls/${callId}?business_id=${encodeURIComponent(businessId)}`;
+                console.log('Fetching call details from URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey // Header for authentication
+                    },
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to fetch call details! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const callData = await response.json();
+                
+                // Display the call details
+                displayCallDetailsUI(callData);
+                
+                // Update API inspector
+                document.getElementById('apiRequest').textContent = JSON.stringify({
+                    business_id: businessId,
+                    input_text: callData.input_text,
+                    system_prompt: callData.system_prompt,
+                    call_type: callData.call_type
+                }, null, 2);
+                
+                document.getElementById('apiResponse').textContent = JSON.stringify(callData, null, 2);
+                document.getElementById('resendButton').disabled = false;
+                
+                // Update performance metrics
+                document.getElementById('totalProcessingTime').textContent = callData.processing_time_ms || '-';
+                document.getElementById('tokenUsage').textContent = callData.token_usage || '-';
+                document.getElementById('estimatedCost').textContent = callData.estimated_cost || '-';
+                
+                showSuccess('Call details fetched successfully!');
+                
+            } catch (error) {
+                console.error('Error fetching call details:', error);
+                showError(`Failed to fetch call details: ${error.message}`);
+            }
+        }
+        
+        // Display call details UI
+        function displayCallDetailsUI(call) {
+            const responseArea = document.getElementById('responseArea');
+            
+            if (!call) {
+                responseArea.innerHTML = '<div class="error">No call data available</div>';
+                return;
+            }
+            
+            let html = `
+                <div class="llm-call">
+                    <div class="call-header">LLM Call Details</div>
+                    <div class="call-content">
+                        <div><strong>Call ID:</strong> ${call.call_id || 'N/A'}</div>
+                        <div><strong>Call Type:</strong> ${call.call_type || 'general'}</div>
+                        <div><strong>Timestamp:</strong> ${formatDateTime(call.timestamp) || 'N/A'}</div>
+                        
+                        <div class="prompt-container">
+                            <strong>Input Text:</strong>
+                            <div class="prompt-box">${call.input_text || 'N/A'}</div>
+                        </div>
+                        
+                        ${call.system_prompt ? `
+                        <div class="system-prompt-container">
+                            <strong>System Prompt:</strong>
+                            <div class="system-prompt">${call.system_prompt}</div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="response-container">
+                            <strong>Response:</strong>
+                            <div class="response-box">${call.response || 'N/A'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            responseArea.innerHTML = html;
+        }
+        
+        // Resend request function
+        function resendRequest() {
+            if (!lastRequestData) {
+                showError('No request data available to resend');
+                return;
+            }
+            
+            // Reuse the makeLLMCall function with the stored request data
+            document.getElementById('inputText').value = lastRequestData.input_text;
+            document.getElementById('systemPrompt').value = lastRequestData.system_prompt || '';
+            document.getElementById('callType').value = lastRequestData.call_type || 'general';
+            makeLLMCall();
+        }
+        
+        // Helper functions
+        function formatDateTime(dateStr) {
+            if (!dateStr) return 'Unknown';
+            
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleString();
+            } catch (e) {
+                return dateStr;
+            }
+        }
+        
+        function truncateText(text, maxLength) {
+            if (!text) return 'N/A';
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+        
+        function showError(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.innerHTML = `<div class="error">${message}</div>`;
+            updateStatus(`Error: ${message}`, true);
+        }
+        
+        function showSuccess(message) {
+            updateStatus(message, false);
+        }
+        
+        function updateStatus(message, isError = false) {
+            const statusElement = document.getElementById('networkStatus');
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'error' : 'success';
+        }
+        
+        // Look up owner ID function
+        async function lookupOwner() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to look up owner');
+                return;
+            }
+            
+            // Prepare lookup data
+            const lookupData = {
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
+            
+            updateStatus('Looking up owner...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/lookup-owner`;
+                console.log('Looking up owner with URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(lookupData),
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+                    } else {
+                        const text = await response.text();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
+                    }
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('ownerId').value = data.owner_id;
+                    showSuccess(`Owner ID found: ${data.owner_id}`);
+                } else {
+                    throw new Error(data.error || 'Failed to find owner ID');
+                }
+                
+            } catch (error) {
+                console.error('Lookup error:', error);
+                showError(`Failed to look up owner ID: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+</html> 

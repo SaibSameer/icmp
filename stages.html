@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICMP Stage Management</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #ddd;
+            --bg-light: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6; 
+            padding: 0;
+            margin: 0;
+            display: flex;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            padding: 20px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input[type="text"], 
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        textarea { 
+            height: 120px; 
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+        }
+
+        button:hover { 
+            background-color: var(--primary-hover);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .error { 
+            color: var(--error-color);
+            border-color: var(--error-color);
+            background-color: #fff5f5;
+        }
+
+        .success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: var(--text-color);
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+
+        .section-divider {
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .stages-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .stage-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+            transition: box-shadow 0.2s;
+            cursor: pointer;
+        }
+        
+        .stage-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stage-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .stage-item-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .stage-item-type {
+            padding: 3px 8px;
+            border-radius: 4px;
+            background-color: #e9ecef;
+            font-size: 0.8em;
+            margin-right: 10px;
+        }
+        
+        .stage-item-description {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        
+        .stage-item-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .template-details {
+            margin: 8px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            flex-wrap: wrap;
+        }
+        
+        .template-detail {
+            margin-right: 15px;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            padding: 3px 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .template-detail:hover {
+            background-color: #dae0e5;
+        }
+        
+        .template-label {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .template-id {
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+        .stage-delete-btn {
+            background-color: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 0.8em;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .stage-delete-btn:hover {
+            background-color: #c82333;
+        }
+        
+        .stage-actions {
+            display: flex;
+            align-items: center;
+        }
+        
+        .template-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .template-card-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .template-card-content {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        .delete-btn {
+            background-color: var(--error-color);
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>ICMP Stage Management</h1>
+        
+        <!-- Configuration Section -->
+        <div id="configSection">
+            <h2>Configuration</h2>
+            <div class="config-section">
+                <div class="form-group">
+                    <label for="businessId">Business ID</label>
+                    <input id="businessId" type="text" placeholder="Enter Business ID">
+                </div>
+                
+                <div class="form-group">
+                    <label for="apiKey">Business API Key</label>
+                    <input id="apiKey" type="password" placeholder="Enter Business API Key">
+                </div>
+                
+                <div class="form-group">
+                    <label for="agentId">Agent ID (optional)</label>
+                    <input id="agentId" type="text" placeholder="Enter Agent ID (optional)">
+                </div>
+                
+                <div class="button-group">
+                    <button id="loginButton" onclick="login()">Login</button>
+                    <span id="loginStatus" class="logged-out">Not logged in</span>
+                </div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('stagesList')">Stages List</div>
+            <div class="tab" onclick="showTab('createStage')">Create Stage</div>
+            <div class="tab" onclick="showTab('editStage')">Edit Stage</div>
+        </div>
+        
+        <!-- Stages List Content -->
+        <div id="stagesListContent" class="tab-content active">
+            <h2>Stages</h2>
+            <div class="button-group">
+                <button onclick="fetchStages()">Refresh Stages</button>
+            </div>
+            <div id="stagesList"></div>
+        </div>
+        
+        <!-- Create Stage Content -->
+        <div id="createStageContent" class="tab-content">
+            <h2>Create Stage</h2>
+            <div class="form-group">
+                <label for="stageName">Stage Name</label>
+                <input id="stageName" type="text" placeholder="Enter stage name">
+            </div>
+            
+            <div class="form-group">
+                <label for="stageDescription">Stage Description</label>
+                <textarea id="stageDescription" placeholder="Enter stage description"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="stageType">Stage Type</label>
+                <select id="stageType">
+                    <option value="conversation">Conversation</option>
+                    <option value="response">Response</option>
+                    <option value="form">Form</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="stageSelectionTemplateId">Stage Selection Template ID</label>
+                <select id="stageSelectionTemplateId">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="dataExtractionTemplateId">Data Extraction Template ID</label>
+                <select id="dataExtractionTemplateId">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="responseGenerationTemplateId">Response Generation Template ID</label>
+                <select id="responseGenerationTemplateId">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="createStage()">Create Stage</button>
+            </div>
+        </div>
+        
+        <!-- Edit Stage Content -->
+        <div id="editStageContent" class="tab-content">
+            <h2>Edit Stage</h2>
+            <div class="form-group">
+                <label for="editStageId">Stage ID</label>
+                <input id="editStageId" type="text" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="editStageName">Stage Name</label>
+                <input id="editStageName" type="text" placeholder="Enter stage name">
+            </div>
+            
+            <div class="form-group">
+                <label for="editStageDescription">Stage Description</label>
+                <textarea id="editStageDescription" placeholder="Enter stage description"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="editStageType">Stage Type</label>
+                <select id="editStageType">
+                    <option value="conversation">Conversation</option>
+                    <option value="response">Response</option>
+                    <option value="form">Form</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="editStageSelectionTemplateId">Stage Selection Template ID</label>
+                <select id="editStageSelectionTemplateId">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="editDataExtractionTemplateId">Data Extraction Template ID</label>
+                <select id="editDataExtractionTemplateId">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="editResponseGenerationTemplateId">Response Generation Template ID</label>
+                <select id="editResponseGenerationTemplateId">
+                    <!-- Populated dynamically -->
+                </select>
+            </div>
+            
+            <div class="button-group">
+                <button onclick="updateStage()">Update Stage</button>
+                <button onclick="confirmDeleteCurrentStage()" class="delete-btn">Delete Stage</button>
+                <button onclick="cancelEdit()">Cancel</button>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Status Section -->
+        <div id="statusSection">
+            <h2>Status</h2>
+            <div id="statusArea">
+                <div id="networkStatus" class="text-muted">No network activity yet</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+        const DEFAULT_BUSINESS_ID = '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
+        const DEFAULT_API_KEY = 'da828cae6a3e46228aa09d65ba9066e3';
+        
+        // State management
+        let isLoggedIn = false;
+        let templates = [];
+        let stages = [];
+        let selectedStageId = null;
+        
+        // Initialize the app
+        function init() {
+            // Check if we're already logged in
+            const savedApiKey = localStorage.getItem('businessApiKey');
+            if (savedApiKey) {
+                // Pre-fill the form with the saved values
+                document.getElementById('apiKey').value = savedApiKey;
+                
+                const savedBusinessId = localStorage.getItem('businessId');
+                const savedAgentId = localStorage.getItem('agentId');
+                
+                if (savedBusinessId) {
+                    document.getElementById('businessId').value = savedBusinessId;
+                }
+                
+                if (savedAgentId) {
+                    document.getElementById('agentId').value = savedAgentId;
+                }
+                
+                // Assume we're logged in if we have all the values
+                if (savedApiKey && savedBusinessId) {
+                    isLoggedIn = true;
+                    document.getElementById('loginStatus').textContent = 'Logged in';
+                    document.getElementById('loginStatus').className = 'logged-in';
+                    document.getElementById('loginButton').textContent = 'Logged In';
+                    document.getElementById('loginButton').disabled = true;
+                    
+                    // Fetch stages
+                    fetchStages();
+                    
+                    // Fetch templates for dropdown lists
+                    fetchTemplates();
+                }
+            }
+            
+            // Set default values if not already set
+            if (!document.getElementById('businessId').value) {
+                document.getElementById('businessId').value = DEFAULT_BUSINESS_ID;
+            }
+        }
+        
+        // Call init when the page loads
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Utility function to generate a UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // Login function
+        function login() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to login');
+                return;
+            }
+            
+            updateStatus('Logging in...');
+            
+            // Store credentials
+            localStorage.setItem('businessApiKey', apiKey);
+            localStorage.setItem('businessId', businessId);
+            
+            const agentId = document.getElementById('agentId').value.trim();
+            if (agentId) {
+                localStorage.setItem('agentId', agentId);
+            }
+            
+            isLoggedIn = true;
+            document.getElementById('loginStatus').textContent = 'Logged in';
+            document.getElementById('loginStatus').className = 'logged-in';
+            document.getElementById('loginButton').textContent = 'Logged In';
+            document.getElementById('loginButton').disabled = true;
+            
+            // Fetch stages
+            fetchStages();
+            
+            // Fetch templates for dropdown lists
+            fetchTemplates();
+            
+            showSuccess('Logged in successfully');
+        }
+        
+        // Tab functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Deactivate all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activate the selected tab
+            document.getElementById(tabName + 'Content').classList.add('active');
+            
+            // Find and activate the tab button
+            const tabButtons = document.querySelectorAll('.tab');
+            tabButtons.forEach(button => {
+                if (button.textContent.toLowerCase().includes(tabName.toLowerCase())) {
+                    button.classList.add('active');
+                }
+            });
+        }
+        
+        // Normalize UUID
+        function normalizeUUID(uuid) {
+            if (!uuid) return null;
+            
+            try {
+                // Convert to lowercase and trim whitespace
+                const normalizedUUID = uuid.toLowerCase().trim();
+                // Check if it's a valid UUID format
+                const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+                
+                if (uuidRegex.test(normalizedUUID)) {
+                    return normalizedUUID;
+                }
+                console.warn('Invalid UUID format:', uuid);
+                return uuid; // Return original if not matching pattern
+            } catch (error) {
+                console.error('Error normalizing UUID:', error);
+                return uuid; // Return original on error
+            }
+        }
+        
+        // Fetch stages
+        async function fetchStages() {
+            if (!isLoggedIn) {
+                showError('You must login first before fetching stages');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const agentId = document.getElementById('agentId').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to fetch stages');
+                return;
+            }
+            
+            updateStatus('Fetching stages...');
+            
+            try {
+                let url = `${API_BASE_URL}/stages?business_id=${normalizeUUID(businessId)}`;
+                if (agentId) {
+                    url += `&agent_id=${normalizeUUID(agentId)}`;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to fetch stages! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                stages = await response.json();
+                
+                // Display the stages
+                displayStages(stages);
+                
+                showSuccess('Stages fetched successfully!');
+            } catch (error) {
+                console.error('Error fetching stages:', error);
+                showError(`Failed to fetch stages: ${error.message}`);
+            }
+        }
+        
+        // Fetch templates
+        async function fetchTemplates() {
+            if (!isLoggedIn) {
+                showError('You must login first before fetching templates');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const agentId = document.getElementById('agentId').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to fetch templates');
+                return;
+            }
+            
+            updateStatus('Fetching templates...');
+            
+            try {
+                let url = `${API_BASE_URL}/templates?business_id=${businessId}`;
+                if (agentId) {
+                    url += `&agent_id=${agentId}`;
+                }
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to fetch templates! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                templates = await response.json();
+                
+                // Populate template dropdowns
+                populateTemplateDropdowns();
+                
+                showSuccess('Templates fetched successfully!');
+            } catch (error) {
+                console.error('Error fetching templates:', error);
+                showError(`Failed to fetch templates: ${error.message}`);
+            }
+        }
+        
+        // Populate template dropdowns
+        function populateTemplateDropdowns() {
+            const stageSelectionTemplates = templates.filter(template => 
+                template.template_type === 'stage_selection' || template.template_type === 'default_stage_selection');
+                
+            const dataExtractionTemplates = templates.filter(template => 
+                template.template_type === 'data_extraction' || template.template_type === 'default_data_extraction');
+                
+            const responseGenerationTemplates = templates.filter(template => 
+                template.template_type === 'response_generation' || template.template_type === 'default_response_generation');
+            
+            // Populate create stage dropdowns
+            populateDropdown('stageSelectionTemplateId', stageSelectionTemplates);
+            populateDropdown('dataExtractionTemplateId', dataExtractionTemplates);
+            populateDropdown('responseGenerationTemplateId', responseGenerationTemplates);
+            
+            // Populate edit stage dropdowns
+            populateDropdown('editStageSelectionTemplateId', stageSelectionTemplates);
+            populateDropdown('editDataExtractionTemplateId', dataExtractionTemplates);
+            populateDropdown('editResponseGenerationTemplateId', responseGenerationTemplates);
+        }
+        
+        // Helper function to populate a dropdown
+        function populateDropdown(elementId, items) {
+            const dropdown = document.getElementById(elementId);
+            dropdown.innerHTML = '';
+            
+            items.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.template_id;
+                option.textContent = item.template_name;
+                dropdown.appendChild(option);
+            });
+        }
+        
+        // Display stages
+        function displayStages(stagesList) {
+            const stagesListElement = document.getElementById('stagesList');
+            
+            if (!stagesList || stagesList.length === 0) {
+                stagesListElement.innerHTML = '<div class="no-stages">No stages found</div>';
+                return;
+            }
+            
+            let html = '<ul class="stages-list">';
+            
+            stagesList.forEach(stage => {
+                html += `
+                    <li class="stage-item">
+                        <div class="stage-item-header">
+                            <div style="display: flex; align-items: center;" onclick="selectStage('${stage.stage_id}')">
+                                <div class="stage-item-name">${stage.stage_name}</div>
+                                <div class="stage-item-type">${stage.stage_type}</div>
+                            </div>
+                            <div class="stage-actions">
+                                <button class="stage-delete-btn" onclick="confirmDeleteStage('${stage.stage_id}', '${stage.stage_name}', event)">Delete</button>
+                            </div>
+                        </div>
+                        <div class="stage-item-content" onclick="selectStage('${stage.stage_id}')">${escapeHtml(truncateText(stage.stage_description || 'No description', 200))}</div>
+                        <div class="template-details">
+                            <div class="template-detail" onclick="openTemplateEditor('${stage.stage_selection_template_id}', event)">
+                                <span class="template-label">Selection:</span> 
+                                <span class="template-id">${truncateText(stage.stage_selection_template_id || 'None', 12)}</span>
+                            </div>
+                            <div class="template-detail" onclick="openTemplateEditor('${stage.data_extraction_template_id}', event)">
+                                <span class="template-label">Extraction:</span> 
+                                <span class="template-id">${truncateText(stage.data_extraction_template_id || 'None', 12)}</span>
+                            </div>
+                            <div class="template-detail" onclick="openTemplateEditor('${stage.response_generation_template_id}', event)">
+                                <span class="template-label">Response:</span> 
+                                <span class="template-id">${truncateText(stage.response_generation_template_id || 'None', 12)}</span>
+                            </div>
+                        </div>
+                        <div class="stage-item-meta">
+                            <div>ID: ${stage.stage_id}</div>
+                        </div>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            
+            stagesListElement.innerHTML = html;
+        }
+        
+        // Select a stage
+        function selectStage(stageId) {
+            selectedStageId = stageId;
+            
+            // Find the stage in our list
+            const stage = stages.find(s => s.stage_id === stageId);
+            if (!stage) {
+                showError('Stage not found');
+                return;
+            }
+            
+            // Populate the edit form
+            document.getElementById('editStageId').value = stage.stage_id;
+            document.getElementById('editStageName').value = stage.stage_name;
+            document.getElementById('editStageDescription').value = stage.stage_description;
+            document.getElementById('editStageType').value = stage.stage_type;
+            
+            // Set template dropdown values
+            if (document.getElementById('editStageSelectionTemplateId')) {
+                document.getElementById('editStageSelectionTemplateId').value = stage.stage_selection_template_id;
+            }
+            
+            if (document.getElementById('editDataExtractionTemplateId')) {
+                document.getElementById('editDataExtractionTemplateId').value = stage.data_extraction_template_id;
+            }
+            
+            if (document.getElementById('editResponseGenerationTemplateId')) {
+                document.getElementById('editResponseGenerationTemplateId').value = stage.response_generation_template_id;
+            }
+            
+            // Switch to edit tab
+            showTab('editStage');
+        }
+        
+        // Create a new stage
+        async function createStage() {
+            if (!isLoggedIn) {
+                showError('You must login first before creating a stage');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const agentId = document.getElementById('agentId').value.trim();
+            
+            const stageName = document.getElementById('stageName').value.trim();
+            const stageDescription = document.getElementById('stageDescription').value.trim();
+            const stageType = document.getElementById('stageType').value;
+            const stageSelectionTemplateId = document.getElementById('stageSelectionTemplateId').value;
+            const dataExtractionTemplateId = document.getElementById('dataExtractionTemplateId').value;
+            const responseGenerationTemplateId = document.getElementById('responseGenerationTemplateId').value;
+            
+            if (!businessId || !apiKey || !stageName || !stageDescription || !stageType ||
+                !stageSelectionTemplateId || !dataExtractionTemplateId || !responseGenerationTemplateId) {
+                showError('All fields are required');
+                return;
+            }
+            
+            updateStatus('Creating stage...');
+            
+            try {
+                const stageData = {
+                    business_id: normalizeUUID(businessId),
+                    stage_name: stageName,
+                    stage_description: stageDescription,
+                    stage_type: stageType,
+                    stage_selection_template_id: normalizeUUID(stageSelectionTemplateId),
+                    data_extraction_template_id: normalizeUUID(dataExtractionTemplateId),
+                    response_generation_template_id: normalizeUUID(responseGenerationTemplateId)
+                };
+                
+                // Add agent_id if provided
+                if (agentId) {
+                    stageData.agent_id = normalizeUUID(agentId);
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/stages`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(stageData)
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to create stage! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const newStage = await response.json();
+                
+                // Clear form
+                document.getElementById('stageName').value = '';
+                document.getElementById('stageDescription').value = '';
+                
+                // Refresh stages
+                fetchStages();
+                
+                showSuccess('Stage created successfully!');
+                
+                // Switch to stages list tab
+                showTab('stagesList');
+            } catch (error) {
+                console.error('Error creating stage:', error);
+                showError(`Failed to create stage: ${error.message}`);
+            }
+        }
+        
+        // Update a stage
+        async function updateStage() {
+            if (!isLoggedIn || !selectedStageId) {
+                showError('You must login and select a stage before updating');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const agentId = document.getElementById('agentId').value.trim();
+            
+            const stageId = document.getElementById('editStageId').value;
+            const stageName = document.getElementById('editStageName').value.trim();
+            const stageDescription = document.getElementById('editStageDescription').value.trim();
+            const stageType = document.getElementById('editStageType').value;
+            const stageSelectionTemplateId = document.getElementById('editStageSelectionTemplateId').value;
+            const dataExtractionTemplateId = document.getElementById('editDataExtractionTemplateId').value;
+            const responseGenerationTemplateId = document.getElementById('editResponseGenerationTemplateId').value;
+            
+            if (!businessId || !apiKey || !stageName || !stageDescription || !stageType ||
+                !stageSelectionTemplateId || !dataExtractionTemplateId || !responseGenerationTemplateId) {
+                showError('All fields are required');
+                return;
+            }
+            
+            updateStatus('Updating stage...');
+            
+            try {
+                const stageData = {
+                    business_id: normalizeUUID(businessId),
+                    stage_name: stageName,
+                    stage_description: stageDescription,
+                    stage_type: stageType,
+                    stage_selection_template_id: normalizeUUID(stageSelectionTemplateId),
+                    data_extraction_template_id: normalizeUUID(dataExtractionTemplateId),
+                    response_generation_template_id: normalizeUUID(responseGenerationTemplateId)
+                };
+                
+                // Add agent_id if provided
+                if (agentId) {
+                    stageData.agent_id = normalizeUUID(agentId);
+                }
+                
+                const response = await fetch(`${API_BASE_URL}/stages/${normalizeUUID(stageId)}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(stageData)
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Failed to update stage! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                // Refresh stages
+                fetchStages();
+                
+                showSuccess('Stage updated successfully!');
+                
+                // Switch to stages list tab
+                showTab('stagesList');
+            } catch (error) {
+                console.error('Error updating stage:', error);
+                showError(`Failed to update stage: ${error.message}`);
+            }
+        }
+        
+        // Cancel editing
+        function cancelEdit() {
+            selectedStageId = null;
+            
+            // Clear edit form
+            document.getElementById('editStageId').value = '';
+            document.getElementById('editStageName').value = '';
+            document.getElementById('editStageDescription').value = '';
+            
+            // Switch to stages list tab
+            showTab('stagesList');
+        }
+        
+        // Helper functions
+        function formatDateTime(dateStr) {
+            if (!dateStr) return 'Unknown';
+            
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleString();
+            } catch (e) {
+                return dateStr;
+            }
+        }
+        
+        // Helper function to truncate text
+        function truncateText(text, maxLength) {
+            if (!text) return '';
+            if (text.length <= maxLength) return text;
+            return text.substring(0, maxLength) + '...';
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
+        function showError(message) {
+            const statusElement = document.getElementById('networkStatus');
+            statusElement.textContent = message;
+            statusElement.className = 'error';
+        }
+        
+        function showSuccess(message) {
+            const statusElement = document.getElementById('networkStatus');
+            statusElement.textContent = message;
+            statusElement.className = 'success';
+        }
+        
+        function updateStatus(message, isError = false) {
+            const statusElement = document.getElementById('networkStatus');
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'error' : 'success';
+        }
+
+        // Open template editor in templates.html
+        function openTemplateEditor(templateId, event) {
+            if (!templateId || templateId === 'None') {
+                showError('No template ID provided');
+                return;
+            }
+            
+            // Stop propagation to prevent stage selection
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            // Open templates.html with template ID parameter
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const url = `templates.html?template_id=${templateId}&business_id=${encodeURIComponent(businessId)}&api_key=${encodeURIComponent(apiKey)}`;
+            
+            window.open(url, '_blank');
+        }
+
+        // Delete stage function
+        async function deleteStage(stageId) {
+            if (!isLoggedIn) {
+                showError('You must login first before deleting a stage');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required');
+                return;
+            }
+            
+            updateStatus('Deleting stage...');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/stages/${normalizeUUID(stageId)}?business_id=${normalizeUUID(businessId)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    let errorData = {};
+                    try {
+                        errorData = await response.json();
+                    } catch (jsonError) {
+                        const errorText = await response.text();
+                        throw new Error(`Failed to delete stage! status: ${response.status}, message: ${errorText}`);
+                    }
+                    
+                    // Check for the new specific foreign key violation error code
+                    if (errorData.error_code === 'FOREIGN_KEY_VIOLATION') {
+                        // Ask the user if they want to reassign conversations
+                        if (confirm(`${errorData.message} Would you like to reassign these conversations to another stage?`)) {
+                            showReassignmentDialog(stageId);
+                            return;
+                        } else {
+                            showError(errorData.message);
+                            return;
+                        }
+                    }
+                    // Also keep the old check for foreign key errors from general exception handler
+                    else if (errorData.error && errorData.error.includes('foreign key constraint') && errorData.error.includes('conversations')) {
+                        // Ask the user if they want to reassign conversations
+                        if (confirm('This stage has conversations referencing it. Would you like to reassign these conversations to another stage?')) {
+                            showReassignmentDialog(stageId);
+                            return;
+                        } else {
+                            showError('Cannot delete stage: There are conversations still using this stage. Please delete those conversations first or assign them to a different stage.');
+                            return;
+                        }
+                    }
+                    
+                    throw new Error(`Failed to delete stage! status: ${response.status}, message: ${errorData.error || errorData.message || 'Unknown error'}`);
+                }
+                
+                // Refresh stages list
+                fetchStages();
+                
+                showSuccess('Stage deleted successfully!');
+            } catch (error) {
+                console.error('Error deleting stage:', error);
+                showError(`Failed to delete stage: ${error.message}`);
+            }
+        }
+        
+        // Show dialog to reassign conversations
+        async function showReassignmentDialog(sourceStageId) {
+            // Find the stage name for display
+            const sourceStage = stages.find(s => s.stage_id === sourceStageId);
+            if (!sourceStage) {
+                showError('Could not find stage information');
+                return;
+            }
+            
+            // Create a dialog element
+            const dialogHtml = `
+                <div id="reassignmentDialog" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+                    <div style="background: white; padding: 20px; border-radius: 8px; max-width: 500px; width: 100%;">
+                        <h3>Reassign Conversations</h3>
+                        <p>Select a stage to reassign all conversations from "${sourceStage.stage_name}" to:</p>
+                        <select id="targetStageSelect" style="width: 100%; padding: 10px; margin: 10px 0;">
+                            ${stages.filter(s => s.stage_id !== sourceStageId).map(s => 
+                                `<option value="${s.stage_id}">${s.stage_name}</option>`
+                            ).join('')}
+                        </select>
+                        <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+                            <button id="cancelReassignBtn" style="background-color: #6c757d; margin-right: 10px;">Cancel</button>
+                            <button id="confirmReassignBtn" style="background-color: var(--primary-color);">Reassign & Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add the dialog to the page
+            document.body.insertAdjacentHTML('beforeend', dialogHtml);
+            
+            // Add event listeners
+            document.getElementById('cancelReassignBtn').addEventListener('click', () => {
+                document.getElementById('reassignmentDialog').remove();
+            });
+            
+            document.getElementById('confirmReassignBtn').addEventListener('click', async () => {
+                const targetStageId = document.getElementById('targetStageSelect').value;
+                
+                // Remove the dialog
+                document.getElementById('reassignmentDialog').remove();
+                
+                // Call the reassign function
+                await reassignConversationsAndDeleteStage(sourceStageId, targetStageId);
+            });
+        }
+        
+        // Reassign conversations and delete stage
+        async function reassignConversationsAndDeleteStage(sourceStageId, targetStageId) {
+            if (!isLoggedIn) {
+                showError('You must login first');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required');
+                return;
+            }
+            
+            updateStatus('Reassigning conversations...');
+            
+            try {
+                // First call the API to reassign conversations
+                const reassignResponse = await fetch(`${API_BASE_URL}/conversations/reassign?business_id=${normalizeUUID(businessId)}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        source_stage_id: normalizeUUID(sourceStageId),
+                        target_stage_id: normalizeUUID(targetStageId),
+                        business_id: normalizeUUID(businessId)
+                    })
+                });
+                
+                if (!reassignResponse.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await reassignResponse.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await reassignResponse.text();
+                    }
+                    
+                    throw new Error(`Failed to reassign conversations! status: ${reassignResponse.status}, message: ${errorText}`);
+                }
+                
+                // If reassignment successful, now try to delete the stage
+                updateStatus('Conversations reassigned. Deleting stage...');
+                
+                const deleteResponse = await fetch(`${API_BASE_URL}/stages/${normalizeUUID(sourceStageId)}?business_id=${normalizeUUID(businessId)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    credentials: 'include'
+                });
+                
+                if (!deleteResponse.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await deleteResponse.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await deleteResponse.text();
+                    }
+                    
+                    throw new Error(`Failed to delete stage after reassignment! status: ${deleteResponse.status}, message: ${errorText}`);
+                }
+                
+                // Refresh stages list
+                fetchStages();
+                
+                showSuccess('Conversations reassigned and stage deleted successfully!');
+            } catch (error) {
+                console.error('Error reassigning conversations:', error);
+                showError(`Failed: ${error.message}`);
+            }
+        }
+
+        // Confirm stage deletion with a popup
+        function confirmDeleteStage(stageId, stageName, event) {
+            if (event) {
+                event.stopPropagation(); // Prevent stage selection
+            }
+            
+            if (confirm(`Are you sure you want to delete the stage "${stageName}"?\n\nIf there are any conversations using this stage, you'll be prompted to reassign them to another stage before deletion. This action cannot be undone.`)) {
+                deleteStage(stageId);
+            }
+        }
+
+        // Confirm deletion of currently selected stage
+        function confirmDeleteCurrentStage() {
+            if (!selectedStageId) {
+                showError('No stage selected');
+                return;
+            }
+            
+            const stageName = document.getElementById('editStageName').value.trim();
+            
+            if (confirm(`Are you sure you want to delete the stage "${stageName}"?\n\nIf there are any conversations using this stage, you'll be prompted to reassign them to another stage before deletion. This action cannot be undone.`)) {
+                deleteStage(selectedStageId);
+                // After deletion, return to stages list
+                showTab('stagesList');
+            }
+        }
+    </script>
+</body>
+</html> 

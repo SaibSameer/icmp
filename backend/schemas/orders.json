@@ -1,0 +1,198 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Order",
+  "description": "Represents a customer order.",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the order."
+    },
+    "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the user who placed the order."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the business that owns the order."
+    },
+    "order_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date and time the order was placed."
+    },
+    "order_total": {
+      "type": "number",
+      "description": "Total amount of the order."
+    },
+    "shipping_address": {
+      "type": "string",
+      "description": "Shipping address for the order."
+    },
+    "billing_address": {
+      "type": "string",
+      "description": "Billing address for the order."
+    },
+    "payment_method": {
+      "type": "string",
+      "description": "Payment method used for the order."
+    },
+    "items": {
+      "type": "array",
+      "description": "List of items in the order.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the product."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Quantity of the product ordered."
+          }
+        },
+        "required": ["product_id", "quantity"],
+        "additionalProperties": false
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"],
+      "description": "Current status of the order."
+    },
+    "tracking_number": {
+      "type": "string",
+      "description": "Tracking number for the shipment."
+    },
+    "shipping_carrier": {
+      "type": "string",
+      "description": "Shipping carrier used for the order."
+    },
+    "discounts": {
+      "type": "array",
+      "description": "List of discounts applied to the order.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "discount_code": {
+            "type": "string",
+            "description": "Code of the discount applied."
+          },
+          "discount_amount": {
+            "type": "number",
+            "description": "Amount of the discount."
+          }
+        },
+        "required": ["discount_code", "discount_amount"],
+        "additionalProperties": false
+      }
+    },
+    "tax_information": {
+      "type": "object",
+      "description": "Tax information for the order.",
+      "properties": {
+        "tax_amount": {
+          "type": "number",
+          "description": "Total tax amount for the order."
+        },
+        "tax_rate": {
+          "type": "number",
+          "description": "Tax rate applied to the order."
+        }
+      },
+      "required": ["tax_amount", "tax_rate"],
+      "additionalProperties": false
+    },
+    "order_notes": {
+      "type": "string",
+      "description": "Notes about the order for internal use."
+    },
+    "returns_refunds": {
+      "type": "array",
+      "description": "Links to related return/refund records.",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      }
+    },
+    "fulfillment_details": {
+      "type": "object",
+      "description": "Details about order fulfillment.",
+      "properties": {
+        "fulfillment_location": {
+          "type": "string",
+          "description": "Location where the order was fulfilled."
+        },
+        "packaging_type": {
+          "type": "string",
+          "description": "Type of packaging used for the order."
+        }
+      },
+      "additionalProperties": false
+    },
+    "customer_rating": {
+      "type": "integer",
+      "description": "Customer's rating of the order (e.g., 1-5 stars)."
+    },
+    "customer_review": {
+      "type": "string",
+      "description": "Customer's review text for the order."
+    },
+    "survey_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Link to an external satisfaction survey."
+    },
+       "satisfaction_status": {
+          "type": "string",
+          "enum": ["good", "needs_improvement", "escalated"],
+          "description": "status for customer satisifaction"
+        },
+    "agent_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the agent who handled the order."
+    },
+    "cancellation_reason": {
+      "type": "string",
+      "description": "Reason for order cancellation (if applicable)."
+    },
+    "fraud_score": {
+      "type": "number",
+      "description": "Fraud score for the order."
+    },
+    "gift_options": {
+      "type": "object",
+      "description": "Options for gift orders.",
+      "properties": {
+        "is_gift": {
+          "type": "boolean",
+          "description": "Indicates if the order is a gift."
+        },
+        "gift_message": {
+          "type": "string",
+          "description": "Gift message for the order."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "order_id",
+    "user_id",
+    "business_id",
+    "order_date",
+    "order_total",
+    "shipping_address",
+    "billing_address",
+    "payment_method",
+    "items",
+    "status"
+  ],
+  "additionalProperties": false
+}

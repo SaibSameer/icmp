@@ -1,0 +1,147 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Analytics/Event",
+  "description": "Represents an analytics event within the ICMP.",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the event."
+    },
+    "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the user associated with the event."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the business associated with the event."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "ID of the user session."
+    },
+    "event_type": {
+      "type": "string",
+      "description": "Type of event (e.g., 'message_sent', 'stage_entered')."
+    },
+    "event_timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of the event."
+    },
+    "agent_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "ID of the agent involved (if applicable)."
+    },
+    "stage_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "ID of the stage involved (if applicable)."
+    },
+    "product_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "ID of the product involved (if applicable)."
+    },
+    "order_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "ID of the order involved (if applicable)."
+    },
+    "message_text": {
+      "type": "string",
+      "description": "Content of the message (if applicable)."
+    },
+    "response_time": {
+      "type": "number",
+      "description": "Time taken to generate a response (ms)."
+    },
+    "llm_cost": {
+      "type": "number",
+      "description": "Cost of using the LLM for this event."
+    },
+    "satisfaction_score": {
+      "type": ["integer", "null"],
+      "description": "User satisfaction score (if available)."
+    },
+       "sentiment_score": {
+      "type": ["number", "null"],
+      "description": "sentiment score of the user"
+    },
+     "intent_confidence": {
+      "type": ["number", "null"],
+      "description": "confidence score"
+    },
+      "turn_count": {
+      "type": ["integer", "null"],
+      "description": "count turn "
+    },
+       "custom_event_properties": {
+      "type": "object",
+      "description": "Store custom data (JSONB).",
+      "note": "Validate against a schema defined by the business."
+    },
+        "goal_achieved": {
+      "type": "boolean",
+      "description": "true of a goal is archieved"
+    },
+        "geographic_data": {
+            "type": "object",
+            "description": "Describing the geographic info",
+            "properties": {
+                "longitude": {
+                    "type": "string",
+                    "description": "Describe the longitude"
+                },
+                "latitude": {
+                    "type": "string",
+                    "description": "Describe the latitude"
+                }
+            },
+             "additionalProperties": false
+        },
+      "error_tracking": {
+            "type": "object",
+            "description": "Describing the errors",
+            "properties": {
+                "error_type": {
+                    "type": "string",
+                    "description": "Describe the error"
+                },
+                "error_details": {
+                    "type": "string",
+                    "description": "Describe the error details"
+                }
+            },
+             "additionalProperties": false
+        },
+          "ab_testing_results": {
+            "type": "object",
+            "description": "Describing the AB Testting",
+            "properties": {
+                "test_id": {
+                    "type": "string",
+                    "description": "Describe the test_ID"
+                },
+                "group": {
+                    "type": "string",
+                    "description": "Describe the group A or B"
+                }
+            },
+             "additionalProperties": false
+        }
+  },
+  "required": [
+    "event_id",
+    "user_id",
+    "business_id",
+    "session_id",
+    "event_type",
+    "event_timestamp"
+  ],
+  "additionalProperties": false
+}

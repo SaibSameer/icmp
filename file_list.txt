@@ -1,0 +1,141 @@
+File and Directory Listing - 2025-04-01 03:57:16.136670
+----------------------------------------
+Directory: .\backend
+  - File: .env
+  - File: App.css
+  - File: App.js
+  - File: app.py
+  - File: auth.py
+  - File: cls
+  - File: config.py
+  - File: connection_test.py
+  - File: db.py
+  - File: health_check.py
+  - File: openai_helper.py
+  - File: package-lock.json
+  - File: package.json
+  - File: requirements.txt
+  - File: schemas_loader.py
+  - File: SELECT
+  - File: style.css
+  - File: template_management.py
+--------------------
+Directory: .\backend\.pytest_cache
+  - File: .gitignore
+  - File: CACHEDIR.TAG
+  - File: README.md
+--------------------
+Directory: .\backend\.pytest_cache\v
+--------------------
+Directory: .\backend\.pytest_cache\v\cache
+  - File: lastfailed
+  - File: nodeids
+  - File: stepwise
+--------------------
+Directory: .\backend\routes
+  - File: businesses.py
+  - File: business_management.py
+  - File: check_routes.py
+  - File: conversations.py
+  - File: health.py
+  - File: messages.py
+  - File: message_handling.py
+  - File: ping.py
+  - File: stages.py
+  - File: stage_management.py
+  - File: templates.py
+  - File: template_management.py
+  - File: tests.py
+  - File: test_imports.py
+  - File: users.py
+  - File: user_management.py
+  - File: utils.py
+  - File: __init__.py
+--------------------
+Directory: .\backend\routes\__pycache__
+  - File: businesses.cpython-312.pyc
+  - File: conversations.cpython-312.pyc
+  - File: health.cpython-312.pyc
+  - File: message_handling.cpython-312.pyc
+  - File: ping.cpython-312.pyc
+  - File: stages.cpython-312.pyc
+  - File: template_management.cpython-312.pyc
+  - File: users.cpython-312.pyc
+  - File: utils.cpython-312.pyc
+  - File: __init__.cpython-312.pyc
+--------------------
+Directory: .\backend\tests
+  - File: test_config.py
+  - File: test_db.py
+  - File: test_message_handling.py
+  - File: __init__.py
+--------------------
+Directory: .\backend\tests\__pycache__
+  - File: test_db.cpython-312-pytest-8.3.5.pyc
+  - File: test_message_handling.cpython-312-pytest-8.3.5.pyc
+  - File: __init__.cpython-312.pyc
+--------------------
+Directory: .\backend\__pycache__
+  - File: auth.cpython-312.pyc
+  - File: config.cpython-312.pyc
+  - File: db.cpython-312.pyc
+  - File: openai_helper.cpython-312.pyc
+  - File: template_management.cpython-312.pyc
+--------------------
+Directory: .\front-end
+  - File: package-lock.json
+  - File: package.json
+--------------------
+Directory: .\front-end\public
+  - File: index.html
+--------------------
+Directory: .\front-end\src
+  - File: App.css
+  - File: App.js
+  - File: index.css
+  - File: index.js
+  - File: reportWebVitals.js
+--------------------
+Directory: .\front-end\src\components
+  - File: BusinessManagement.js
+  - File: Configuration.js
+  - File: ErrorDisplay.js
+  - File: files.app.txt
+  - File: HealthCheck.js
+  - File: healthCheckService.js
+  - File: LoadingIndicator.js
+  - File: MyInterface.css
+  - File: MyInterface.js
+  - File: SendMessage.js
+  - File: StageManagement.js
+  - File: TemplateManagement.js
+  - File: useConfig.js
+  - File: UserManagement.js
+  - File: useStageManagement.js
+  - File: useTemplateManagement.js
+  - File: useUser.js
+--------------------
+Directory: .\front-end\src\hooks
+  - File: useBusiness.js
+  - File: useConfig.js
+  - File: UserManagement.js
+  - File: useStageManagement.js
+  - File: useTemplateManagement.js
+  - File: useUser.js
+--------------------
+Directory: .\front-end\src\services
+  - File: testService.js
+--------------------
+Directory: .\schemas
+  - File: businesses.json
+  - File: business_create.json
+  - File: business_event_property_schemas.json
+  - File: configuration.json
+  - File: events.json
+  - File: message.json
+  - File: orders.json
+  - File: products.json
+  - File: prompt_templates.json
+  - File: stages.json
+  - File: users.json
+--------------------

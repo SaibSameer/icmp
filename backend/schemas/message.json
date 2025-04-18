@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "business_id": {"type": "string", "format": "uuid"},
+    "user_id": {"type": "string", "format": "uuid"},
+    "message": {"type": "string"},
+    "conversation_id": {"type": "string", "format": "uuid"},
+    "stage_id": {"type": "string", "format": "uuid"},
+    "agent_id": {"type": "string", "format": "uuid"}
+  },
+  "required": ["business_id", "user_id", "message"]
+}

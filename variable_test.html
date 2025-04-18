@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variable Testing Tool</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #ddd;
+            --bg-light: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-light);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1, h2 {
+            color: var(--text-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        textarea {
+            height: 120px;
+            font-family: monospace;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .error {
+            color: var(--error-color);
+            background-color: #fff5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .success {
+            color: var(--success-color);
+            background-color: #f0fff4;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .variable-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .variable-list {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        #statusArea {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Variable Testing Tool</h1>
+        <div id="statusArea"></div>
+
+        <!-- Authentication Section -->
+        <div id="authSection" class="card">
+            <h2>Authentication</h2>
+            <div class="form-group">
+                <label for="businessId">Business ID</label>
+                <input type="text" id="businessId" placeholder="Enter Business ID">
+            </div>
+            <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input type="password" id="apiKey" placeholder="Enter API Key">
+            </div>
+            <div class="form-group">
+                <label for="ownerId">Owner ID</label>
+                <input type="text" id="ownerId" placeholder="Enter Owner ID">
+            </div>
+            <div class="form-group">
+                <label for="userId">User ID</label>
+                <input type="text" id="userId" placeholder="Enter User ID">
+            </div>
+            <button onclick="authenticate()">Authenticate</button>
+            <button onclick="clearAuth()" style="background-color: var(--error-color);">Clear Auth</button>
+        </div>
+
+        <!-- Variables Section (initially hidden) -->
+        <div id="variablesSection" class="hidden">
+            <div class="card">
+                <h2>Available Variables</h2>
+                <div id="variablesList" class="variable-list">
+                    Loading variables...
+                </div>
+            </div>
+
+            <!-- Add New Variable Section -->
+            <div class="card">
+                <h2>Add New Variable</h2>
+                <div class="form-group">
+                    <label for="variableName">Variable Name</label>
+                    <input type="text" id="variableName" placeholder="Enter variable name (e.g., last_10_messages)">
+                </div>
+                <div class="form-group">
+                    <label for="variableDescription">Description</label>
+                    <textarea id="variableDescription" placeholder="Enter variable description"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="variableCategory">Category</label>
+                    <input type="text" id="variableCategory" placeholder="Enter category (e.g., conversation)">
+                </div>
+                <div class="form-group">
+                    <label for="defaultValue">Default Value</label>
+                    <input type="text" id="defaultValue" placeholder="Enter default value">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="isDynamic">
+                        Is Dynamic Variable
+                    </label>
+                </div>
+                <button onclick="addVariable()">Add Variable</button>
+            </div>
+
+            <div class="card">
+                <h2>Test Variable Substitution</h2>
+                <div class="form-group">
+                    <label for="testTemplate">Template Content</label>
+                    <textarea id="testTemplate" placeholder="Enter template with variables (e.g., Hello {{user_name}})"></textarea>
+                </div>
+                <button onclick="testSubstitution()">Test Substitution</button>
+                <div id="substitutionResult" class="hidden">
+                    <h3>Result:</h3>
+                    <pre id="resultContent"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration object
+        const config = {
+            baseUrl: 'http://localhost:5000',
+            businessId: '',
+            apiKey: '',
+            ownerId: '',
+            userId: ''
+        };
+
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusArea = document.getElementById('statusArea');
+            statusArea.innerHTML = `<div class="${type}">${message}</div>`;
+            setTimeout(() => statusArea.innerHTML = '', 5000);
+        }
+
+        // Clear authentication
+        function clearAuth() {
+            localStorage.removeItem('businessId');
+            localStorage.removeItem('apiKey');
+            localStorage.removeItem('ownerId');
+            localStorage.removeItem('userId');
+            
+            document.getElementById('businessId').value = '';
+            document.getElementById('apiKey').value = '';
+            document.getElementById('ownerId').value = '';
+            document.getElementById('userId').value = '';
+            
+            config.businessId = '';
+            config.apiKey = '';
+            config.ownerId = '';
+            config.userId = '';
+            
+            document.getElementById('variablesSection').classList.add('hidden');
+            showStatus('Authentication cleared', 'success');
+        }
+
+        // Authenticate user
+        async function authenticate() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const ownerId = document.getElementById('ownerId').value.trim();
+            const userId = document.getElementById('userId').value.trim();
+
+            if (!businessId || !apiKey || !ownerId || !userId) {
+                showStatus('Please fill in all authentication fields', 'error');
+                return;
+            }
+
+            try {
+                // Test authentication with both business and owner verification
+                const response = await fetch(`${config.baseUrl}/api/verify-owner`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey
+                    },
+                    body: JSON.stringify({
+                        userId: ownerId,
+                        businessId: businessId,
+                        businessApiKey: apiKey
+                    }),
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Authentication failed');
+                }
+
+                const authResult = await response.json();
+                if (!authResult.success) {
+                    throw new Error(authResult.message || 'Authentication failed');
+                }
+
+                // Store credentials in config and localStorage
+                config.businessId = businessId;
+                config.apiKey = apiKey;
+                config.ownerId = ownerId;
+                config.userId = userId;
+
+                localStorage.setItem('businessId', businessId);
+                localStorage.setItem('apiKey', apiKey);
+                localStorage.setItem('ownerId', ownerId);
+                localStorage.setItem('userId', userId);
+
+                // Show variables section
+                document.getElementById('variablesSection').classList.remove('hidden');
+                showStatus('Authentication successful', 'success');
+
+                // Load variables
+                loadVariables();
+
+            } catch (error) {
+                showStatus(`Authentication failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Load variables from database
+        async function loadVariables() {
+            try {
+                const response = await fetch(`${config.baseUrl}/api/variables/?business_id=${config.businessId}&owner_id=${config.ownerId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${config.apiKey}`,
+                        'Accept': 'application/json',
+                        'businessapikey': config.apiKey
+                    },
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load variables');
+                }
+
+                const data = await response.json();
+                const variables = data.variables || data; // Handle both array and object with variables property
+                const variablesList = document.getElementById('variablesList');
+                
+                if (!Array.isArray(variables) || variables.length === 0) {
+                    variablesList.innerHTML = '<p>No variables found</p>';
+                    return;
+                }
+
+                let html = '';
+                variables.forEach(variable => {
+                    const name = variable.variable_name || variable.name || 'Unnamed';
+                    const category = variable.category || 'No category';
+                    const defaultValue = variable.default_value !== undefined ? variable.default_value : '""';
+                    const description = variable.description || 'No description';
+                    
+                    html += `
+                        <div class="variable-tag" title="${description}">
+                            {{${name}}}
+                            <span style="color: #666; font-size: 0.8em;"> (${category})</span>
+                            <span style="color: #666; font-size: 0.8em;"> = ${defaultValue}</span>
+                        </div>
+                    `;
+                });
+
+                variablesList.innerHTML = html;
+
+            } catch (error) {
+                showStatus(`Error loading variables: ${error.message}`, 'error');
+            }
+        }
+
+        // Test variable substitution
+        async function testSubstitution() {
+            const template = document.getElementById('testTemplate').value.trim();
+            if (!template) {
+                showStatus('Please enter a template to test', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${config.baseUrl}/api/variables/test-substitution/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`,
+                        'Accept': 'application/json',
+                        'businessapikey': config.apiKey
+                    },
+                    body: JSON.stringify({
+                        business_id: config.businessId,
+                        owner_id: config.ownerId,
+                        user_id: config.userId,
+                        template: template
+                    }),
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Substitution test failed');
+                }
+
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('substitutionResult');
+                const resultContent = document.getElementById('resultContent');
+                
+                resultDiv.classList.remove('hidden');
+                resultContent.textContent = JSON.stringify(result, null, 2);
+                
+                showStatus('Substitution test completed', 'success');
+
+            } catch (error) {
+                showStatus(`Error testing substitution: ${error.message}`, 'error');
+            }
+        }
+
+        // Add new variable
+        async function addVariable() {
+            const variableName = document.getElementById('variableName').value.trim();
+            const description = document.getElementById('variableDescription').value.trim();
+            const category = document.getElementById('variableCategory').value.trim();
+            const defaultValue = document.getElementById('defaultValue').value.trim();
+            const isDynamic = document.getElementById('isDynamic').checked;
+
+            if (!variableName || !description || !category) {
+                showStatus('Please fill in all required fields', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${config.baseUrl}/api/variables/?business_id=${config.businessId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`,
+                        'Accept': 'application/json',
+                        'businessapikey': config.apiKey
+                    },
+                    body: JSON.stringify({
+                        business_id: config.businessId,
+                        name: variableName,
+                        description: description,
+                        category: category,
+                        default_value: defaultValue,
+                        is_dynamic: isDynamic
+                    }),
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to add variable');
+                }
+
+                const result = await response.json();
+                showStatus('Variable added successfully', 'success');
+
+                // Clear form
+                document.getElementById('variableName').value = '';
+                document.getElementById('variableDescription').value = '';
+                document.getElementById('variableCategory').value = '';
+                document.getElementById('defaultValue').value = '';
+                document.getElementById('isDynamic').checked = false;
+
+                // Reload variables list
+                loadVariables();
+
+            } catch (error) {
+                showStatus(`Error adding variable: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for stored credentials
+            const storedBusinessId = localStorage.getItem('businessId');
+            const storedApiKey = localStorage.getItem('apiKey');
+            const storedOwnerId = localStorage.getItem('ownerId');
+            const storedUserId = localStorage.getItem('userId');
+
+            if (storedBusinessId && storedApiKey && storedOwnerId && storedUserId) {
+                document.getElementById('businessId').value = storedBusinessId;
+                document.getElementById('apiKey').value = storedApiKey;
+                document.getElementById('ownerId').value = storedOwnerId;
+                document.getElementById('userId').value = storedUserId;
+                
+                // Auto authenticate if we have stored credentials
+                authenticate();
+            }
+        });
+    </script>
+</body>
+</html> 

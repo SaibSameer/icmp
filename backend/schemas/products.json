@@ -1,0 +1,196 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Product/Service",
+  "description": "Represents a product or service offered by a business.",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the business offering the product/service."
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Name of the product/service."
+    },
+    "product_description": {
+      "type": "string",
+      "description": "Detailed description."
+    },
+    "product_price": {
+      "type": "number",
+      "description": "Price of the product/service."
+    },
+     "pricing_options": {
+        "type": "object",
+        "description": "Details about different pricing models.",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["one_time", "tiered", "subscription"],
+            "description": "Type of pricing (e.g., one-time purchase, tiered pricing, subscription)."
+          },
+          "tiers": {
+            "type": "array",
+            "description": "Tiered pricing details.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "quantity_min": { "type": "integer" },
+                "quantity_max": { "type": "integer" },
+                "price": { "type": "number" }
+              },
+              "required": ["quantity_min", "quantity_max", "price"],
+              "additionalProperties": false
+            }
+          },
+          "subscription_interval": {
+            "type": "string",
+            "enum": ["monthly", "yearly"],
+            "description": "Subscription billing interval."
+          }
+        },
+        "additionalProperties": false
+      },
+    "product_category": {
+      "type": "string",
+      "description": "Category of the product/service."
+    },
+    "product_images": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "description": "Array of URLs for product/service images."
+    },
+    "product_specifications": {
+      "type": "object",
+      "description": "Detailed specifications (JSONB)."
+    },
+      "service_duration": {
+      "type": "string",
+      "description": "Typical duration of the service (if applicable)."
+    },
+    "service_delivery_method": {
+      "type": "string",
+      "enum": ["in-person", "online", "remote"],
+      "description": "How the service is delivered (if applicable)."
+    },
+     "availability": {
+      "type": "boolean",
+      "description": "Service is available or not (if applicable)."
+    },
+    "slots_per_week": {
+      "type": "integer",
+      "description": "Number of available time slots per week (if applicable)."
+    },
+    "quantity_in_stock": {
+      "type": "integer",
+      "description": "Quantity currently in stock (if applicable)."
+    },
+    "weight": {
+      "type": "number",
+      "description": "Weight of the product (if applicable)."
+    },
+    "dimensions": {
+      "type": "string",
+      "description": "Dimensions of the product (if applicable)."
+    },
+    "related_products_services": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "IDs of related products/services (upsells, cross-sells)."
+    },
+      "requires_review": {
+      "type": "boolean",
+      "description": "Whether the product/service requires a review after purchase."
+    },
+    "digital_asset_links": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "description": "Links to digital assets (manuals, demos)."
+    },
+    "terms_of_service_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Link to the terms of service."
+    },
+     "date_of_production": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of Manifacturing."
+    },
+      "service_start_date": {
+      "type": "string",
+      "format": "date",
+      "description": "service start date"
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Required licenses, certifications, etc."
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Keywords for searching and filtering."
+    },
+    "search_vector": {
+      "type": "string",
+      "description": "(PostgreSQL) Search vector for text search.",
+      "note": "This field is automatically generated and managed by PostgreSQL."
+    },
+      "target_customer": {
+      "type": "string",
+      "description": "ideal customer for marketing."
+    },
+      "approval_status": {
+      "type": "string",
+      "enum": ["draft", "pending_approval", "approved", "rejected"],
+      "description": "Status of the product/service listing."
+    },
+      "date_first_available": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when the product/service was first offered."
+    },
+      "discontinued_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when the product/service was discontinued."
+    },
+    "warranty_information": {
+      "type": "string",
+      "description": "Warranty details (if applicable)."
+    },
+    "custom_attributes": {
+      "type": "object",
+      "description": "custom atributes (JSONB)."
+    }
+  },
+  "required": [
+    "product_id",
+    "business_id",
+    "product_name",
+    "product_description",
+    "product_price",
+    "product_category"
+  ],
+  "additionalProperties": false
+}

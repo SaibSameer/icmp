@@ -1,0 +1,433 @@
+// Check if API server is running
+async function checkApiServer(url) {
+    try {
+        console.log('Checking API server at:', url);
+        
+        // First try a simple GET request to the base URL
+        try {
+            console.log('Trying GET request to base URL');
+            const baseResponse = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                },
+                mode: 'cors'
+            });
+            console.log('Base URL response status:', baseResponse.status);
+            
+            // If we get a 404, it might mean the API server is running but the endpoint doesn't exist
+            if (baseResponse.status === 404) {
+                console.log('Base URL returned 404, API server might be running but endpoint not found');
+                return true;
+            }
+        } catch (baseError) {
+            console.log('Base URL request failed:', baseError.message);
+            
+            // If we get a CORS error, try with no-cors mode
+            if (baseError.message.includes('CORS') || baseError.message.includes('Failed to fetch')) {
+                console.log('CORS error detected, trying with no-cors mode...');
+                try {
+                    const noCorsResponse = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        mode: 'no-cors'
+                    });
+                    console.log('No-cors request succeeded, server might be running');
+                    return true;
+                } catch (noCorsError) {
+                    console.log('No-cors request also failed:', noCorsError.message);
+                }
+            }
+        }
+        
+        // Try to make a request to the save-config endpoint
+        const testUrl = `${url}/save-config`;
+        console.log('Testing API endpoint:', testUrl);
+        
+        try {
+            const response = await fetch(testUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    userId: 'test',
+                    businessId: 'test',
+                    businessApiKey: 'test'
+                }),
+                mode: 'cors'
+            });
+            
+            // Even if we get a 400 or 401, it means the server is running
+            console.log('API server response status:', response.status);
+            
+            // If we get a 404, it means the server is not running or the endpoint doesn't exist
+            if (response.status === 404) {
+                console.log('API endpoint returned 404, server might not be running');
+                
+                // Show a more specific error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-danger mt-3';
+                errorDiv.innerHTML = `
+                    <h5>API Server Not Found</h5>
+                    <p>The API server at <code>${url}</code> is not accessible. This could be because:</p>
+                    <ol>
+                        <li>The API server is not running. Please start it with: <code>python app.py</code> (in the backend directory)</li>
+                        <li>The API server is running on a different port or URL</li>
+                        <li>The API endpoint path is incorrect</li>
+                    </ol>
+                    <p>Please check your API server configuration and try again.</p>
+                `;
+                
+                // Add the error to the page
+                const container = document.querySelector('.container');
+                container.insertBefore(errorDiv, document.querySelector('.card'));
+                
+                // Remove the error after 15 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 15000);
+                
+                return false;
+            }
+            
+            return response.status !== 404;
+        } catch (endpointError) {
+            console.log('Endpoint request failed:', endpointError.message);
+            
+            // If we get a CORS error, try with no-cors mode
+            if (endpointError.message.includes('CORS') || endpointError.message.includes('Failed to fetch')) {
+                console.log('CORS error detected for endpoint, trying with no-cors mode...');
+                try {
+                    const noCorsResponse = await fetch(testUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userId: 'test',
+                            businessId: 'test',
+                            businessApiKey: 'test'
+                        }),
+                        mode: 'no-cors'
+                    });
+                    console.log('No-cors endpoint request succeeded, server might be running');
+                    return true;
+                } catch (noCorsError) {
+                    console.log('No-cors endpoint request also failed:', noCorsError.message);
+                }
+            }
+            
+            // Show a CORS-specific error message
+            const corsDiv = document.createElement('div');
+            corsDiv.className = 'alert alert-warning mt-3';
+            corsDiv.innerHTML = `
+                <h5>CORS Error Detected</h5>
+                <p>The API server might be running, but your browser is blocking the request due to CORS policy.</p>
+                <p>This typically happens when:</p>
+                <ol>
+                    <li>You're accessing the page from a different origin than the API server</li>
+                    <li>The API server doesn't have CORS headers configured properly</li>
+                </ol>
+                <p>Solutions:</p>
+                <ol>
+                    <li>Configure your API server to allow CORS requests from your origin</li>
+                    <li>Use a browser extension to disable CORS (for development only)</li>
+                    <li>Serve both the frontend and API from the same origin</li>
+                </ol>
+                <p>If you're serving this page from port 8000 and the API is on port 5000, you need to enable CORS on your API server.</p>
+            `;
+            
+            // Add the error to the page
+            const container = document.querySelector('.container');
+            container.insertBefore(corsDiv, document.querySelector('.card'));
+            
+            // Remove the error after 15 seconds
+            setTimeout(() => {
+                corsDiv.remove();
+            }, 15000);
+            
+            return false;
+        }
+    } catch (error) {
+        console.error('API server check failed:', error);
+        
+        // Show a generic error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger mt-3';
+        errorDiv.innerHTML = `
+            <h5>API Server Connection Error</h5>
+            <p>Failed to connect to the API server at <code>${url}</code>.</p>
+            <p>Error: ${error.message}</p>
+            <p>Please check if the API server is running and accessible.</p>
+            <p>If you're serving this page from port 8000 and the API is on port 5000, make sure:</p>
+            <ol>
+                <li>The API server is running: <code>python app.py</code> (in the backend directory)</li>
+                <li>The API server has CORS enabled to allow requests from <code>http://localhost:8000</code></li>
+            </ol>
+        `;
+        
+        // Add the error to the page
+        const container = document.querySelector('.container');
+        container.insertBefore(errorDiv, document.querySelector('.card'));
+        
+        // Remove the error after 15 seconds
+        setTimeout(() => {
+            errorDiv.remove();
+        }, 15000);
+        
+        return false;
+    }
+} 
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    // Disable send button until login
+    document.getElementById('sendButton').disabled = true;
+    
+    // Set default API URL based on the current context
+    if (window.location.protocol === 'file:') {
+        // If opened directly from file system, use localhost:5000
+        API_BASE_URL = 'http://localhost:5000/api';
+        console.log('Detected file:// protocol, setting default API URL to:', API_BASE_URL);
+    } else {
+        // If served from a web server, check if it's the same origin as the API
+        const currentPort = window.location.port;
+        if (currentPort === '5000') {
+            // If served from port 5000, use relative path
+            API_BASE_URL = '/api';
+            console.log('Served from port 5000, using relative API URL:', API_BASE_URL);
+        } else {
+            // If served from a different port, use absolute URL to port 5000
+            API_BASE_URL = 'http://localhost:5000/api';
+            console.log('Served from port', currentPort, ', using absolute API URL:', API_BASE_URL);
+        }
+    }
+    
+    // Show appropriate warning based on context
+    const warningDiv = document.createElement('div');
+    warningDiv.className = 'alert alert-warning';
+    
+    if (window.location.protocol === 'file:') {
+        warningDiv.innerHTML = `
+            <h4>⚠️ Important: Using File Protocol</h4>
+            <p>You are opening this page directly from your file system. For better compatibility, you have two options:</p>
+            <ol>
+                <li><strong>Use the React Application (Recommended):</strong>
+                    <ul>
+                        <li>Run the API server: <code>python app.py</code> (in the backend directory)</li>
+                        <li>Run the React app: <code>npm start</code> (in the front-end directory)</li>
+                        <li>Access the app at <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+                    </ul>
+                </li>
+                <li><strong>Use this Standalone HTML File:</strong>
+                    <ul>
+                        <li>Run the API server: <code>python app.py</code> (in the backend directory)</li>
+                        <li>Make sure your API server has CORS enabled for file:// protocol</li>
+                        <li>Enter your credentials below and click Login</li>
+                    </ul>
+                </li>
+            </ol>
+            <p>If you're seeing CORS errors, please use the React application instead.</p>
+        `;
+    } else if (window.location.port !== '5000') {
+        warningDiv.innerHTML = `
+            <h4>⚠️ Important: API Server Port Mismatch</h4>
+            <p>You are accessing this page from port ${window.location.port}, but the API server is expected to run on port 5000.</p>
+            <p>Please ensure:</p>
+            <ol>
+                <li>The API server is running on port 5000: <code>python app.py</code> (in the backend directory)</li>
+                <li>The API URL below is set to <code>http://localhost:5000/api</code></li>
+            </ol>
+            <p>If you're seeing 404 errors, it means the API server is not running or is running on a different port.</p>
+        `;
+    }
+    
+    if (warningDiv.innerHTML) {
+        document.querySelector('.container').insertBefore(warningDiv, document.querySelector('.card'));
+    }
+
+    // Update API base URL input
+    const apiUrlInput = document.getElementById('apiBaseUrl');
+    if (apiUrlInput) {
+        apiUrlInput.value = API_BASE_URL;
+        apiUrlInput.addEventListener('change', function() {
+            API_BASE_URL = this.value;
+            console.log('API Base URL updated to:', API_BASE_URL);
+            
+            // Show warning if URL doesn't end with /api
+            if (!API_BASE_URL.endsWith('/api')) {
+                const warning = document.createElement('div');
+                warning.className = 'alert alert-warning mt-2';
+                warning.textContent = 'Warning: API URL should end with /api';
+                apiUrlInput.parentNode.appendChild(warning);
+                setTimeout(() => warning.remove(), 5000);
+            }
+        });
+    }
+
+    // Add test connection button
+    const testButton = document.createElement('button');
+    testButton.className = 'btn btn-info btn-sm ms-2';
+    testButton.textContent = 'Test Connection';
+    testButton.onclick = async function() {
+        try {
+            const isRunning = await checkApiServer(API_BASE_URL);
+            if (isRunning) {
+                showAlert('API server is running and accessible!', 'success');
+            } else {
+                showAlert('API server is not accessible. Please check if it\'s running on port 5000.', 'danger');
+            }
+        } catch (error) {
+            showAlert('Error testing connection: ' + error.message, 'danger');
+        }
+    };
+    apiUrlInput.parentNode.appendChild(testButton);
+}); 
+
+// Login function
+async function login() {
+    try {
+        // Get values from form
+        const businessId = document.getElementById('businessId').value.trim();
+        const apiKey = document.getElementById('apiKey').value.trim();
+        const ownerId = document.getElementById('ownerId').value.trim();
+        
+        // Validate inputs
+        if (!businessId || !apiKey || !ownerId) {
+            showError('Please enter all required fields');
+            return;
+        }
+        
+        // Update API base URL if provided
+        const apiBaseUrlInput = document.getElementById('apiBaseUrl');
+        if (apiBaseUrlInput && apiBaseUrlInput.value) {
+            API_BASE_URL = apiBaseUrlInput.value.trim();
+            console.log('Using custom API URL:', API_BASE_URL);
+        }
+        
+        // Check if API server is running
+        console.log('Checking if API server is running at:', API_BASE_URL);
+        const isRunning = await checkApiServer(API_BASE_URL);
+        
+        if (!isRunning) {
+            showError(`API server is not accessible at ${API_BASE_URL}. Please ensure:
+                <ol>
+                    <li>The API server is running: <code>python app.py</code> (in the backend directory)</li>
+                    <li>The API URL is correct: <code>${API_BASE_URL}</code></li>
+                    <li>You're not getting CORS errors (check browser console)</li>
+                </ol>
+                <p>If you're serving this page from a different port than the API server, make sure to use the full URL including the port number.</p>`);
+            return;
+        }
+        
+        // Show loading state
+        const loginButton = document.getElementById('loginButton');
+        const originalText = loginButton.textContent;
+        loginButton.disabled = true;
+        loginButton.textContent = 'Logging in...';
+        
+        // Prepare login data
+        const loginData = {
+            businessId: businessId,
+            businessApiKey: apiKey,
+            ownerId: ownerId
+        };
+        
+        console.log('Attempting login with data:', {...loginData, businessApiKey: '***'});
+        
+        // Make login request
+        const response = await fetch(`${API_BASE_URL}/save-config`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(loginData)
+        });
+        
+        console.log('Login response status:', response.status);
+        
+        // Clone the response before reading it
+        const responseClone = response.clone();
+        
+        // Check if response is OK
+        if (!response.ok) {
+            // Try to get error details from response
+            let errorMessage = `Login failed: ${response.status} ${response.statusText}`;
+            try {
+                const errorData = await responseClone.json();
+                if (errorData && errorData.error) {
+                    errorMessage = `Login failed: ${errorData.error}`;
+                }
+            } catch (e) {
+                console.log('Could not parse error response as JSON');
+            }
+            
+            throw new Error(errorMessage);
+        }
+        
+        // Parse response data
+        const data = await response.json();
+        console.log('Login successful, response data:', data);
+        
+        // Store credentials
+        BUSINESS_ID = businessId;
+        API_KEY = apiKey;
+        OWNER_ID = ownerId;
+        
+        // Enable send button
+        document.getElementById('sendButton').disabled = false;
+        
+        // Show success message
+        showAlert('Login successful! You can now send messages.', 'success');
+        
+        // Update UI
+        loginButton.textContent = 'Logged In';
+        loginButton.classList.remove('btn-primary');
+        loginButton.classList.add('btn-success');
+        
+        // Hide login form
+        document.getElementById('loginForm').style.display = 'none';
+        
+        // Show message form
+        document.getElementById('messageForm').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        
+        // Reset login button
+        const loginButton = document.getElementById('loginButton');
+        loginButton.disabled = false;
+        loginButton.textContent = 'Login';
+        
+        // Show error message
+        showError(`Login failed: ${error.message}`);
+        
+        // Add troubleshooting tips
+        const troubleshootingTips = document.createElement('div');
+        troubleshootingTips.className = 'alert alert-info mt-3';
+        troubleshootingTips.innerHTML = `
+            <h5>Troubleshooting Tips:</h5>
+            <ol>
+                <li>Check if the API server is running on port 5000</li>
+                <li>Verify your Business ID, API Key, and Owner ID are correct</li>
+                <li>If you're seeing CORS errors, make sure the API server has CORS enabled</li>
+                <li>Try using the "Test Connection" button to check API connectivity</li>
+            </ol>
+        `;
+        
+        // Add the tips to the page
+        const loginCard = document.querySelector('.card');
+        loginCard.appendChild(troubleshootingTips);
+        
+        // Remove the tips after 10 seconds
+        setTimeout(() => {
+            troubleshootingTips.remove();
+        }, 10000);
+    }
+} 

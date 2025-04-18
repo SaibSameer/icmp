@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Prompt Template",
+  "description": "Represents a reusable prompt template.",
+  "type": "object",
+  "properties": {
+    "template_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the prompt template."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the business that owns this template."
+    },
+    "template_name": {
+      "type": "string",
+      "description": "Human-readable name for the template."
+    },
+    "template_description": {
+      "type": "string",
+      "description": "Detailed description of the template's purpose."
+    },
+    "template_text": {
+      "type": "string",
+      "description": "The actual prompt template text, with placeholders for variables."
+    },
+    "input_variables": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of expected input variable names."
+    },
+   "variables": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "List of expected input variable names."
+    },
+    "model_settings": {
+      "type": "object",
+      "description": "Default model settings for this template.",
+      "additionalProperties": {
+        "type": "number"
+      }
+    },
+     "template_type": {
+      "type": "string",
+      "enum": ["stage_selection", "data_extraction", "response_generation"],
+      "description": "what process will the tempalte be used for"
+    }
+  },
+  "required": [
+    "template_id",
+    "business_id",
+    "template_name",
+    "template_description",
+    "template_text",
+    "input_variables",
+        "variables",
+    "template_type"
+  ],
+  "additionalProperties": false
+}

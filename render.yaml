@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: icmp-events-api
+    env: python
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn application:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ICMP_API_KEY
+        sync: false
+      - key: REACT_APP_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false 

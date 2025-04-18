@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Variables Tester</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #ddd;
+            --bg-light: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6; 
+            padding: 0;
+            margin: 0;
+            display: flex;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            padding: 20px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+
+        .section-divider {
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+        }
+
+        input[type="text"], 
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        textarea {
+            height: 120px;
+            font-family: monospace;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .variable-tag {
+            display: inline-block;
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            margin: 2px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+
+        .variable-list {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            background-color: #f0fff4;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .error {
+            color: var(--error-color);
+            border-color: var(--error-color);
+            background-color: #fff5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+        .delete-btn {
+            background-color: var(--error-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.8em;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+        
+        .delete-btn:hover {
+            background-color: #bd2130;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>Template Variables Tester</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <p><strong>Note:</strong> This page is for testing variables only. To edit actual templates, use the Templates Manager:</p>
+            <a href="templates.html" style="display: inline-block; background-color: var(--primary-color); color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; margin-top: 5px;">Go to Template Manager</a>
+        </div>
+        
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">Important Information</div>
+            <div style="padding: 10px;">
+                <p><strong>There are two different template editors available:</strong></p>
+                <ol>
+                    <li><strong>React Editor</strong> (at localhost:3000) - This is the recommended editor for template management</li>
+                    <li><strong>HTML Editor</strong> (templates.html) - This is a simple alternative editor</li>
+                </ol>
+                <p>Both editors connect to the same database, but the React editor provides a better experience. For best results, use the React editor at <a href="http://localhost:3000" target="_blank">localhost:3000</a>.</p>
+                <p><strong>Template Variables:</strong> The system supports both single <code>{variable}</code> and double <code>{{variable}}</code> curly brace formats, but the React editor uses double braces by default.</p>
+            </div>
+        </div>
+        
+        <!-- Configuration -->
+        <div class="card">
+            <div class="card-header">API Configuration</div>
+            <div class="form-group">
+                <label for="baseUrl">API Base URL</label>
+                <input id="baseUrl" type="text" value="http://localhost:5000">
+            </div>
+            
+            <div class="form-group">
+                <label for="businessId">Business ID (required for authentication)</label>
+                <input id="businessId" type="text" value="46cd481d-44ba-485f-868e-3292885c9976">
+            </div>
+            
+            <div class="form-group">
+                <label for="apiKey">API Key (required for authentication)</label>
+                <input id="apiKey" type="text" value="da828cae6a3e46228aa09d65ba9066e3">
+            </div>
+            
+            <button id="saveConfig" onclick="saveConfig()">Save Configuration</button>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Available Variables -->
+        <h2>Available Variables</h2>
+        <button onclick="fetchAvailableVariables()">List All Available Variables</button>
+        <div id="availableVariables" class="variable-list">
+            <p>Variables will be shown here...</p>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Template Tester -->
+        <h2>Template Content Tester</h2>
+        <div class="form-group">
+            <label for="templateContent">Template Content (Use {variable_name} or {{variable_name}} for variables)</label>
+            <textarea id="templateContent" placeholder="Enter template content with variables in curly braces, e.g. {variable_name} or {{variable_name}}">Based on the last {N} conversations and {stage_list}, what most represents the current stage? Reply with the current stage with confidence level.</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="systemPrompt">System Prompt (Optional)</label>
+            <textarea id="systemPrompt" placeholder="Enter system prompt (optional)">You are a conversation stage detector. Analyze the conversation history and determine the current stage from the available stages in {stage_list}.</textarea>
+        </div>
+        
+        <button onclick="validateTemplate()">Validate Template</button>
+        
+        <div id="validationResults" style="margin-top: 15px;"></div>
+        
+        <hr class="section-divider">
+        
+        <!-- Variable Substitution Tester -->
+        <h2>Test Variable Substitution</h2>
+        <div class="form-group">
+            <label for="substitutionTemplate">Template with Variables (supports both {variable} and {{variable}} formats)</label>
+            <textarea id="substitutionTemplate" placeholder="Enter template content with variables in single {variable} or double {{variable}} curly braces">Based on the last {{N}} conversations and {{stage_list}}, what stage is this conversation in?</textarea>
+        </div>
+        
+        <div id="variableInputsContainer">
+            <p>Set variable values:</p>
+            <!-- Dynamic inputs will be added here based on detected variables -->
+        </div>
+        
+        <div class="button-group">
+            <button onclick="detectSubstitutionVariables()">Detect Variables</button>
+            <button onclick="testSubstitution()">Test Substitution</button>
+        </div>
+        
+        <div id="substitutionResults" class="card" style="margin-top: 15px; display: none;">
+            <div class="card-header">Substitution Result</div>
+            <pre id="substitutionResultContent"></pre>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Database Variable Substitution Tester -->
+        <h2>Test Substitution with Database Values</h2>
+        <div class="form-group">
+            <label for="dbSubstitutionTemplate">Template with Variables</label>
+            <textarea id="dbSubstitutionTemplate" placeholder="Enter template content with variables in single {variable} or double {{variable}} curly braces">Based on the last {{N}} conversations and {{stage_list}}, what stage is this conversation in?</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label>Available Variables from Database</label>
+            <div id="dbVariablesContainer" class="variable-list">
+                <p>Loading variables from database...</p>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="loadDatabaseVariables()">Refresh DB Variables</button>
+            <button onclick="testDatabaseSubstitution()">Test with DB Values</button>
+        </div>
+        
+        <div id="dbSubstitutionResults" class="card" style="margin-top: 15px; display: none;">
+            <div class="card-header">Database Substitution Result</div>
+            <div class="card" style="margin: 10px 0;">
+                <div class="card-header">Variables Used</div>
+                <pre id="dbVariablesUsed"></pre>
+            </div>
+            <div class="card">
+                <div class="card-header">Result</div>
+                <pre id="dbSubstitutionResultContent"></pre>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Template Variables in DB -->
+        <h2>Registered Template Variables</h2>
+        <button onclick="fetchDatabaseVariables()">List Variables from Database</button>
+        <div id="databaseVariables" class="variable-list">
+            <p>Variables from database will be shown here...</p>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Add New Variable Section -->
+        <h2>Add New Template Variable</h2>
+        <div class="card">
+            <div class="card-header">New Variable Details</div>
+            
+            <div class="form-group">
+                <label for="variableName">Variable Name</label>
+                <input id="variableName" type="text" placeholder="Enter variable name (e.g. stage_list)">
+            </div>
+            
+            <div class="form-group">
+                <label for="variableDescription">Description</label>
+                <input id="variableDescription" type="text" placeholder="Describe what this variable represents">
+            </div>
+            
+            <div class="form-group">
+                <label for="variableCategory">Category</label>
+                <select id="variableCategory">
+                    <option value="Conversation">Conversation</option>
+                    <option value="Business">Business</option>
+                    <option value="User">User</option>
+                    <option value="System">System</option>
+                    <option value="Custom">Custom</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="variableExample">Example Value (Optional)</label>
+                <input id="variableExample" type="text" placeholder="Example of what this variable might contain">
+            </div>
+            
+            <div class="form-group">
+                <label for="variableResolver">Resolver Function (Optional)</label>
+                <textarea id="variableResolver" placeholder="Python function that resolves this variable (leave blank for manually defined variables)">{}</textarea>
+            </div>
+            
+            <button onclick="addVariable()">Add Variable</button>
+        </div>
+        
+        <!-- Status Section -->
+        <hr class="section-divider">
+        <div id="statusArea"></div>
+    </div>
+    
+    <script>
+        // Configuration
+        let config = {
+            baseUrl: 'http://localhost:5000',
+            businessId: '7ae167a0-d864-43b9-bdaf-fcba35b33f27',
+            apiKey: 'da828cae6a3e46228aa09d65ba9066e3'
+        };
+        
+        // Initialize from localStorage
+        function initConfig() {
+            const savedConfig = localStorage.getItem('variablesTesterConfig');
+            if (savedConfig) {
+                try {
+                    config = JSON.parse(savedConfig);
+                    document.getElementById('baseUrl').value = config.baseUrl || 'http://localhost:5000';
+                    document.getElementById('businessId').value = config.businessId || '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
+                    document.getElementById('apiKey').value = config.apiKey || 'da828cae6a3e46228aa09d65ba9066e3';
+                } catch (e) {
+                    console.error('Error loading saved config:', e);
+                }
+            }
+        }
+        
+        // Save configuration
+        function saveConfig() {
+            config.baseUrl = document.getElementById('baseUrl').value.trim() || 'http://localhost:5000';
+            config.businessId = document.getElementById('businessId').value.trim();
+            config.apiKey = document.getElementById('apiKey').value.trim();
+            
+            localStorage.setItem('variablesTesterConfig', JSON.stringify(config));
+            showStatus('Configuration saved!', 'success');
+            
+            // Fetch variables with the new configuration
+            fetchAvailableVariables();
+            fetchDatabaseVariables();
+        }
+        
+        // Fetch available variables
+        async function fetchAvailableVariables() {
+            try {
+                showStatus('Fetching available variables...', 'info');
+                
+                const response = await fetch(`${config.baseUrl}/api/variables/available/?business_id=${config.businessId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${await response.text()}`);
+                }
+                
+                const data = await response.json();
+                
+                // Display variables
+                const variablesElement = document.getElementById('availableVariables');
+                if (data.length === 0) {
+                    variablesElement.innerHTML = '<p>No variables registered</p>';
+                    return;
+                }
+                
+                let html = '<div>';
+                data.forEach(variable => {
+                    html += `<span class="variable-tag">${variable.name}</span> `;
+                });
+                html += '</div>';
+                
+                variablesElement.innerHTML = html;
+                showStatus('Variables fetched successfully', 'success');
+                
+            } catch (error) {
+                console.error('Error fetching variables:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Fetch database variables
+        async function fetchDatabaseVariables() {
+            try {
+                showStatus('Fetching database variables...', 'info');
+                
+                const response = await fetch(`${config.baseUrl}/api/variables/?business_id=${config.businessId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${await response.text()}`);
+                }
+                
+                const data = await response.json();
+                
+                // Display variables
+                const variablesElement = document.getElementById('databaseVariables');
+                if (data.length === 0) {
+                    variablesElement.innerHTML = '<p>No variables in database</p>';
+                    return;
+                }
+                
+                // Group by category
+                const categories = {};
+                data.forEach(variable => {
+                    if (!categories[variable.category]) {
+                        categories[variable.category] = [];
+                    }
+                    categories[variable.category].push(variable);
+                });
+                
+                let html = '';
+                for (const [category, variables] of Object.entries(categories)) {
+                    html += `<div class="card">`;
+                    html += `<div class="card-header">${category}</div>`;
+                    
+                    variables.forEach(variable => {
+                        html += `<div style="margin-bottom: 10px;">`;
+                        html += `<span class="variable-tag">${variable.name}</span>`;
+                        html += `<span>${variable.description}</span>`;
+                        if (variable.example_value) {
+                            html += `<div><small>Example: ${variable.example_value}</small></div>`;
+                        }
+                        html += `<button class="delete-btn" onclick="deleteVariable('${variable.id}', '${variable.name}')">Delete</button>`;
+                        html += `</div>`;
+                    });
+                    
+                    html += `</div>`;
+                }
+                
+                variablesElement.innerHTML = html;
+                showStatus('Database variables fetched successfully', 'success');
+                
+            } catch (error) {
+                console.error('Error fetching database variables:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Validate template
+        async function validateTemplate() {
+            const content = document.getElementById('templateContent').value.trim();
+            const systemPrompt = document.getElementById('systemPrompt').value.trim();
+            
+            if (!content) {
+                showStatus('Template content is required', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Validating template...', 'info');
+                
+                const response = await fetch(`${config.baseUrl}/api/variables/validate-template/?business_id=${config.businessId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    mode: 'cors',
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        content,
+                        system_prompt: systemPrompt
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${await response.text()}`);
+                }
+                
+                const data = await response.json();
+                
+                // Display validation results
+                const resultsElement = document.getElementById('validationResults');
+                
+                let html = '<div class="card">';
+                html += `<div class="card-header">Validation Results</div>`;
+                
+                if (data.all_valid) {
+                    html += '<div class="success">All variables are registered and available</div>';
+                } else {
+                    html += '<div class="error">Some variables are not registered</div>';
+                }
+                
+                html += '<h3>Content Variables</h3>';
+                html += '<div class="variable-list">';
+                for (const [variable, isValid] of Object.entries(data.content_variables)) {
+                    const statusClass = isValid ? 'success' : 'error';
+                    html += `<span class="variable-tag ${statusClass}">${variable}</span> `;
+                }
+                html += '</div>';
+                
+                if (Object.keys(data.system_variables).length > 0) {
+                    html += '<h3>System Prompt Variables</h3>';
+                    html += '<div class="variable-list">';
+                    for (const [variable, isValid] of Object.entries(data.system_variables)) {
+                        const statusClass = isValid ? 'success' : 'error';
+                        html += `<span class="variable-tag ${statusClass}">${variable}</span> `;
+                    }
+                    html += '</div>';
+                }
+                
+                html += '</div>';
+                
+                resultsElement.innerHTML = html;
+                showStatus('Template validated', 'success');
+                
+            } catch (error) {
+                console.error('Error validating template:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Add new variable
+        async function addVariable() {
+            const variableName = document.getElementById('variableName').value.trim();
+            const description = document.getElementById('variableDescription').value.trim();
+            const category = document.getElementById('variableCategory').value;
+            const exampleValue = document.getElementById('variableExample').value.trim();
+            const resolverFunc = document.getElementById('variableResolver').value.trim();
+            
+            if (!variableName || !description || !category) {
+                showStatus('Variable name, description, and category are required', 'error');
+                return;
+            }
+            
+            try {
+                showStatus('Adding new variable...', 'info');
+                
+                const variableData = {
+                    name: variableName,
+                    description: description,
+                    category: category
+                };
+                
+                if (exampleValue) {
+                    variableData.example_value = exampleValue;
+                }
+                
+                if (resolverFunc && resolverFunc !== '{}') {
+                    variableData.resolver_function = resolverFunc;
+                }
+                
+                const response = await fetch(`${config.baseUrl}/api/variables/?business_id=${config.businessId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    mode: 'cors',
+                    credentials: 'include',
+                    body: JSON.stringify(variableData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${await response.text()}`);
+                }
+                
+                const data = await response.json();
+                
+                // Clear form
+                document.getElementById('variableName').value = '';
+                document.getElementById('variableDescription').value = '';
+                document.getElementById('variableExample').value = '';
+                document.getElementById('variableResolver').value = '{}';
+                
+                // Refresh variables list
+                fetchDatabaseVariables();
+                
+                showStatus('Variable added successfully!', 'success');
+                
+            } catch (error) {
+                console.error('Error adding variable:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Delete variable
+        async function deleteVariable(variableId, variableName) {
+            // Confirm deletion
+            if (!confirm(`Are you sure you want to delete the variable "${variableName}"?`)) {
+                return;
+            }
+            
+            try {
+                showStatus(`Deleting variable "${variableName}"...`, 'info');
+                
+                const response = await fetch(`${config.baseUrl}/api/variables/${variableId}/?business_id=${config.businessId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${await response.text()}`);
+                }
+                
+                // Refresh variables list
+                fetchDatabaseVariables();
+                
+                showStatus(`Variable "${variableName}" deleted successfully!`, 'success');
+                
+            } catch (error) {
+                console.error('Error deleting variable:', error);
+                showStatus(`Error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Test variable substitution
+        function testSubstitution() {
+            const templateContent = document.getElementById('substitutionTemplate').value;
+            const variables = extractVariables(templateContent);
+            
+            if (variables.length === 0) {
+                showStatus('No variables detected in the template', 'error');
+                return;
+            }
+            
+            // Collect variable values
+            const variableValues = {};
+            variables.forEach(variable => {
+                const inputElement = document.getElementById(`var_${variable}`);
+                if (inputElement) {
+                    variableValues[variable] = inputElement.value || `{${variable}}`;
+                }
+            });
+            
+            // Perform substitution - handling both single and double curly braces
+            let result = templateContent;
+            
+            // Process each variable
+            for (const [variable, value] of Object.entries(variableValues)) {
+                // Replace double curly braces first (to avoid conflicts)
+                const doublePlaceholder = `{{${variable}}}`;
+                if (result.includes(doublePlaceholder)) {
+                    result = result.replace(new RegExp(doublePlaceholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value);
+                }
+                
+                // Then replace single curly braces
+                const singlePlaceholder = `{${variable}}`;
+                if (result.includes(singlePlaceholder)) {
+                    result = result.replace(new RegExp(singlePlaceholder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), value);
+                }
+            }
+            
+            // Display result
+            document.getElementById('substitutionResultContent').textContent = result;
+            document.getElementById('substitutionResults').style.display = 'block';
+            
+            showStatus('Substitution completed', 'success');
+        }
+        
+        // Detect variables for substitution testing
+        function detectSubstitutionVariables() {
+            const templateContent = document.getElementById('substitutionTemplate').value;
+            const variables = extractVariables(templateContent);
+            
+            const inputsContainer = document.getElementById('variableInputsContainer');
+            
+            if (variables.length === 0) {
+                inputsContainer.innerHTML = '<p>No variables detected in the template</p>';
+                return;
+            }
+            
+            let html = '<p>Set variable values:</p>';
+            
+            variables.forEach(variable => {
+                // Check if variable uses double curly braces
+                const hasDoubleFormat = templateContent.includes(`{{${variable}}}`);
+                const bracketFormat = hasDoubleFormat ? `{{${variable}}}` : `{${variable}}`;
+                
+                html += `
+                    <div class="form-group">
+                        <label for="var_${variable}">${bracketFormat}</label>
+                        <input id="var_${variable}" type="text" placeholder="Value for ${variable}">
+                    </div>
+                `;
+            });
+            
+            inputsContainer.innerHTML = html;
+        }
+        
+        // Helper function to show status
+        function showStatus(message, type = 'info') {
+            const statusElement = document.getElementById('statusArea');
+            statusElement.innerHTML = `<div class="${type}">${message}</div>`;
+            
+            // Clear status after 5 seconds
+            setTimeout(() => {
+                statusElement.innerHTML = '';
+            }, 5000);
+        }
+        
+        // Initialize the page
+        window.addEventListener('DOMContentLoaded', () => {
+            initConfig();
+            
+            // Auto-save the config if values are provided by default
+            if (document.getElementById('baseUrl').value && 
+                document.getElementById('businessId').value && 
+                document.getElementById('apiKey').value) {
+                saveConfig();
+            } else {
+                // Even if not saving, load variables using default URL
+                // Only if business ID is available
+                if (config.businessId && config.apiKey) {
+                    fetchAvailableVariables();
+                    fetchDatabaseVariables();
+                } else {
+                    showStatus('Business ID and API Key are required for API authentication', 'error');
+                }
+            }
+            
+            // Detect variables in the template substitution tester on page load
+            detectSubstitutionVariables();
+            
+            // Add listener for template substitution text changes
+            document.getElementById('substitutionTemplate').addEventListener('input', function() {
+                // Auto-detect variables on content change with a slight delay
+                clearTimeout(this.timeout);
+                this.timeout = setTimeout(() => {
+                    detectSubstitutionVariables();
+                }, 500);
+            });
+        });
+        
+        // Extract variables from content
+        function extractVariables(content) {
+            if (!content) return [];
+            
+            // Support both single and double curly braces
+            const singleCurlyRegex = /{([^{}]+)}/g;
+            const doubleCurlyRegex = /{{([^{}]+)}}/g;
+            
+            const singleMatches = content.match(singleCurlyRegex) || [];
+            const doubleMatches = content.match(doubleCurlyRegex) || [];
+            
+            // Process single curly brace matches (excluding those that are part of double braces)
+            const singleVars = [];
+            for (const match of singleMatches) {
+                const varName = match.slice(1, -1);
+                // Check if this variable is not part of a double brace pattern
+                if (!content.includes(`{{${varName}}}`)) {
+                    singleVars.push(varName);
+                }
+            }
+            
+            // Process double curly brace matches
+            const doubleVars = doubleMatches.map(match => match.slice(2, -2));
+            
+            // Combine and filter out duplicates
+            const allVars = [...singleVars, ...doubleVars];
+            const uniqueVars = [...new Set(allVars)];
+            
+            console.log("Extracted variables:", {
+                single: singleVars,
+                double: doubleVars,
+                all: uniqueVars
+            });
+            
+            return uniqueVars;
+        }
+
+        // Global store for database variables
+        let databaseVariables = {};
+
+        // Load variables from database
+        async function loadDatabaseVariables() {
+            try {
+                showStatus('Loading variables from database...', false, true);
+                
+                const response = await fetch(`${config.baseUrl}/api/variables/?business_id=${config.businessId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${await response.text()}`);
+                }
+                
+                const data = await response.json();
+                databaseVariables = {};
+                
+                // Create HTML for variables display
+                let html = '<div class="variable-list">';
+                data.forEach(variable => {
+                    databaseVariables[variable.variable_name] = variable;
+                    html += `
+                        <div class="variable-tag" title="${variable.description || 'No description'}">
+                            ${variable.variable_name}
+                            <span style="color: #666; font-size: 0.8em;"> (${variable.category})</span>
+                            <span style="color: #666; font-size: 0.8em;"> = ${variable.default_value || '""'}</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+                document.getElementById('dbVariablesContainer').innerHTML = html;
+                showStatus('Variables loaded successfully!', false, false);
+                
+            } catch (error) {
+                console.error('Error loading variables:', error);
+                document.getElementById('dbVariablesContainer').innerHTML = 
+                    `<div class="error">Error loading variables: ${error.message}</div>`;
+                showStatus(`Error: ${error.message}`, true, false);
+            }
+        }
+
+        // Test substitution with database values
+        async function testDatabaseSubstitution() {
+            try {
+                const templateContent = document.getElementById('dbSubstitutionTemplate').value;
+                const variables = extractVariables(templateContent);
+                
+                if (variables.length === 0) {
+                    showStatus('No variables detected in the template', true, false);
+                    return;
+                }
+                
+                // Collect variable values from database
+                const variableValues = {};
+                const variablesUsed = [];
+                
+                variables.forEach(variable => {
+                    if (databaseVariables[variable]) {
+                        variableValues[variable] = databaseVariables[variable].default_value;
+                        variablesUsed.push({
+                            name: variable,
+                            value: databaseVariables[variable].default_value,
+                            category: databaseVariables[variable].category,
+                            description: databaseVariables[variable].description
+                        });
+                    } else {
+                        variableValues[variable] = `[Missing: ${variable}]`;
+                        variablesUsed.push({
+                            name: variable,
+                            value: '[Missing]',
+                            category: 'unknown',
+                            description: 'Variable not found in database'
+                        });
+                    }
+                });
+                
+                // Perform substitution
+                let result = templateContent;
+                for (const [variable, value] of Object.entries(variableValues)) {
+                    // Replace double curly braces first
+                    result = result.replace(new RegExp(`{{${variable}}}`, 'g'), value);
+                    // Then replace single curly braces
+                    result = result.replace(new RegExp(`{${variable}}`, 'g'), value);
+                }
+                
+                // Display results
+                document.getElementById('dbVariablesUsed').textContent = 
+                    JSON.stringify(variablesUsed, null, 2);
+                document.getElementById('dbSubstitutionResultContent').textContent = result;
+                document.getElementById('dbSubstitutionResults').style.display = 'block';
+                
+                showStatus('Database substitution completed', false, false);
+                
+            } catch (error) {
+                console.error('Error testing substitution:', error);
+                showStatus(`Error: ${error.message}`, true, false);
+            }
+        }
+
+        // Load database variables on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            // ... existing DOMContentLoaded code ...
+            
+            // Load database variables
+            if (config.businessId && config.apiKey) {
+                loadDatabaseVariables();
+            }
+        });
+    </script>
+</body>
+</html> 

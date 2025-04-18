@@ -1,0 +1,3543 @@
+================================================================================
+File: CHANGELOG.md
+Path: .\CHANGELOG.md
+Size: 2470
+Modified: 2025-04-12T19:20:30.213792
+Created: 2025-04-12T19:19:05.808942
+Hash: 7e049a6a8bab8515df91e90263a961c8e874ca03832217489cc7553f118fd7fe
+Lines: 86
+================================================================================
+# Changelog
+
+All notable changes to the ICMP Events API - LLM Integration Platform will be documented in this file.
+
+## [1.0.0] - 2024-04-12
+
+### Added
+- Initial release of the LLM Integration Platform
+- Complete frontend interface with multiple pages:
+  - LLM Calls Monitor (`llm_calls.html`)
+  - Message Handling (`message_handling.html`)
+  - Chat Window (`chat-window.html`)
+  - Stages Management (`stages.html`)
+  - Variables Management (`variables.html`)
+  - Templates Management (`templates.html`)
+- React Components:
+  - Authentication (`Login.js`)
+  - Main Interface (`MyInterface.js`)
+  - Loading States (`LoadingIndicator.js`)
+  - Health Monitoring (`HealthCheck.js`)
+  - Error Handling (`ErrorDisplay.js`)
+  - Business Management (`BusinessManagement.js`)
+- Backend API implementation:
+  - Flask application (`app.py`)
+  - Database operations (`db.py`)
+  - Authentication system (`auth.py`)
+  - OpenAI integration (`openai_helper.py`)
+  - Configuration management (`config.py`)
+- Real-time monitoring capabilities
+- Process flow visualization
+- Detailed logging system
+- User authentication
+- API configuration management
+- Template-based response system
+- Variable substitution functionality
+- Stage-based message routing
+- WebSocket integration for real-time updates
+
+### Features
+- Comprehensive LLM call monitoring
+- Message processing and routing
+- Chat interface with history
+- Stage management system
+- Variable management
+- Template management
+- API configuration
+- User session management
+- Real-time debugging tools
+- Process flow visualization
+- Detailed logging and error tracking
+
+### Technical Details
+- Backend:
+  - Python Flask framework
+  - SQLite database
+  - OpenAI API integration
+  - WebSocket support
+  - RESTful API design
+  - JWT authentication
+  - Environment-based configuration
+  - Migration system
+- Frontend:
+  - React components
+  - HTML/CSS/JavaScript
+  - WebSocket client
+  - Real-time updates
+  - Modular architecture
+  - Responsive design
+- Testing:
+  - Backend test suite
+  - Frontend testing
+  - API testing
+  - Health monitoring
+  - Database migrations
+  - Template validation
+
+### Documentation
+- Initial README.md
+- API documentation in `/backend/documentation`
+- Setup instructions
+- Testing guidelines
+- Development guidelines
+- Database schema documentation
+- API endpoint documentation
+- Component documentation
+- Deployment guide 
+
+================================================================================
+File: file_list.txt
+Path: .\file_list.txt
+Size: 3962
+Modified: 2025-04-01T03:57:19.105293
+Created: 2025-03-31T18:10:57.053858
+Hash: dd4b64b085358d0e1a047d1189872f3506d735e9cf957cf77ff53698cf8251a1
+Lines: 142
+================================================================================
+File and Directory Listing - 2025-04-01 03:57:16.136670
+----------------------------------------
+Directory: .\backend
+  - File: .env
+  - File: App.css
+  - File: App.js
+  - File: app.py
+  - File: auth.py
+  - File: cls
+  - File: config.py
+  - File: connection_test.py
+  - File: db.py
+  - File: health_check.py
+  - File: openai_helper.py
+  - File: package-lock.json
+  - File: package.json
+  - File: requirements.txt
+  - File: schemas_loader.py
+  - File: SELECT
+  - File: style.css
+  - File: template_management.py
+--------------------
+Directory: .\backend\.pytest_cache
+  - File: .gitignore
+  - File: CACHEDIR.TAG
+  - File: README.md
+--------------------
+Directory: .\backend\.pytest_cache\v
+--------------------
+Directory: .\backend\.pytest_cache\v\cache
+  - File: lastfailed
+  - File: nodeids
+  - File: stepwise
+--------------------
+Directory: .\backend\routes
+  - File: businesses.py
+  - File: business_management.py
+  - File: check_routes.py
+  - File: conversations.py
+  - File: health.py
+  - File: messages.py
+  - File: message_handling.py
+  - File: ping.py
+  - File: stages.py
+  - File: stage_management.py
+  - File: templates.py
+  - File: template_management.py
+  - File: tests.py
+  - File: test_imports.py
+  - File: users.py
+  - File: user_management.py
+  - File: utils.py
+  - File: __init__.py
+--------------------
+Directory: .\backend\routes\__pycache__
+  - File: businesses.cpython-312.pyc
+  - File: conversations.cpython-312.pyc
+  - File: health.cpython-312.pyc
+  - File: message_handling.cpython-312.pyc
+  - File: ping.cpython-312.pyc
+  - File: stages.cpython-312.pyc
+  - File: template_management.cpython-312.pyc
+  - File: users.cpython-312.pyc
+  - File: utils.cpython-312.pyc
+  - File: __init__.cpython-312.pyc
+--------------------
+Directory: .\backend\tests
+  - File: test_config.py
+  - File: test_db.py
+  - File: test_message_handling.py
+  - File: __init__.py
+--------------------
+Directory: .\backend\tests\__pycache__
+  - File: test_db.cpython-312-pytest-8.3.5.pyc
+  - File: test_message_handling.cpython-312-pytest-8.3.5.pyc
+  - File: __init__.cpython-312.pyc
+--------------------
+Directory: .\backend\__pycache__
+  - File: auth.cpython-312.pyc
+  - File: config.cpython-312.pyc
+  - File: db.cpython-312.pyc
+  - File: openai_helper.cpython-312.pyc
+  - File: template_management.cpython-312.pyc
+--------------------
+Directory: .\front-end
+  - File: package-lock.json
+  - File: package.json
+--------------------
+Directory: .\front-end\public
+  - File: index.html
+--------------------
+Directory: .\front-end\src
+  - File: App.css
+  - File: App.js
+  - File: index.css
+  - File: index.js
+  - File: reportWebVitals.js
+--------------------
+Directory: .\front-end\src\components
+  - File: BusinessManagement.js
+  - File: Configuration.js
+  - File: ErrorDisplay.js
+  - File: files.app.txt
+  - File: HealthCheck.js
+  - File: healthCheckService.js
+  - File: LoadingIndicator.js
+  - File: MyInterface.css
+  - File: MyInterface.js
+  - File: SendMessage.js
+  - File: StageManagement.js
+  - File: TemplateManagement.js
+  - File: useConfig.js
+  - File: UserManagement.js
+  - File: useStageManagement.js
+  - File: useTemplateManagement.js
+  - File: useUser.js
+--------------------
+Directory: .\front-end\src\hooks
+  - File: useBusiness.js
+  - File: useConfig.js
+  - File: UserManagement.js
+  - File: useStageManagement.js
+  - File: useTemplateManagement.js
+  - File: useUser.js
+--------------------
+Directory: .\front-end\src\services
+  - File: testService.js
+--------------------
+Directory: .\schemas
+  - File: businesses.json
+  - File: business_create.json
+  - File: business_event_property_schemas.json
+  - File: configuration.json
+  - File: events.json
+  - File: message.json
+  - File: orders.json
+  - File: products.json
+  - File: prompt_templates.json
+  - File: stages.json
+  - File: users.json
+--------------------
+
+
+================================================================================
+File: password.txt
+Path: .\password.txt
+Size: 1165
+Modified: 2025-04-15T10:42:10.602882
+Created: 2025-03-26T19:34:11.735521
+Hash: 79fb05868954a847ec5873bf362a5aae37de453954997a3f31667dfa6c7b016d
+Lines: 51
+================================================================================
+
+password 852456
+
+852456istheKEY
+
+
+cd C:\icmp_events_api
+venv\Scripts\activate
+python archiver.py
+python restore.py -i archive_output/javascript_archive.txt -o restored_files
+python restore.py -i archive_output/archive_python.txt -o restored_files
+
+
+
+
+
+
+
+
+
+
+
+psql -h localhost -p 5432 -U icmp_user -d icmp_db
+your_password
+
+\! cls
+SELECT * FROM llm_calls ORDER BY timestamp DESC LIMIT 6;
+SELECT * FROM agents;
+SELECT * FROM prompt_templates;
+SELECT * FROM businesses;
+SELECT * FROM stages;
+\d agents
+
+
+cd C:\icmp_events_api\front-end
+npm start
+
+
+cd C:\icmp_events_api
+venv\Scripts\activate
+cd backend
+python app.py
+
+python llm_debugger.py --test
+
+python test_variable.py test available_stages --business-id 46cd481d-44ba-485f-868e-3292885c9976 --api-key cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6 --owner-id 26c6e238-42b9-4cfe-ae20-0a8d6e2744e4
+
+
+
+
+cd C:\icmp_events_api && python test_variable.py test available_stages --business-id 46cd481d-44ba-485f-868e-3292885c9976 --api-key cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6 --owner-id 26c6e238-42b9-4cfe-ae20-0a8d6e2744e4
+
+================================================================================
+File: README.md
+Path: .\README.md
+Size: 3257
+Modified: 2025-04-14T17:41:44.483086
+Created: 2025-04-12T19:18:59.091809
+Hash: 9192727ceaab5138aaaa75bccdfabc0c12cef4138f58c5aeb864b7008f677349
+Lines: 142
+================================================================================
+# ICMP LLM API Debugger
+
+A command-line tool for debugging and interacting with the ICMP LLM API system. This tool allows you to make LLM calls, view recent calls, and examine call details directly from the command line.
+
+## Features
+
+- Login to the ICMP LLM API
+- Make LLM calls with custom input text and system prompts
+- View recent LLM calls
+- Examine detailed information about specific LLM calls
+- Check API health
+- Template system with modular variable providers
+
+## Installation
+
+1. Clone this repository or download the files
+2. Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Template Variables
+
+The system includes a modular template variable system that allows dynamic content in templates. Variables are defined in `backend/message_processing/variables/` and include:
+
+- User variables (e.g., `{{user_name}}`)
+- Business variables (e.g., `{{business_name}}`)
+- Conversation variables (e.g., `{{last_10_messages}}`)
+- Stage variables (e.g., `{{available_stages}}`)
+- Utility variables (e.g., `{{current_time}}`)
+
+For detailed documentation on the template system, see `backend/documentation/TEMPLATE_SYSTEM.md`.
+
+## Usage
+
+### Basic Commands
+
+#### Check API Health
+
+```bash
+python llm_debugger.py health
+```
+
+#### Login to the API
+
+```bash
+python llm_debugger.py login
+```
+
+#### Make an LLM Call
+
+```bash
+python llm_debugger.py call --input "Your input text here"
+```
+
+With a system prompt:
+
+```bash
+python llm_debugger.py call --input "Your input text here" --system-prompt "Your system prompt here"
+```
+
+With a specific call type:
+
+```bash
+python llm_debugger.py call --input "Your input text here" --type "stage_selection"
+```
+
+#### View Recent LLM Calls
+
+```bash
+python llm_debugger.py recent
+```
+
+With a custom limit:
+
+```bash
+python llm_debugger.py recent --limit 20
+```
+
+#### View Call Details
+
+```bash
+python llm_debugger.py details --call-id "your-call-id-here"
+```
+
+### Advanced Usage
+
+#### Custom API URL
+
+```bash
+python llm_debugger.py --api-url "http://your-api-url:5000" health
+```
+
+#### Custom Business ID and API Key
+
+```bash
+python llm_debugger.py --business-id "your-business-id" --api-key "your-api-key" login
+```
+
+#### Specify Owner ID
+
+```bash
+python llm_debugger.py --owner-id "your-owner-id" login
+```
+
+## Examples
+
+### Making a General LLM Call
+
+```bash
+python llm_debugger.py call --input "What is the capital of France?"
+```
+
+### Making a Stage Selection Call
+
+```bash
+python llm_debugger.py call --input "I need help with my order" --type "stage_selection"
+```
+
+### Viewing Recent Calls and Then Details
+
+```bash
+# First, view recent calls to get a call ID
+python llm_debugger.py recent
+
+# Then, view details for a specific call
+python llm_debugger.py details --call-id "call-id-from-previous-command"
+```
+
+## Troubleshooting
+
+If you encounter issues:
+
+1. Make sure the API server is running and accessible
+2. Verify your business ID and API key are correct
+3. Check that you have the required dependencies installed
+4. Ensure you have network connectivity to the API server
+
+## License
+
+This tool is provided as-is for debugging purposes. 
+
+================================================================================
+File: requirements.txt
+Path: .\requirements.txt
+Size: 51
+Modified: 2025-04-12T22:27:33.095481
+Created: 2025-04-12T22:27:25.863284
+Hash: 83169863e2850075770829ce5ff29f17d52508678c080ae49507c246b1d796d1
+Lines: 3
+================================================================================
+requests>=2.28.0
+tabulate>=0.9.0
+colorama>=0.4.5 
+
+================================================================================
+File: README.md
+Path: .\.pytest_cache\README.md
+Size: 310
+Modified: 2025-04-01T02:55:41.738203
+Created: 2025-04-01T02:55:41.737205
+Hash: 73fd6fccdd802c419a6b2d983d6c3173b7da97558ac4b589edec2dfe443db9ad
+Lines: 9
+================================================================================
+# pytest cache directory #
+
+This directory contains data from the pytest's cache plugin,
+which provides the `--lf` and `--ff` options, as well as the `cache` fixture.
+
+**Do not** commit this to version control.
+
+See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more information.
+
+
+================================================================================
+File: README.md
+Path: .\backend\README.md
+Size: 4684
+Modified: 2025-04-10T14:48:41.885094
+Created: 2025-04-02T12:51:35.669451
+Hash: 5ea8844d64047c075f11a10a1d0ffd08c261f30289d1a02d40160f81bcc5fb06
+Lines: 119
+================================================================================
+# ICMP - Intelligent Conversation Management Platform
+
+## Project Overview
+
+The ICMP POC aims to automate and enhance customer interactions for businesses using a scalable, multi-agent, context-aware conversation system powered by Large Language Models (LLMs).
+
+See [Project Summary](c:\icmp_events_api\archive_output\project_archive\sumary.txt) or [Full Implementation Guide (Draft)](documentation/100%.txt) for more details.
+
+**Current Status:** Proof of Concept (POC) - Core features partially implemented, ongoing refactoring (See [Auth/Template Summary](documentation/auth_template_refactor_summary.md)). Test suite: 45/51 tests passing, with ongoing fixes for business and conversation route tests.
+
+## Quick Start / Setup
+
+### Prerequisites
+
+*   Python Version: [Specify Version, e.g., 3.10+]
+*   Node.js Version: [Specify Version, e.g., 18+]
+*   npm/yarn: [Specify Version]
+*   PostgreSQL Version: [Specify Version, e.g., 14+]
+*   Access to OpenAI API
+
+### Backend Setup (`/backend` directory)
+
+1.  **Install Dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
+2.  **Environment Variables:** Create a `.env` file in the `backend` directory with the following variables:
+    ```dotenv
+    DB_NAME=icmp_db
+    DB_USER=icmp_user
+    DB_PASSWORD=your_db_password
+    DB_HOST=localhost
+    DB_PORT=5432
+    OPENAI_API_KEY=your_openai_key
+    ICMP_API_KEY=generate_a_strong_secret_key # Used for admin/server tasks
+    # Add other variables as needed (e.g., for Flask secret key)
+    FLASK_SECRET_KEY=generate_another_strong_secret
+    ```
+3.  **Database Setup:**
+    *   Ensure PostgreSQL is running.
+    *   Create the database user and database specified in `.env`.
+    *   Apply the necessary table schemas. **Note:** The canonical `CREATE TABLE` statements need consolidation (see [Database Schema Doc](documentation/DATABASE_SCHEMA.md) or `documentation/100%.txt`). The `prompt_templates` table has been deprecated and replaced by the new `templates` table. Ensure the `stages` table has the correct foreign key references to the `templates` table.
+    *   [Add specific commands/migration steps here if they exist, e.g., `flask db upgrade`]
+4.  **Run Backend Server:**
+    ```bash
+    flask run # Or python app.py
+    ```
+    The server should be running on `http://localhost:5000`.
+
+### Frontend Setup (`/front-end` directory)
+
+1.  **Install Dependencies:**
+    ```bash
+    cd front-end
+    npm install # or yarn install
+    ```
+2.  **Run Frontend Dev Server:**
+    ```bash
+    npm start # or yarn start
+    ```
+    The frontend should be accessible at `http://localhost:3000`.
+
+## Directory Structure
+
+```
+/backend
+├── routes/         # API route handlers (Blueprints)
+├── schemas/        # JSON schemas for validation
+├── documentation/  # Project documentation files
+├── app.py          # Main Flask application
+├── auth.py         # Authentication decorators
+├── config.py       # Configuration loading
+├── db.py           # Database connection handling
+├── requirements.txt # Backend dependencies
+├── .env            # Environment variables (local only)
+└── ...
+/front-end
+├── public/
+├── src/
+│   ├── components/ # React components
+│   ├── pages/      # Page-level components
+│   ├── services/   # API call functions
+│   ├── App.js      # Main application component
+│   └── index.js    # Entry point
+├── package.json    # Frontend dependencies
+└── ...
+README.md           # This file
+```
+
+## Further Documentation
+
+*   [API Specification](documentation/API_SPECIFICATION.md)
+*   [Database Schema](documentation/DATABASE_SCHEMA.md)
+*   [Core Logic Explained](documentation/CORE_LOGIC_EXPLAINED.md)
+*   [Architecture Overview](documentation/ARCHITECTURE.md)
+*   [Frontend Guide](documentation/FRONTEND_GUIDE.md)
+*   [Testing Strategy](documentation/TESTING_STRATEGY.md)
+*   [Auth/Template Refactor Summary](documentation/auth_template_refactor_summary.md)
+
+## Testing
+
+The project includes a comprehensive test suite using pytest. To run the tests:
+
+```bash
+cd backend
+pytest
+```
+
+### Test Coverage
+- Authentication and authorization tests
+- Business management route tests
+- Conversation handling tests
+- Message processing tests
+- Database interaction tests
+
+### Known Issues
+- Some tests in the business routes are currently failing and being addressed
+- Conversation route tests need updates to match the latest API changes
+- Authentication tests are being updated to handle standardized error responses 
+
+================================================================================
+File: requirements.txt
+Path: .\backend\requirements.txt
+Size: 143
+Modified: 2025-04-08T15:59:04.762366
+Created: 2025-03-27T13:05:44.110792
+Hash: ee4bcdc917a93f2a0ab83c20ffe69036ebe9c1117f9bf7e97e9c54c591fae194
+Lines: 7
+================================================================================
+flask>=2.0.0
+flask-limiter>=2.0.0
+python-dotenv>=0.19.0
+openai>=0.27.0
+psycopg2-binary>=2.9.0
+python-json-logger>=2.0.0
+Flask-Cors>=4.0.1
+
+================================================================================
+File: 100%.txt
+Path: .\backend\documentation\100%.txt
+Size: 25306
+Modified: 2025-04-09T14:14:08.643889
+Created: 2025-04-01T17:32:05.083208
+Hash: 02c6bb7d9ee948d3f61cc2a68a1dec6edcf833760b310561e22510dcf931a271
+Lines: 615
+================================================================================
+Yes, I can draft a comprehensive document consolidating all aspects of the Intelligent Conversation Management Platform (ICMP) Proof of Concept (POC) into a single, cohesive guide for a future AI to fully understand and implement the project. Due to length constraints, I'll provide a detailed outline with key sections fully developed and others summarized with placeholders, ensuring all critical information—including the recent 10% gap fixes—is included. If you'd like any section expanded further, let me know!
+
+---
+
+# Intelligent Conversation Management Platform (ICMP) - Proof of Concept (POC) - Complete Implementation Guide
+
+**Date:** March 22, 2025  
+**Purpose:** This document serves as a definitive reference for an AI tasked with implementing the ICMP POC, encapsulating project goals, architecture, data models, APIs, security, error handling, and more in one place.
+
+---
+
+## 1. Project Overview
+
+The ICMP POC aims to automate and enhance customer interactions for businesses using a scalable, multi-agent, context-aware conversation system powered by Large Language Models (LLMs) via the OpenAI API. It supports business onboarding, product/service management, conversation stage design, intelligent message processing, and robust analytics.
+
+### 1.1 Core Goals
+- Enable seamless business onboarding and tenant isolation.
+- Manage product/service catalogs with CRUD operations.
+- Design customizable conversation stages with a three-prompt system (situation awareness, requirement check, response generation).
+- Process messages intelligently with multi-agent routing.
+- Ensure data validation, consistency, and security.
+
+---
+
+## 2. Overall Architecture
+
+The ICMP POC employs a microservices-oriented architecture for scalability and maintainability.
+
+### 2.1 Key Components
+- **API Gateway**:  
+  - Technology: Flask (Python)  
+  - Responsibilities: Single entry point, authentication (Bearer API key), request routing.  
+- **Business/Product/Stage Management Service**:  
+  - Technology: Python  
+  - Responsibilities: CRUD for core entities, data validation, PostgreSQL interaction.  
+- **NLP Pipeline**:  
+  - Technology: Python with OpenAI API  
+  - Responsibilities: Intent recognition, response generation, agent routing.  
+- **Data Layer**:  
+  - PostgreSQL: Structured data (businesses, products, stages, agents, users, orders, conversations).  
+  - MongoDB (Future): Conversation logs.
+
+### 2.2 Technology Stack
+- Python, Flask, PostgreSQL, OpenAI API.
+
+### 2.3 Scalability & Security
+- **Scalability**: Microservices scale independently with load balancing (e.g., AWS ELB).  
+- **Security**: AES-256-GCM encryption at rest (keys via AWS KMS, rotated quarterly), TLS 1.3 in transit, AWS WAF for attack protection, Cloudflare CDN for DDoS mitigation.
+
+---
+
+## 3. Data Model
+
+Below are the PostgreSQL table schemas and corresponding JSON schemas for key entities.
+
+### 3.1 Businesses
+```sql
+CREATE TABLE businesses (
+    business_id UUID PRIMARY KEY NOT NULL,
+    api_key TEXT NOT NULL, -- Encrypted
+    owner_id UUID NOT NULL REFERENCES users(user_id),
+    business_name TEXT NOT NULL UNIQUE,
+    business_description TEXT,
+    address TEXT,
+    phone_number TEXT,
+    website TEXT,
+    agent_list JSONB, -- Array of agent UUIDs
+    product_list JSONB, -- Array of product UUIDs
+    service_list JSONB, -- Array of service names
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+```
+```json
+{
+  "type": "object",
+  "properties": {
+    "business_id": {"type": "string", "format": "uuid"},
+    "api_key": {"type": "string"},
+    "owner_id": {"type": "string", "format": "uuid"},
+    "business_information": {
+      "type": "object",
+      "properties": {
+        "business_name": {"type": "string"},
+        "business_description": {"type": "string"},
+        "address": {"type": "string"},
+        "phone_number": {"type": "string"},
+        "website": {"type": "string", "format": "uri"}
+      },
+      "required": ["business_name"]
+    },
+    "agent_list": {"type": "array", "items": {"type": "string", "format": "uuid"}},
+    "products": {"type": "array", "items": {"type": "string", "format": "uuid"}},
+    "services": {"type": "array", "items": {"type": "string"}},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "required": ["business_id", "api_key", "owner_id", "business_information"]
+}
+```
+
+### 3.2 Stages
+```sql
+CREATE TABLE stages (
+    stage_id UUID PRIMARY KEY NOT NULL,
+    business_id UUID NOT NULL REFERENCES businesses(business_id),
+    agent_id UUID REFERENCES agents(agent_id), -- Nullable
+    stage_name TEXT NOT NULL,
+    stage_description TEXT NOT NULL,
+    stage_type TEXT NOT NULL,
+    stage_selection JSONB NOT NULL,
+    data_extraction JSONB NOT NULL,
+    response_generation JSONB NOT NULL,
+    data_retrieval JSONB NOT NULL,
+    stage_selection_example_conversations TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+```
+```json
+{
+  "type": "object",
+  "properties": {
+    "business_id": {"type": "string", "format": "uuid"},
+    "agent_id": {"type": ["string", "null"], "format": "uuid"},
+    "stage_name": {"type": "string"},
+    "stage_description": {"type": "string"},
+    "stage_type": {"type": "string"},
+    "stage_selection": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "object",
+          "properties": {
+            "template_id": {"type": "string"},
+            "model_settings": {"type": "object"},
+            "input_variables": {"type": "array", "items": {"type": "string"}}
+          },
+          "required": ["template_id"]
+        },
+        "context_data_fields": {"type": "object"}
+      },
+      "required": ["prompt", "context_data_fields"]
+    },
+    "data_extraction": {/* Detailed structure as per previous schema */},
+    "response_generation": {/* Detailed structure as per previous schema */},
+    "data_retrieval": {
+      "type": "object",
+      "properties": {
+        "method": {"type": "string", "enum": ["prompt_user", "database_query", "api_call", "none"]},
+        "config": {"type": "object"}
+      },
+      "required": ["method", "config"]
+    },
+    "stage_selection_example_conversations": {"type": "string"}
+  },
+  "required": ["business_id", "stage_name", "stage_description", "stage_type", "stage_selection", "data_extraction", "response_generation", "data_retrieval", "stage_selection_example_conversations"]
+}
+```
+
+### 3.3 Conversations (New)
+```sql
+CREATE TABLE conversations (
+    conversation_id UUID PRIMARY KEY NOT NULL,
+    business_id UUID NOT NULL REFERENCES businesses(business_id),
+    user_id UUID NOT NULL REFERENCES users(user_id),
+    agent_id UUID REFERENCES agents(agent_id),
+    stage_id UUID REFERENCES stages(stage_id),
+    session_id TEXT NOT NULL,
+    start_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    last_updated TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    status TEXT NOT NULL DEFAULT 'active'
+);
+CREATE INDEX idx_conversations_business_id ON conversations (business_id);
+```
+```json
+{
+  "type": "object",
+  "properties": {
+    "conversation_id": {"type": "string", "format": "uuid"},
+    "business_id": {"type": "string", "format": "uuid"},
+    "user_id": {"type": "string", "format": "uuid"},
+    "agent_id": {"type": ["string", "null"], "format": "uuid"},
+    "stage_id": {"type": ["string", "null"], "format": "uuid"},
+    "session_id": {"type": "string"},
+    "start_time": {"type": "string", "format": "date-time"},
+    "last_updated": {"type": "string", "format": "date-time"},
+    "status": {"type": "string", "enum": ["active", "paused", "completed"]}
+  },
+  "required": ["conversation_id", "business_id", "user_id", "session_id", "start_time"]
+}
+```
+
+(*Other tables like `users`, `products`, `orders`, `events`, etc., follow similar patterns as previously documented.*)
+
+---
+
+## 4. API Reference
+
+### 4.1 Authentication
+- Bearer token (API key) in `Authorization` header: `Bearer YOUR_API_KEY`.
+
+### 4.2 Key Endpoints
+- **POST /api/v1/events**: Submit analytics event (no auth, with validation).  
+  - Request: `{"event_id": "uuid", "user_id": "uuid", ...}`  
+  - Response: `201 Created`  
+  - Error Example:  
+    ```json
+    {
+      "error_code": "INVALID_REQUEST",
+      "message": "Invalid event_timestamp format",
+      "details": "Expected ISO 8601, got '2023-13-01'",
+      "remediation": "Use 'YYYY-MM-DDTHH:MM:SSZ' format"
+    }
+    ```
+- **GET /api/v1/events**: Retrieve events with filtering/pagination.  
+  - Query: `?business_id=uuid&limit=100&offset=0`  
+  - Response: Array of event objects.
+
+(*Full API details for CRUD on businesses, stages, agents, etc., as per previous docs.*)
+
+---
+
+## 5. Rate Limiting & DoS Protection
+- **Limits**:  
+  - `/api/v1/auth/login`: 10 req/min per IP  
+  - `/api/v1/messages`: 30 req/min per API key  
+- **Algorithm**: Token Bucket (10 tokens initial, 1 token/min refill).  
+- **Mitigation**: WAF, CDN, traffic filtering, anomaly detection.
+
+---
+
+## 6. Error Handling & Logging
+- **Structured Logging**: JSON format with timestamp, level, source, IDs, error code.  
+- **Centralized**: Sent to ELK Stack via HTTP.  
+- **Exception Handling**: Caught at all levels, logged with stack traces, user-friendly messages returned.
+
+---
+
+## 7. Implementation Notes
+- **Validation**: Use `jsonschema` for JSON validation.  
+- **Scalability**: Deploy with AWS ECS for microservices, PostgreSQL RDS for data.  
+- **Security**: Rotate API keys quarterly, enforce RBAC.
+
+---
+
+This document integrates all prior discussions, schemas, and gap fixes into a unified guide. It's ready for an AI to implement the ICMP POC, with enough detail to cover architecture, data, APIs, and operational concerns. Let me know if you need deeper elaboration!
+
+
+app.py content:
+{
+from flask import Flask, request, jsonify
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import psycopg2
+import datetime
+import openai
+import logging
+from pythonjsonlogger import jsonlogger
+import os
+from dotenv import load_dotenv
+import uuid
+from jsonschema import validate, ValidationError
+
+# Load environment variables
+load_dotenv()
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+log_handler = logging.StreamHandler()
+log_handler.setFormatter(jsonlogger.JsonFormatter())
+log.addHandler(log_handler)
+
+# Environment Variables
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+ICMP_API_KEY = os.environ.get("ICMP_API_KEY")
+DB_NAME = os.environ.get("DB_NAME")
+DB_USER = os.environ.get("DB_USER")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
+DB_HOST = os.environ.get("DB_HOST")
+DB_PORT = os.environ.get("DB_PORT")
+
+if not all([OPENAI_API_KEY, ICMP_API_KEY, DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT]):
+    raise ValueError("Missing required environment variables")
+
+openai.api_key = OPENAI_API_KEY
+app = Flask(__name__)
+
+# Rate Limiting
+limiter = Limiter(get_remote_address, app=app, default_limits=["100 per day"])
+
+# JSON Schemas
+message_schema = {
+    "type": "object",
+    "properties": {
+        "business_id": {"type": "string", "format": "uuid"},
+        "user_id": {"type": "string", "format": "uuid"},
+        "message": {"type": "string"}
+    },
+    "required": ["business_id", "user_id", "message"]
+}
+
+business_schema = {
+    "type": "object",
+    "properties": {
+        "owner_id": {"type": "string", "format": "uuid"},
+        "business_name": {"type": "string"},
+        "business_description": {"type": "string"},
+        "address": {"type": "string"},
+        "phone_number": {"type": "string"},
+        "website": {"type": "string", "format": "uri"}
+    },
+    "required": ["owner_id", "business_name"]
+}
+
+stage_schema = {
+    "type": "object",
+    "properties": {
+        "business_id": {"type": "string", "format": "uuid"},
+        "stage_name": {"type": "string"},
+        "stage_description": {"type": "string"},
+        "stage_type": {"type": "string"},
+        "stage_selection_prompt": {"type": "string"},
+        "data_extraction_prompt": {"type": "string"},
+        "response_generation_prompt": {"type": "string"}
+    },
+    "required": ["business_id", "stage_name", "stage_description", "stage_type"]
+}
+
+# Database Helpers
+def get_db_connection():
+    try:
+        conn = psycopg2.connect(
+            dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT
+        )
+        return conn
+    except psycopg2.Error as e:
+        log.error({"message": "Error connecting to database", "error": str(e)}, exc_info=True)
+        raise
+
+def execute_query(conn, query, params=None):
+    try:
+        c = conn.cursor()
+        c.execute(query, params)
+        return c
+    except psycopg2.Error as e:
+        log.error({"message": f"Database error executing query: {query}", "error": str(e)}, exc_info=True)
+        raise
+
+def setup_database():
+    conn = None
+    try:
+        conn = get_db_connection()
+        # Drop tables with CASCADE
+        execute_query(conn, 'DROP TABLE IF EXISTS conversations CASCADE;')
+        execute_query(conn, 'DROP TABLE IF EXISTS stages CASCADE;')
+        execute_query(conn, 'DROP TABLE IF EXISTS businesses CASCADE;')
+
+        # Businesses table
+        execute_query(conn, '''CREATE TABLE IF NOT EXISTS businesses (
+            business_id UUID PRIMARY KEY NOT NULL,
+            api_key TEXT NOT NULL,
+            owner_id UUID NOT NULL,
+            business_name TEXT NOT NULL UNIQUE,
+            business_description TEXT,
+            address TEXT,
+            phone_number TEXT,
+            website TEXT,
+            agent_list JSONB DEFAULT '[]',
+            product_list JSONB DEFAULT '[]',
+            service_list JSONB DEFAULT '[]',
+            created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        );''')
+
+        # Stages table (expanded for three-prompt system)
+        execute_query(conn, '''CREATE TABLE IF NOT EXISTS stages (
+            stage_id UUID PRIMARY KEY NOT NULL,
+            business_id UUID NOT NULL,
+            agent_id UUID,
+            stage_name TEXT NOT NULL,
+            stage_description TEXT NOT NULL,
+            stage_type TEXT NOT NULL,
+            stage_selection_prompt TEXT NOT NULL DEFAULT 'Determine the intent of this message:',
+            data_extraction_prompt TEXT NOT NULL DEFAULT 'Extract key information from this message:',
+            response_generation_prompt TEXT NOT NULL DEFAULT 'Generate a response based on this message:',
+            created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        );''')
+
+        # Conversations table
+        execute_query(conn, '''CREATE TABLE IF NOT EXISTS conversations (
+            conversation_id UUID PRIMARY KEY NOT NULL,
+            business_id UUID NOT NULL,
+            user_id UUID NOT NULL,
+            agent_id UUID,
+            stage_id UUID,
+            session_id TEXT NOT NULL,
+            start_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+            last_updated TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+            status TEXT NOT NULL DEFAULT 'active',
+            CONSTRAINT fk_business FOREIGN KEY (business_id) REFERENCES businesses(business_id),
+            CONSTRAINT fk_stage FOREIGN KEY (stage_id) REFERENCES stages(stage_id)
+        );''')
+        execute_query(conn, 'CREATE INDEX IF NOT EXISTS idx_conversations_business_id ON conversations (business_id);')
+
+        # Messages table
+        execute_query(conn, '''CREATE TABLE IF NOT EXISTS messages (
+            message_id UUID PRIMARY KEY NOT NULL,
+            conversation_id UUID NOT NULL REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+            message_content TEXT NOT NULL,
+            sender_type TEXT NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+        );''')
+        execute_query(conn, 'CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages (conversation_id);')
+        execute_query(conn, 'CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages (created_at);')
+
+        conn.commit()
+        log.info({"message": "Database setup completed successfully"})
+    except psycopg2.Error as e:
+        log.error({"message": "Database error during setup", "error": str(e)}, exc_info=True)
+        raise
+    finally:
+        if conn:
+            conn.close()
+
+# Utility
+def is_valid_uuid(uuid_str):
+    try:
+        uuid.UUID(uuid_str)
+        return True
+    except ValueError:
+        return False
+
+# OpenAI Helper with Three-Prompt System
+def get_openai_response(message, stage):
+    try:
+        # 1. Situation Awareness (Stage Selection)
+        selection_prompt = stage["stage_selection_prompt"]
+        selection_response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "system", "content": selection_prompt}, {"role": "user", "content": message}]
+        ).choices[0].message.content
+
+        # 2. Requirement Check (Data Extraction)
+        extraction_prompt = stage["data_extraction_prompt"]
+        extraction_response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "system", "content": extraction_prompt}, {"role": "user", "content": message}]
+        ).choices[0].message.content
+
+        # 3. Response Generation
+        generation_prompt = f"{stage['response_generation_prompt']} Context: {selection_response}. Extracted: {extraction_response}"
+        final_response = openai.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "system", "content": generation_prompt}, {"role": "user", "content": message}]
+        ).choices[0].message.content
+
+        return final_response
+    except Exception as e:
+        log.error({"message": "OpenAI API error", "error": str(e)}, exc_info=True)
+        return "Error generating response"
+
+# Authentication Middleware
+def require_auth():
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith("Bearer ") or auth_header[7:] != ICMP_API_KEY:
+        log.warning({"message": "Unauthorized access attempt"})
+        return jsonify({"error_code": "UNAUTHORIZED", "message": "Unauthorized"}), 401
+    return None
+
+# Endpoints
+@app.route('/businesses', methods=['POST'])
+@limiter.limit("10 per minute")
+def create_business():
+    auth_error = require_auth()
+    if auth_error:
+        return auth_error
+
+    try:
+        data = request.get_json() or {}
+        validate(data, business_schema)
+        business_id = str(uuid.uuid4())
+        conn = get_db_connection()
+        query = """
+            INSERT INTO businesses (business_id, api_key, owner_id, business_name, business_description, address, phone_number, website)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+        """
+        execute_query(conn, query, (
+            business_id, ICMP_API_KEY, data["owner_id"], data["business_name"],
+            data.get("business_description", ""), data.get("address", ""),
+            data.get("phone_number", ""), data.get("website", "")
+        ))
+        conn.commit()
+        conn.close()
+        log.info({"message": "Business created", "business_id": business_id})
+        return jsonify({"business_id": business_id}), 201
+    except ValidationError as e:
+        return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid request format", "details": str(e)}), 400
+    except Exception as e:
+        log.error({"message": "Error in create_business", "error": str(e)}, exc_info=True)
+        return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+
+@app.route('/stages', methods=['POST'])
+@limiter.limit("10 per minute")
+def create_stage():
+    auth_error = require_auth()
+    if auth_error:
+        return auth_error
+
+    try:
+        data = request.get_json() or {}
+        validate(data, stage_schema)
+        stage_id = str(uuid.uuid4())
+        conn = get_db_connection()
+        query = """
+            INSERT INTO stages (stage_id, business_id, stage_name, stage_description, stage_type, stage_selection_prompt, data_extraction_prompt, response_generation_prompt)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+        """
+        execute_query(conn, query, (
+            stage_id, data["business_id"], data["stage_name"], data["stage_description"], data["stage_type"],
+            data.get("stage_selection_prompt", "Determine the intent of this message:"),
+            data.get("data_extraction_prompt", "Extract key information from this message:"),
+            data.get("response_generation_prompt", "Generate a response based on this message:")
+        ))
+        conn.commit()
+        conn.close()
+        log.info({"message": "Stage created", "stage_id": stage_id})
+        return jsonify({"stage_id": stage_id}), 201
+    except ValidationError as e:
+        return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid request format", "details": str(e)}), 400
+    except Exception as e:
+        log.error({"message": "Error in create_stage", "error": str(e)}, exc_info=True)
+        return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+
+@app.route('/message', methods=['POST'])
+@limiter.limit("30 per minute")
+def handle_message():
+    auth_error = require_auth()
+    if auth_error:
+        return auth_error
+
+    try:
+        data = request.get_json() or {}
+        validate(data, message_schema)
+        if not is_valid_uuid(data["business_id"]) or not is_valid_uuid(data["user_id"]):
+            return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid UUID format"}), 400
+
+        # Fetch a default stage (for simplicity, use the first stage for this business)
+        conn = get_db_connection()
+        stage_query = "SELECT stage_selection_prompt, data_extraction_prompt, response_generation_prompt FROM stages WHERE business_id = %s LIMIT 1;"
+        stage_cursor = execute_query(conn, stage_query, (data["business_id"],))
+        stage_row = stage_cursor.fetchone()
+        if not stage_row:
+            conn.close()
+            return jsonify({"error_code": "NOT_FOUND", "message": "No stages found for this business"}), 404
+        stage = {
+            "stage_selection_prompt": stage_row[0],
+            "data_extraction_prompt": stage_row[1],
+            "response_generation_prompt": stage_row[2]
+        }
+
+        # Generate response using three-prompt system
+        response = get_openai_response(data["message"], stage)
+
+        # Save conversation
+        conversation_id = str(uuid.uuid4())
+        session_id = str(uuid.uuid4())
+        query = """
+            INSERT INTO conversations (conversation_id, business_id, user_id, session_id)
+            VALUES (%s, %s, %s, %s);
+        """
+        execute_query(conn, query, (conversation_id, data["business_id"], data["user_id"], session_id))
+        conn.commit()
+        conn.close()
+        log.info({"message": "Conversation saved", "conversation_id": conversation_id})
+        return jsonify({"response": response, "conversation_id": conversation_id}), 200
+    except ValidationError as e:
+        return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid request format", "details": str(e)}), 400
+    except Exception as e:
+        log.error({"message": "Error in handle_message", "error": str(e)}, exc_info=True)
+        return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+
+@app.route('/conversations/<user_id>', methods=['GET'])
+@limiter.limit("10 per minute")
+def get_conversations(user_id):
+    auth_error = require_auth()
+    if auth_error:
+        return auth_error
+
+    if not is_valid_uuid(user_id):
+        return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid user_id format"}), 400
+
+    try:
+        conn = get_db_connection()
+        query = "SELECT * FROM conversations WHERE user_id = %s;"
+        c = execute_query(conn, query, (user_id,))
+        rows = c.fetchall()
+        conversations = [
+            {
+                "conversation_id": str(row[0]), "business_id": str(row[1]), "user_id": str(row[2]),
+                "agent_id": str(row[3]) if row[3] else None, "stage_id": str(row[4]) if row[4] else None,
+                "session_id": row[5], "start_time": str(row[6]), "last_updated": str(row[7]), "status": row[8]
+            } for row in rows
+        ]
+        conn.close()
+        return jsonify(conversations), 200
+    except Exception as e:
+        log.error({"message": "Error in get_conversations", "error": str(e)}, exc_info=True)
+        return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+
+@app.route('/')
+def hello():
+    return "Welcome to ICMP!"
+
+if __name__ == "__main__":
+    setup_database()
+    app.run(debug=True, host="0.0.0.0", port=5000)
+}
+
+================================================================================
+File: API_SPECIFICATION.md
+Path: .\backend\documentation\API_SPECIFICATION.md
+Size: 6397
+Modified: 2025-04-02T12:52:16.986566
+Created: 2025-04-02T12:52:14.166578
+Hash: 1ec2d24b2e0f1ad3f7bdaf08c4f4059fbda85e8da9ea48e67d88f5071848bbeb
+Lines: 143
+================================================================================
+# API Specification
+
+**Base URL:** `/` (relative to backend server, e.g., `http://localhost:5000`)
+
+## Authentication
+
+Two primary methods are used:
+
+1.  **Master API Key (`ICMP_API_KEY`):**
+    *   Required for administrative or server-to-server tasks.
+    *   Passed via the `Authorization` header: `Authorization: Bearer <ICMP_API_KEY>`.
+    *   Applies to routes decorated with `@require_api_key`.
+2.  **Business API Key (`businessApiKey`):**
+    *   Required for operations specific to a business.
+    *   Passed automatically via the `businessApiKey` `HttpOnly` cookie after successful configuration via `/api/save-config`.
+    *   Can potentially be passed via `Authorization: Bearer <businessApiKey>` for direct API access (needs confirmation based on `require_business_api_key` decorator logic).
+    *   Applies to routes decorated with `@require_business_api_key`.
+
+## Endpoints
+
+*(Note: This is a preliminary list based on current files. Needs verification and expansion.)*
+
+### Configuration & Health
+
+*   **`GET /`**
+    *   Description: Welcome message.
+    *   Auth: None.
+    *   Response (200 OK): `text/plain`
+*   **`POST /api/save-config`**
+    *   Description: Validates user, business, and business key; sets `businessApiKey` cookie.
+    *   Auth: None (entry point for setting cookie).
+    *   Request Body: `application/json` (Schema: See notes below)
+        ```json
+        {
+          "userId": "uuid",
+          "businessId": "uuid",
+          "businessApiKey": "string"
+        }
+        ```
+    *   Response (200 OK): `application/json`
+        ```json
+        {"success": true}
+        ```
+    *   Response (400 Bad Request): `{"success": false, "error": "Missing parameters | Invalid parameter types"}`
+    *   Response (401 Unauthorized): `{"success": false, "error": "Invalid credentials: ..."}`
+*   **`POST /validate_config`**
+    *   Description: Validates a full set of config details including the master key. (Purpose/necessity might need review after refactor).
+    *   Auth: `@require_api_key` (Master Key via Bearer).
+    *   Request Body: `application/json`
+        ```json
+        {
+          "userId": "uuid",
+          "businessId": "uuid",
+          "apiKey": "string", // Master ICMP_API_KEY
+          "businessApiKey": "string"
+        }
+        ```
+    *   Response (200 OK): `{"isValid": true}`
+    *   Response (400/401/500): See `app.py` for details.
+*   **`GET /health`**
+    *   Description: Health check endpoint.
+    *   Auth: None.
+    *   Response (200 OK): `{"status": "ok"}`
+*   **`GET /ping`**
+    *   Description: Simple ping endpoint.
+    *   Auth: None.
+    *   Response (200 OK): `{"message": "pong"}`
+
+### Business Management
+
+*   **`POST /businesses`**
+    *   Description: Creates a new business.
+    *   Auth: `@require_api_key` (Master Key via Bearer).
+    *   Request Body: `application/json` (Schema: `backend/schemas/business_create.json` - Needs update? Compare with `businesses.py` route schema)
+    *   Response (201 Created): `{"message": "Business created", "business_id": "uuid", "api_key": "string"}`
+    *   Response (400/500): Error details.
+*   **`GET /businesses/{business_id}`**
+    *   Description: Retrieves details for a specific business.
+    *   Auth: `@require_business_api_key` (Business Key via Cookie/Bearer).
+    *   Path Params: `business_id` (UUID).
+    *   Response (200 OK): `application/json` (Business details)
+    *   Response (400/401/404/500): Error details.
+
+### Stage Management
+
+*   **`POST /stages`**
+    *   Description: Creates a new stage for a business, including template configurations.
+    *   Auth: `@require_business_api_key` (Business Key via Cookie/Bearer).
+    *   Request Body: `application/json` (Schema: `backend/schemas/stages.json` - Updated).
+    *   Response (201 Created): `{"stage_id": "uuid"}`
+    *   Response (400/401/500): Error details.
+*   **`GET /stages`** (Example - Needs Implementation)
+    *   Description: Retrieves stages, likely filtered by `business_id`.
+    *   Auth: `@require_business_api_key`.
+    *   Query Params: `?business_id=uuid`.
+    *   Response (200 OK): Array of stage objects.
+
+### Default Template Management
+
+*   **`POST /templates`** (or `/defaultTemplates` - Check `template_management.py`)
+    *   Description: Creates a global default template.
+    *   Auth: `@require_api_key` (Master Key via Bearer).
+    *   Request Body: `application/json` (Schema defined inline in `template_management.py`).
+    *   Response (201 Created): `{"template_id": "uuid"}`
+    *   Response (400/500): Error details.
+*   **`GET /templates`** (or `/defaultTemplates`)
+    *   Description: Retrieves all global default templates.
+    *   Auth: `@require_api_key` (Master Key via Bearer).
+    *   Response (200 OK): Array of template objects.
+
+### Message Handling
+
+*   **`POST /message`**
+    *   Description: Handles an incoming user message for a business.
+    *   Auth: `@require_business_api_key` (Business Key via Cookie/Bearer).
+    *   Request Body: `application/json` (Schema: `backend/schemas/message.json`).
+    *   Response (200 OK): `{"response": "AI generated response", "conversation_id": "uuid"}`
+    *   Response (400/401/404/500): Error details.
+
+### Conversation Management
+
+*   **`GET /conversations/{user_id}`**
+    *   Description: Retrieves conversations for a specific user.
+    *   Auth: `@require_business_api_key` (Business Key via Cookie/Bearer). **Note:** Additional authorization needed to link user_id to the authenticated business.
+    *   Path Params: `user_id` (UUID).
+    *   Response (200 OK): Array of conversation objects.
+    *   Response (400/401/403/500): Error details.
+
+### User Management
+
+*   **`POST /users`**
+    *   Description: Creates a new user.
+    *   Auth: `@require_api_key` (Master Key via Bearer) - Verify this intended auth level.
+    *   Request Body: `application/json` (Schema: `backend/schemas/users.json`).
+    *   Response (201 Created): `{"user_id": "uuid"}`
+    *   Response (400/500): Error details.
+*   **`GET /users`**
+    *   Description: Retrieves all users.
+    *   Auth: `@require_api_key` (Master Key via Bearer).
+    *   Response (200 OK): Array of user objects.
+    *   Response (500): Error details.
+
+*(Add other endpoints as needed)* 
+
+================================================================================
+File: ARCHITECTURE.md
+Path: .\backend\documentation\ARCHITECTURE.md
+Size: 3560
+Modified: 2025-04-02T12:53:21.302195
+Created: 2025-04-02T12:53:18.936483
+Hash: f696a1655c93ce48345174e614643e261c87264d04ad204f7830cc34b42fe7aa
+Lines: 63
+================================================================================
+# Architecture Overview
+
+## System Diagram
+
+```mermaid
+graph LR
+    User --> Browser[React Frontend];
+    Browser --> Backend[Flask Backend API];
+    Backend -->|Auth Checks| DB[(PostgreSQL DB)];
+    Backend -->|CRUD Ops| DB;
+    Backend -->|Prompt Generation| OpenAI[OpenAI API];
+    Backend -->|Stage Config| DB;
+    OpenAI --> Backend;
+```
+*(This is a simplified view)*
+
+## Key Components
+
+1.  **React Frontend (`/front-end`)**
+    *   Technology: React, Material UI (MUI), react-router-dom.
+    *   Responsibilities: User interface for configuration, business/stage management (future), displaying conversations.
+    *   Authentication: Sends credentials (`userId`, `businessId`, `businessApiKey`) to `/api/save-config` to obtain the `businessApiKey` cookie. Relies on this cookie for subsequent requests.
+2.  **Flask Backend API (`/backend`)**
+    *   Technology: Flask, Python.
+    *   Responsibilities: Handles all API requests, performs authentication/authorization, interacts with the database, orchestrates calls to OpenAI API.
+    *   Key Modules:
+        *   `app.py`: Main application entry point, registers blueprints, handles config saving.
+        *   `auth.py`: Contains `@require_api_key` and `@require_business_api_key` decorators.
+        *   `db.py`: Manages PostgreSQL connection pool.
+        *   `config.py`: Loads configuration from environment variables.
+        *   `routes/`: Contains blueprints defining API endpoints for different resources (businesses, stages, messages, etc.).
+        *   `schemas/`: Contains JSON schemas used for request validation.
+        *   `openai_helper.py`: (Assumed) Contains functions to interact with the OpenAI API (`call_openai`).
+3.  **PostgreSQL Database**
+    *   Technology: PostgreSQL.
+    *   Responsibilities: Stores structured data for businesses, users, stages (including template configs), conversations, default templates.
+    *   Schema: Defined in `documentation/DATABASE_SCHEMA.md`.
+4.  **OpenAI API**
+    *   Technology: External Service.
+    *   Responsibilities: Provides LLM capabilities for the three-prompt system (stage selection, data extraction, response generation).
+    *   Interaction: Called via `openai_helper.call_openai` (or similar) from the backend.
+
+## Data Flow Example (Message Handling)
+
+1.  User sends message via Frontend.
+2.  Frontend makes `POST /message` request (includes `businessApiKey` cookie).
+3.  Backend API receives request.
+4.  `@require_business_api_key` decorator in `auth.py` validates the cookie against the `business_id` in the request body and the `businesses` table.
+5.  `message_handling.py` route handler is invoked.
+6.  Handler fetches relevant stage configuration (e.g., `stage_selection`, `data_extraction`) from the `stages` table in DB (using `business_id`).
+7.  Handler potentially fetches conversation context/history from DB.
+8.  Handler formats prompts using fetched stage config and context.
+9.  Handler calls OpenAI API via `openai_helper.py` for selection, extraction, response generation steps.
+10. Handler logs conversation details to DB.
+11. Handler returns final response to Frontend.
+12. Frontend displays response to User.
+
+## Deployment (Planned/TBD)
+
+*   [Describe planned deployment strategy - e.g., Docker containers, Cloud Provider (AWS, GCP, Azure), Serverless, etc.]
+*   [Mention CI/CD pipeline if planned]
+
+*(This overview can be expanded with details on specific libraries, scalability considerations, and security measures as the project evolves)* 
+
+================================================================================
+File: auth_template_refactor_summary.md
+Path: .\backend\documentation\auth_template_refactor_summary.md
+Size: 7330
+Modified: 2025-04-10T14:48:22.473918
+Created: 2025-04-02T12:47:32.401563
+Hash: 0621dae8d6985c20b92e0861862566af3307be99f432e3a5037e4452adc5c992
+Lines: 97
+================================================================================
+# ICMP Authentication & Template Refactor Summary (March 2025)
+
+This document summarizes the key changes made to the authentication flow and template handling within the ICMP backend and frontend.
+
+## 1. Authentication Flow Changes
+
+The authentication mechanism was refactored to improve security and clarity, moving away from using the global master `ICMP_API_KEY` for regular frontend operations.
+
+**Previous Flow:**
+- Frontend required `ICMP_API_KEY`, `userId`, `businessId`, `businessApiKey`.
+- `/api/save-config` validated all four, set cookies for both `icmpApiKey` and `businessApiKey`.
+- Backend routes used `@require_api_key` which primarily checked the `icmpApiKey` cookie or `Authorization: Bearer <ICMP_API_KEY>` header.
+
+**Revised Flow:**
+1.  **`ICMP_API_KEY` (Master Key):**
+    *   Lives **only** on the backend server (loaded from environment variables via `backend/config.py`).
+    *   **NOT** used by the standard frontend flow.
+    *   Protected backend routes (using the original `@require_api_key` decorator in `backend/auth.py`) require this key, typically passed via `Authorization: Bearer <ICMP_API_KEY>` header for administrative or server-to-server tasks (e.g., creating templates via `backend/routes/template_management.py`, potentially initial business creation via `POST /businesses`).
+2.  **`businessApiKey` (Per-Business Key):**
+    *   Generated by the backend (`backend/routes/businesses.py`) during business creation (`POST /businesses`) and returned in the response.
+    *   User enters this key, `userId`, and `businessId` into the frontend Configuration (`front-end/src/components/Configuration.js`).
+    *   Frontend calls `/api/save-config` (in `backend/app.py`) sending only `userId`, `businessId`, `businessApiKey`.
+    *   Backend validates these three against the database (`users` and `businesses` tables).
+    *   If valid, backend sets a secure, `HttpOnly` cookie named `businessApiKey`.
+3.  **Ongoing Business Operations:**
+    *   Browser automatically sends the `businessApiKey` cookie with subsequent requests.
+    *   Backend routes operating on specific business data (e.g., stages, messages) are protected by the **new** `@require_business_api_key` decorator (`backend/auth.py`).
+    *   This decorator extracts `business_id` (from URL param or request body), reads the `businessApiKey` from the cookie, and verifies against the `businesses` table that the key is valid *for that specific business_id*.
+
+## 2. Template Handling Changes
+
+A distinction was made between regular templates used by stages and default templates used as starting points.
+
+1.  **Template Types and Storage:**
+    *   All templates are stored in the `templates` table (replacing the deprecated `prompt_templates` table).
+    *   Templates are distinguished by their `template_type` field:
+        * Regular types (e.g., "stage_selection", "data_extraction", "response_generation") are used directly by stages.
+        * Default types (e.g., "default_stage_selection", "default_data_extraction", "default_response_generation") serve as starting points for creating or updating templates.
+    *   Both regular and default templates are managed via routes in `backend/routes/template_management.py`.
+    *   Template management routes are protected by the global `@require_api_key` decorator.
+
+2.  **Stage-Template Relationship:**
+    *   Stages no longer contain embedded template text or configuration.
+    *   Instead, the `stages` table has foreign key references to templates:
+        * `stage_selection_template_id`
+        * `data_extraction_template_id`
+        * `response_generation_template_id`
+    *   These IDs link to templates in the `templates` table with corresponding regular types.
+    *   The stages can be created with empty templates initially, and the templates can be populated later by:
+        * Manually entering content
+        * Copying content from default templates
+        * Modifying existing templates
+
+3.  **Template Usage in Message Handling:**
+    *   The message handling logic (`backend/routes/message_handling.py`) fetches template IDs from the relevant stage.
+    *   It then queries the `templates` table to retrieve the actual template content.
+    *   The templates are rendered with context data and sent to OpenAI for processing.
+
+## 3. Key Files Modified
+
+*   `backend/routes/businesses.py`:
+    *   Added `businessApiKey` generation and return value to `create_business`.
+    *   Applied `@require_business_api_key` to `get_business`.
+*   `front-end/src/components/Configuration.js`:
+    *   Removed `ICMP API Key` input field and related state/logic.
+    *   Updated `handleSave` fetch call to `/api/save-config` (removed `Authorization` header and `apiKey` from body).
+*   `backend/app.py`:
+    *   Modified `/api/save-config` to remove validation and cookie setting for `icmpApiKey`. Only validates `userId`, `businessId`, `businessApiKey` and sets `businessApiKey` cookie.
+*   `backend/auth.py`:
+    *   Added new `@require_business_api_key` decorator for business-level authentication.
+*   `backend/routes/stages.py`:
+    *   Applied `@require_business_api_key` to `create_stage`.
+    *   Modified `create_stage` to accept template ID references instead of embedded configurations.
+*   `backend/schemas/stages.json`:
+    *   Replaced JSONB configuration fields with template ID references.
+    *   Updated `required` fields to include template ID fields.
+*   `backend/routes/template_management.py`:
+    *   Updated to manage both regular and default templates in the `templates` table.
+    *   Kept `@require_api_key` decorator.
+*   `backend/routes/message_handling.py`:
+    *   Applied `@require_business_api_key` to `/message` route.
+    *   Updated logic to fetch template IDs from stages and then retrieve templates from the `templates` table.
+*   `backend/routes/conversations.py`:
+    *   Applied `@require_business_api_key` to `get_conversations`. Added comment about needed authorization enhancement.
+
+## 4. Outstanding Items / Next Steps
+
+*   **Database Schema:** Ensure `stages` table has correct template ID foreign key columns (`stage_selection_template_id`, `data_extraction_template_id`, `response_generation_template_id`) and the `templates` table has the necessary fields, including `template_type`.
+*   **User Authentication:** Implement a proper user login system (e.g., email/password, sessions/JWT).
+*   **Authorization:** Implement finer-grained checks (beyond business key authentication) to ensure the logged-in user has permission to access specific resources (e.g., user X can only get conversations for businesses they belong to).
+*   **Stage Selection Logic:** Implement the actual logic in `message_handling.py` to determine the correct stage based on conversation history/intent.
+*   **Template Management UI:** Develop frontend components for:
+    *   Creating and editing templates
+    *   Applying default templates to regular templates
+    *   Viewing and selecting templates by type
+*   **Testing:** Update frontend tests (e.g., `Configuration.test.js`) and add backend tests for the new auth and template logic.
+*   **Cookie Security:** Ensure `secure=True` is set for the `businessApiKey` cookie in production (HTTPS). 
+
+================================================================================
+File: CORE_LOGIC_EXPLAINED.md
+Path: .\backend\documentation\CORE_LOGIC_EXPLAINED.md
+Size: 5692
+Modified: 2025-04-04T23:26:00.570839
+Created: 2025-04-02T12:53:02.408111
+Hash: 27d84d15363e2be744b3955921614fdbfbe30ce8b5a57dcc5ed029224ada5d84
+Lines: 88
+================================================================================
+# Core Logic Explained
+
+This document details some of the more complex or critical logic within the ICMP application.
+
+## Three-Prompt System Implementation (`backend/routes/message_handling.py`)
+
+The core message processing follows a three-prompt approach using OpenAI's API.
+
+**Current Flow:**
+
+1.  **Identify Stage and Templates:**
+    *   The system retrieves the stage associated with the incoming message's `business_id`.
+    *   From the stage, it extracts the template IDs (`stage_selection_template_id`, `data_extraction_template_id`, `response_generation_template_id`).
+    *   These IDs reference templates in the `prompt_templates` table.
+    *   **Note:** Templates are distinguished by their `template_type` field, with regular types (e.g., "stage_selection") used by stages and default types (e.g., "default_stage_selection") used as starting points.
+
+2.  **Fetch Templates:**
+    *   The system queries the `prompt_templates` table to retrieve the templates referenced by the stage.
+    *   Each template contains a `template_text` field with placeholders (e.g., `{message}`, `{context}`) to be formatted.
+    *   Templates may also define required `variables` and `input_variables`.
+
+3.  **Fetch Context:**
+    *   **TODO:** Implement logic to fetch relevant conversation history or summary from the `conversations` table or another source.
+
+4.  **Stage Selection Prompt:**
+    *   The `template_text` from the selection template is retrieved.
+    *   Placeholders are formatted with the current user message and conversation context.
+    *   The formatted prompt is sent to `openai_helper.call_openai`.
+    *   **TODO:** Process the LLM response (`selection_response`) to determine the actual next stage required.
+
+5.  **Data Extraction Prompt:**
+    *   The `template_text` from the extraction template is retrieved.
+    *   Placeholders (e.g., `{message}`, `{context}`, `{stage}`) are formatted.
+    *   The formatted prompt is sent to `openai_helper.call_openai`.
+    *   **TODO:** Process the LLM response (`extraction_response`) to extract structured data (e.g., parse JSON, identify entities).
+
+6.  **Response Generation Prompt:**
+    *   The `template_text` from the generation template is retrieved.
+    *   Placeholders (e.g., `{message}`, `{context}`, `{stage}`, `{extracted_data}`) are formatted.
+    *   The formatted prompt is sent to `openai_helper.call_openai` to get the `final_response` for the user.
+
+**Template Creation and Management:**
+
+*   When creating a stage, empty templates are initially created or existing templates are referenced.
+*   Templates with types like "default_stage_selection" serve as starting points that can be copied to create new templates.
+*   The UI should provide options to:
+    *   Create new templates
+    *   Apply default templates to existing templates
+    *   Link templates to stages
+
+**Key Assumptions/Implementation Notes:**
+
+*   Relies on the `stages` table having the correct template ID columns.
+*   Assumes `openai_helper.call_openai` takes a prompt string and returns the LLM's text response.
+*   Stage selection, context fetching, and response processing logic are currently placeholders and need implementation.
+*   Templates in the `prompt_templates` table can be filtered by `template_type` to distinguish between regular and default templates.
+
+## Authentication Decorators (`backend/auth.py`)
+
+*   **`@require_api_key`:**
+    *   Validates the global `ICMP_API_KEY` (from server config).
+    *   Checks `Authorization: Bearer <key>` header first, then falls back to deprecated `icmpApiKey` cookie (fallback should likely be removed).
+    *   Use Case: Protecting administrative endpoints (e.g., template management).
+*   **`@require_business_api_key`:**
+    *   Validates a business-specific API key.
+    *   Extracts `business_id` from the route (`kwargs`) or request JSON/args.
+    *   Extracts the `businessApiKey` value from the `businessApiKey` cookie first, then falls back to `Authorization: Bearer <businessApiKey>` header.
+    *   Queries the `businesses` table to verify the extracted key matches the key stored for the extracted `business_id`.
+    *   Use Case: Protecting endpoints related to specific business data (stages, messages, etc.).
+
+## Stage Configuration (`backend/schemas/stages.json`, `backend/routes/stages.py`)
+
+*   Stages are created via `POST /stages`.
+*   The request body must conform to `backend/schemas/stages.json`.
+*   This schema expects template ID references (`stage_selection_template_id`, etc.) that point to templates in the `prompt_templates` table.
+*   The `create_stage` function in `routes/stages.py` creates the stage record with these template ID references.
+*   Templates referenced by stages should have appropriate regular types (e.g., "stage_selection", "data_extraction", "response_generation").
+
+## Template Management (`backend/schemas/prompt_templates.json`, `backend/routes/template_management.py`)
+
+*   Templates are created and managed via endpoints defined in `routes/template_management.py`.
+*   Templates can be of regular types (used directly by stages) or default types (used as starting points).
+*   Default templates (with types like "default_stage_selection") serve as starter templates that can be copied to create new templates.
+*   When creating or updating a stage, the associated templates can be either:
+    *   Empty templates initially, with content added later
+    *   Templates populated by copying content from default templates
+
+*(Add sections for other complex logic like Agent Routing, Analytics Processing, etc., as they are developed)* 
+
+================================================================================
+File: DATABASE_MIGRATION_GUIDE.md
+Path: .\backend\documentation\DATABASE_MIGRATION_GUIDE.md
+Size: 4134
+Modified: 2025-04-10T12:44:42.509654
+Created: 2025-04-10T12:44:38.669886
+Hash: 9057b74dc237173ed3a0c51dcbb83bbc85f4732d2bc3ccdf2b17ea2c06d2e776
+Lines: 127
+================================================================================
+# Database Migration Guide
+
+This guide provides instructions for running database migrations in the ICMP Events API system, including the template system migration.
+
+## Overview
+
+Database migrations are necessary when making structural changes to the database, such as:
+- Adding or removing tables
+- Changing column types
+- Renaming tables or columns
+- Moving data between tables
+
+## Migration Scripts
+
+Migration scripts are stored in the `backend/migrations/` directory and are named with a numeric prefix to indicate the order in which they should be run.
+
+Current migration scripts:
+- `01_cleanup_template_tables.sql`: Migrates data from the legacy `prompt_templates` table to the new `templates` table and drops the redundant table.
+
+## Running Migrations
+
+### Prerequisites
+
+- PostgreSQL client (psql) installed
+- Database connection details
+- Appropriate database permissions
+
+### Method 1: Using psql
+
+To run a migration using the PostgreSQL command-line client:
+
+```bash
+# Connect to the database
+psql -h <hostname> -U <username> -d icmp_db
+
+# Within the psql console, run the migration script
+\i backend/migrations/01_cleanup_template_tables.sql
+```
+
+### Method 2: Using Python Script
+
+You can also use the Python database utility to run migrations:
+
+```bash
+# From the project root directory
+python backend/utils/run_migration.py --file backend/migrations/01_cleanup_template_tables.sql
+```
+
+## Template Migration Specifics
+
+The template migration (01_cleanup_template_tables.sql) performs the following steps:
+
+1. Identifies any templates in the `prompt_templates` table that haven't been migrated to the `templates` table
+2. Migrates any missing templates with proper mapping:
+   - `template_text` → `content`
+   - `description` → Not directly mapped (used in template_name if needed)
+   - Assigns a business_id (required in the new schema)
+   - Generates proper UUIDs for template_id
+3. Updates any references to old template IDs in the `stages` table
+4. Safely drops the `prompt_templates` table once all data is migrated
+
+### Migration Verification
+
+To verify the migration was successful:
+
+1. Check that all templates are present in the new table:
+   ```sql
+   SELECT COUNT(*) FROM templates;
+   ```
+
+2. Confirm the old table no longer exists:
+   ```sql
+   \dt prompt_templates;
+   ```
+   Should return "Did not find any relation named 'prompt_templates'."
+
+3. Verify stage template references are intact:
+   ```sql
+   SELECT COUNT(*) FROM stages WHERE 
+     stage_selection_template_id IS NOT NULL OR 
+     data_extraction_template_id IS NOT NULL OR 
+     response_generation_template_id IS NOT NULL;
+   ```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Permission Denied**:
+   - Ensure the database user has sufficient permissions
+   - Contact your database administrator if needed
+
+2. **Failed Migration**:
+   - Check the error message for details
+   - Migrations are designed to be idempotent, so you can fix the issue and try again
+
+3. **Missing Templates After Migration**:
+   - Run the verification query to check if templates were successfully migrated
+   - Check if business_id assignment was correct
+
+### Rollback
+
+If you need to rollback the template migration:
+
+```sql
+-- Note: Only use if absolutely necessary and you have backed up the data
+-- This will recreate the prompt_templates table (without data)
+CREATE TABLE prompt_templates (
+    template_id CHARACTER VARYING(255) PRIMARY KEY NOT NULL,
+    template_text TEXT NOT NULL,
+    description TEXT,
+    variables TEXT[] NOT NULL DEFAULT '{}',
+    template_name CHARACTER VARYING(255),
+    template_type CHARACTER VARYING(50) DEFAULT 'stage_selection'
+);
+```
+
+## Best Practices
+
+- Always backup the database before running migrations
+- Test migrations in a non-production environment first
+- Run migrations during low-traffic periods
+- Update application code before or in conjunction with database changes
+
+## Additional Information
+
+For more details on the template system, see [TEMPLATE_SYSTEM.md](TEMPLATE_SYSTEM.md). 
+
+================================================================================
+File: DATABASE_SCHEMA.md
+Path: .\backend\documentation\DATABASE_SCHEMA.md
+Size: 8171
+Modified: 2025-04-10T12:45:40.992527
+Created: 2025-04-02T12:52:44.736623
+Hash: 198784748ccfe0511968eb3986fd46f871195ac6e2c78f0decc31a4c3c7ffeda
+Lines: 181
+================================================================================
+# Database Schema (PostgreSQL)
+
+This document outlines the canonical database schema. 
+**Note:** Ensure the actual database reflects these definitions, including table renames and column updates from recent refactoring.
+
+## Tables
+
+### `businesses`
+
+*   **Purpose:** Stores information about registered businesses (tenants).
+*   **Schema:**
+    ```sql
+    CREATE TABLE businesses (
+        business_id UUID PRIMARY KEY NOT NULL,
+        api_key TEXT NOT NULL UNIQUE, -- Unique API key for the business (ensure encryption at rest)
+        owner_id UUID NOT NULL, -- Link to the user who owns the business (references users table? Needs users table definition)
+        business_name TEXT NOT NULL UNIQUE,
+        business_description TEXT,
+        address TEXT,
+        phone_number TEXT,
+        website TEXT,
+        -- agent_list JSONB, -- Consider a separate business_agents table for many-to-many
+        -- product_list JSONB, -- Consider a separate business_products table
+        -- service_list JSONB, -- Consider normalization
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX idx_businesses_owner_id ON businesses (owner_id);
+    ```
+
+### `templates`
+
+*   **Purpose:** Stores all prompt templates, including both active templates used by stages and default templates.
+*   **Schema:**
+    ```sql
+    CREATE TABLE templates (
+        template_id UUID PRIMARY KEY NOT NULL,
+        business_id UUID NOT NULL REFERENCES businesses(business_id) ON DELETE CASCADE,
+        template_name VARCHAR(255) NOT NULL,
+        template_type VARCHAR(50) NOT NULL,
+        content TEXT NOT NULL,
+        system_prompt TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX idx_templates_business_id ON templates (business_id);
+    CREATE INDEX idx_templates_template_type ON templates (template_type);
+    ```
+
+### `prompt_templates` (Deprecated)
+
+*   **Purpose:** Legacy table for storing prompt templates. Being phased out in favor of the `templates` table.
+*   **Migration:** A migration script is available at `backend/migrations/01_cleanup_template_tables.sql` to move any remaining data from this table to the `templates` table.
+*   **Schema:**
+    ```sql
+    CREATE TABLE prompt_templates (
+        template_id CHARACTER VARYING(255) PRIMARY KEY NOT NULL,
+        template_text TEXT NOT NULL,
+        description TEXT,
+        variables TEXT[] NOT NULL DEFAULT '{}',
+        template_name CHARACTER VARYING(255),
+        template_type CHARACTER VARYING(50) DEFAULT 'stage_selection'
+    );
+    ```
+
+### `stages`
+
+*   **Purpose:** Defines the different stages within a business's conversation flow and stores their unique configurations.
+*   **Schema:**
+    ```sql
+    CREATE TABLE stages (
+        stage_id UUID PRIMARY KEY NOT NULL,
+        business_id UUID NOT NULL REFERENCES businesses(business_id) ON DELETE CASCADE,
+        agent_id UUID, -- Optional link to a specific agent
+        stage_name TEXT NOT NULL,
+        stage_description TEXT NOT NULL,
+        stage_type TEXT NOT NULL, -- e.g., 'conversation', 'response', 'form'
+        stage_selection_template_id UUID NOT NULL REFERENCES templates(template_id),
+        data_extraction_template_id UUID NOT NULL REFERENCES templates(template_id),
+        response_generation_template_id UUID NOT NULL REFERENCES templates(template_id),
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX idx_stages_business_id ON stages (business_id);
+    CREATE INDEX idx_stages_agent_id ON stages (agent_id);
+    ```
+
+### `users`
+
+*   **Purpose:** Stores user information (customers, business owners, agents).
+*   **Schema:**
+    ```sql
+    CREATE TABLE users (
+        user_id UUID PRIMARY KEY NOT NULL,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        email TEXT NOT NULL UNIQUE,
+        -- Add password_hash TEXT NOT NULL for user authentication
+        -- Add role TEXT NOT NULL DEFAULT 'customer' (e.g., 'customer', 'admin', 'agent')
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX idx_users_email ON users (email);
+    ```
+
+### `conversations`
+
+*   **Purpose:** Tracks ongoing or completed conversations.
+*   **Schema:**
+    ```sql
+    CREATE TABLE conversations (
+        conversation_id UUID PRIMARY KEY NOT NULL,
+        business_id UUID NOT NULL REFERENCES businesses(business_id) ON DELETE CASCADE,
+        user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+        agent_id UUID, -- REFERENCES agents(agent_id), -- Link to agent handling (Needs agents table)
+        stage_id UUID, -- REFERENCES stages(stage_id), -- Current or last stage
+        session_id TEXT NOT NULL, -- Identifier for a user's session
+        start_time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        last_updated TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+        status TEXT NOT NULL DEFAULT 'active', -- e.g., 'active', 'paused', 'completed', 'error'
+        -- Add conversation_summary TEXT -- For context in future messages?
+        -- Add message_history JSONB -- Potentially store recent messages?
+    );
+    CREATE INDEX idx_conversations_business_id ON conversations (business_id);
+    CREATE INDEX idx_conversations_user_id ON conversations (user_id);
+    CREATE INDEX idx_conversations_session_id ON conversations (session_id);
+    CREATE INDEX idx_conversations_status ON conversations (status);
+    ```
+
+### `messages`
+
+*   **Purpose:** Stores individual messages within conversations.
+*   **Schema:**
+    ```sql
+    CREATE TABLE messages (
+        message_id UUID PRIMARY KEY NOT NULL,
+        conversation_id UUID NOT NULL REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+        message_content TEXT NOT NULL,
+        sender_type TEXT NOT NULL, -- 'user' or 'assistant'
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX idx_messages_conversation_id ON messages (conversation_id);
+    CREATE INDEX idx_messages_created_at ON messages (created_at);
+    ```
+
+### `agents`
+
+*   **Purpose:** Stores information about AI or human agents.
+*   **Schema:**
+    ```sql
+    CREATE TABLE agents (
+        agent_id UUID PRIMARY KEY NOT NULL,
+        business_id UUID NOT NULL REFERENCES businesses(business_id) ON DELETE CASCADE,
+        agent_name TEXT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX idx_agents_business_id ON agents (business_id);
+    ```
+
+## Relationships (Summary)
+
+*   A `business` has one `owner` (a `user`).
+*   A `business` can have many `stages`.
+*   A `business` can have many `agents`.
+*   A `business` can have many `conversations`.
+*   A `business` can have many `templates`.
+*   A `user` can participate in many `conversations`.
+*   A `stage` belongs to one `business`.
+*   A `stage` links to three `templates` (selection, extraction, generation).
+*   A `stage` can optionally be linked to one `agent`.
+*   A `conversation` belongs to one `business` and one `user`.
+*   A `conversation` can optionally be handled by one `agent`.
+*   A `conversation` can be associated with a `stage`.
+*   `templates` belong to a business and can be used by multiple stages.
+
+## Migration Notes
+
+Some parts of the database schema are undergoing migration:
+
+1. **Template System Migration**: The system is transitioning from using the `prompt_templates` table to the more robust `templates` table, which includes business relationships and better supports the template system features.
+
+2. **Table Dependencies**: When migrating templates, care must be taken to update references in the `stages` table, which links to templates for stage selection, data extraction, and response generation.
+
+For more information on database migrations, see [DATABASE_MIGRATION_GUIDE.md](DATABASE_MIGRATION_GUIDE.md) and [TEMPLATE_SYSTEM.md](TEMPLATE_SYSTEM.md).
+
+================================================================================
+File: FRONTEND_GUIDE.md
+Path: .\backend\documentation\FRONTEND_GUIDE.md
+Size: 7462
+Modified: 2025-04-08T14:15:03.355308
+Created: 2025-04-02T12:53:35.156905
+Hash: 46791fefb5f07b0bcd121b14ae07aa11a83ea419fb3a93dddc17e683ecd84406
+Lines: 242
+================================================================================
+# Frontend Guide (React)
+
+This guide provides details specific to the `/front-end` React application.
+
+## Technology Stack
+
+*   **Framework:** React
+*   **UI Library:** Material UI (MUI) v5
+*   **Routing:** `react-router-dom` v6
+*   **Language:** JavaScript (with JSX)
+*   **Package Manager:** npm (or yarn, specify in README)
+*   **API Calls:** Browser `fetch` API
+
+## Project Structure (`/src`)
+
+*   **`components/`:** Reusable UI components
+    - `StageView.jsx`: Displays stage details in read-only mode
+    - `StageManager.js`: Manages the list of stages and stage operations
+    - `StageEditor.js`: Form for creating/editing stages
+    - Other common components (Buttons, TextFields, etc.)
+*   **`pages/`:** Top-level components representing application pages/views
+    - `StageViewPage.jsx`: Page wrapper for stage view
+    - `StageEditorPage.js`: Page wrapper for stage editor
+*   **`contexts/`:** React context providers for state management
+*   **`hooks/`:** Custom React hooks
+*   **`services/`:** API call modules
+    - `stageService.js`: Stage-related API calls
+    - Other service modules
+*   **`utils/`:** Utility functions
+*   **`App.js`:** Main application component, sets up routing
+*   **`index.js`:** Application entry point
+*   **`test-utils.js`:** Testing utilities
+
+## State Management
+
+*   Currently uses prop drilling and local component state (useState)
+*   **Recommendation:** Consider using:
+    - React Context API for shared state
+    - Zustand or Redux Toolkit for complex state
+
+## Routing
+
+*   Managed by `react-router-dom`
+*   Key routes defined in `App.js`:
+    ```javascript
+    <Routes>
+      <Route path="/stages" element={<StageManager />} />
+      <Route path="/stages/:stageId" element={<StageViewPage />} />
+      <Route path="/stage-editor/:stageId" element={<StageEditorPage />} />
+      <Route path="/stage-editor/new" element={<StageEditorPage />} />
+      {/* Other routes */}
+    </Routes>
+    ```
+
+## API Interaction
+
+*   Uses the browser's `fetch` API
+*   **Authentication:** Uses `businessApiKey` HttpOnly cookie
+*   **Error Handling:** Checks `response.ok` and handles errors appropriately
+
+Example service module:
+```javascript
+// src/services/stageService.js
+const API_BASE_URL = '/api';
+
+async function request(endpoint, options = {}) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const defaultOptions = {
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+        },
+        credentials: 'include', // Ensure cookies are sent
+    };
+
+    const response = await fetch(url, { ...defaultOptions, ...options });
+
+    if (!response.ok) {
+        let errorData;
+        try {
+            errorData = await response.json();
+        } catch (e) {
+            throw new Error(`HTTP error ${response.status}`);
+        }
+        const error = new Error(errorData?.message || `HTTP error ${response.status}`);
+        error.status = response.status;
+        error.data = errorData;
+        throw error;
+    }
+
+    return response.status === 204 ? null : response.json();
+}
+
+// Stage-related API calls
+export const stageService = {
+    getStages: (businessId, agentId) => {
+        const params = new URLSearchParams({ business_id: businessId });
+        if (agentId) params.append('agent_id', agentId);
+        return request(`/stages?${params}`);
+    },
+
+    getStage: (stageId, businessId) => {
+        return request(`/stages/${stageId}?business_id=${businessId}`);
+    },
+
+    createStage: (stageData) => {
+        return request('/stages', {
+            method: 'POST',
+            body: JSON.stringify(stageData),
+        });
+    },
+
+    updateStage: (stageId, stageData) => {
+        return request(`/stages/${stageId}`, {
+            method: 'PUT',
+            body: JSON.stringify(stageData),
+        });
+    },
+
+    deleteStage: (stageId, businessId) => {
+        return request(`/stages/${stageId}?business_id=${businessId}`, {
+            method: 'DELETE',
+        });
+    },
+};
+```
+
+## Key Components
+
+### StageView Component
+
+```jsx
+// src/components/StageView.jsx
+function StageView({ stageId }) {
+    const [stageData, setStageData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        // Fetch stage data
+        const fetchStage = async () => {
+            try {
+                const businessId = localStorage.getItem('businessId');
+                const data = await stageService.getStage(stageId, businessId);
+                setStageData(data);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStage();
+    }, [stageId]);
+
+    // Render loading, error, or stage data
+    if (loading) return <LoadingSpinner />;
+    if (error) return <ErrorMessage message={error} />;
+    if (!stageData) return <NoDataMessage />;
+
+    return (
+        <Paper>
+            <BasicInformation data={stageData} />
+            <TemplateConfiguration data={stageData} />
+            <CreationInfo data={stageData} />
+        </Paper>
+    );
+}
+```
+
+### StageManager Component
+
+```jsx
+// src/components/StageManager.js
+function StageManager() {
+    const [stages, setStages] = useState([]);
+    const navigate = useNavigate();
+
+    const handleStageClick = (stageId) => {
+        navigate(`/stages/${stageId}`);
+    };
+
+    const handleEditClick = (stageId, event) => {
+        event.stopPropagation();
+        navigate(`/stage-editor/${stageId}`);
+    };
+
+    return (
+        <Container>
+            <StageList 
+                stages={stages} 
+                onStageClick={handleStageClick}
+                onEditClick={handleEditClick}
+            />
+        </Container>
+    );
+}
+```
+
+## Building for Production
+
+```bash
+npm run build # or yarn build
+```
+Creates an optimized build in `build/` directory.
+
+## Testing
+
+*   Use React Testing Library for component tests
+*   Mock API calls in tests using `jest.mock`
+*   Example test:
+    ```javascript
+    // src/components/__tests__/StageView.test.js
+    import { render, screen, waitFor } from '@testing-library/react';
+    import StageView from '../StageView';
+    import { stageService } from '../../services/stageService';
+
+    jest.mock('../../services/stageService');
+
+    describe('StageView', () => {
+        it('displays stage details when loaded', async () => {
+            const mockStage = {
+                stage_name: 'Test Stage',
+                stage_description: 'Test Description',
+                // ... other fields
+            };
+            stageService.getStage.mockResolvedValue(mockStage);
+
+            render(<StageView stageId="test-id" />);
+
+            await waitFor(() => {
+                expect(screen.getByText('Test Stage')).toBeInTheDocument();
+                expect(screen.getByText('Test Description')).toBeInTheDocument();
+            });
+        });
+    });
+    ```
+
+## Key Components
+
+*   **`Configuration.js`:** Handles input for `userId`, `businessId`, `businessApiKey`, saves configuration via `/api/save-config`, and handles logout.
+*   *(Add descriptions of other major components as they are developed)* 
+
+================================================================================
+File: POC_PROGRESS_PLAN.md
+Path: .\backend\documentation\POC_PROGRESS_PLAN.md
+Size: 3586
+Modified: 2025-04-02T13:39:00.799345
+Created: 2025-04-02T13:38:57.978708
+Hash: 5074ba09d4fca2aefabe3c905a93df1f3643c51994408b4bb68351f12f4a70fd
+Lines: 49
+================================================================================
+# ICMP POC - Recommended Progress Plan (Post-Auth Refactor)
+
+This document outlines the recommended steps to move the ICMP POC forward, focusing on testing and stability after the recent authentication and template handling refactoring.
+
+See also:
+*   [Auth/Template Refactor Summary](auth_template_refactor_summary.md)
+*   [Database Schema](DATABASE_SCHEMA.md)
+*   [API Specification](API_SPECIFICATION.md)
+*   [Testing Strategy](TESTING_STRATEGY.md)
+
+## Plan Steps
+
+1.  **Manual DB Schema Verification & Update:**
+    *   **Action:** Before running any tests or the application, manually verify and, if necessary, update your PostgreSQL database schema according to [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md):
+        *   Rename the `prompt_templates` table to `default_templates`.
+        *   Ensure the `stages` table has the correct JSONB columns (`stage_selection`, `data_extraction`, `response_generation`, `data_retrieval`) and `stage_selection_example_conversations` (TEXT).
+    *   **Why:** Ensures the database matches the code's expectations, preventing immediate errors.
+
+2.  **Review & Execute Mocked Backend Tests:**
+    *   **Action:** Run the backend test suite (`pytest backend/tests`). Carefully review and debug the tests we created/updated, ensuring they pass:
+        *   `test_auth.py`
+        *   `test_save_config.py`
+        *   `test_businesses.py`
+        *   `test_stages.py`
+        *   `test_conversations.py`
+        *   `test_message_handling.py` (Pay close attention to mocks reflecting current logic).
+    *   **Why:** Validates the refactored backend code logic in isolation using mocks, building confidence before integration.
+    *   **Reference:** [Testing Strategy](TESTING_STRATEGY.md)
+
+3.  **Basic Manual API Smoke Test:**
+    *   **Action:** Start the backend server. Use an API client (e.g., Postman) to manually test the core flow against your development database (with the correct schema):
+        *   `POST /businesses` (using master key via `Authorization: Bearer`) -> Get `business_id`, `api_key`.
+        *   `POST /api/save-config` (using created IDs/key) -> Check for 200 OK and `businessApiKey` cookie.
+        *   `GET /businesses/{business_id}` (with cookie) -> Check for 200 OK.
+        *   `POST /stages` (with cookie, valid stage config JSON) -> Check for 201 Created.
+        *   `POST /message` (with cookie, valid message data) -> Check for 200 OK and monitor logs.
+    *   **Why:** Quick integration check of backend components and database interaction before involving the frontend.
+    *   **Reference:** [API Specification](API_SPECIFICATION.md)
+
+4.  **Debug Frontend Authentication/Interface Issues:**
+    *   **Action:** Run the frontend (`npm start`). Systematically debug the reported frontend problems using browser developer tools (Network tab, Console):
+        *   Verify `/api/save-config` request/response and cookie setting.
+        *   Verify subsequent API calls include the `businessApiKey` cookie and check for errors (401, etc.).
+    *   **Why:** Directly addresses user-facing issues by inspecting the frontend-backend communication layer.
+
+5.  **Iterate & Refine:**
+    *   **Action:** Based on frontend debugging (Step 4), fix frontend code (state, API calls, error handling).
+    *   **Action:** Once the core flow is stable, proceed with implementing backend TODOs (e.g., stage selection logic in `message_handling.py`) or new features (e.g., User Authentication).
+    *   **Why:** Incrementally build features and stability upon a verified foundation. 
+
+================================================================================
+File: STAGE_MANAGEMENT.md
+Path: .\backend\documentation\STAGE_MANAGEMENT.md
+Size: 6270
+Modified: 2025-04-10T14:47:53.597795
+Created: 2025-04-08T14:13:52.015636
+Hash: 6b618da1c506922eebfc5c67b885b075d268ec6de0671f8fadb0cc4c60de52f6
+Lines: 237
+================================================================================
+# Stage Management System
+
+## Overview
+
+The Stage Management System is a core component of the ICMP platform that allows businesses to define, configure, and manage conversation stages. Each stage represents a specific point in a conversation flow and contains configuration for how the system should handle messages at that point.
+
+## Components
+
+### Stage View
+
+The stage view component (`StageView.jsx`) provides a read-only view of stage details, including:
+
+1. **Basic Information**
+   - Stage Name
+   - Description
+   - Type (e.g., conversation, response, form)
+   - Stage ID
+   - Business ID
+   - Agent ID (if applicable)
+
+2. **Template Configuration**
+   - Stage Selection Template
+     - Template ID
+     - Template Name
+   - Data Extraction Template
+     - Template ID
+     - Template Name
+   - Response Generation Template
+     - Template ID
+     - Template Name
+
+3. **Creation Information**
+   - Creation Date/Time
+
+### Stage Editor
+
+The stage editor component allows users to create and modify stages. It includes:
+
+1. **Basic Information Form**
+   - Name input
+   - Description input
+   - Type selection
+   - Agent assignment (optional)
+
+2. **Template Configuration**
+   - Template selection for each type:
+     - Stage Selection
+     - Data Extraction
+     - Response Generation
+   - Template preview
+   - Template configuration options
+
+## Database Schema
+
+The stages table schema (from `stages` table in PostgreSQL):
+
+```sql
+CREATE TABLE stages (
+    stage_id UUID PRIMARY KEY NOT NULL,
+    business_id UUID NOT NULL REFERENCES businesses(business_id) ON DELETE CASCADE,
+    agent_id UUID,  -- Optional link to a specific agent
+    stage_name TEXT NOT NULL,
+    stage_description TEXT NOT NULL,
+    stage_type TEXT NOT NULL,  -- e.g., 'conversation', 'response', 'form'
+    stage_selection_template_id UUID NOT NULL REFERENCES templates(template_id),
+    data_extraction_template_id UUID NOT NULL REFERENCES templates(template_id),
+    response_generation_template_id UUID NOT NULL REFERENCES templates(template_id),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+```
+
+## API Endpoints
+
+### GET /stages
+
+Lists all stages for a business.
+
+**Query Parameters:**
+- `business_id` (required): UUID of the business
+- `agent_id` (optional): UUID of an agent to filter stages
+
+**Response:**
+```json
+[
+    {
+        "stage_id": "uuid",
+        "stage_name": "string",
+        "stage_description": "string",
+        "stage_type": "string",
+        "business_id": "uuid",
+        "agent_id": "uuid",
+        "stage_selection_template_id": "uuid",
+        "data_extraction_template_id": "uuid",
+        "response_generation_template_id": "uuid",
+        "created_at": "timestamp"
+    }
+]
+```
+
+### GET /stages/{stage_id}
+
+Retrieves details for a specific stage.
+
+**Query Parameters:**
+- `business_id` (required): UUID of the business
+
+**Response:**
+```json
+{
+    "stage_id": "uuid",
+    "stage_name": "string",
+    "stage_description": "string",
+    "stage_type": "string",
+    "business_id": "uuid",
+    "agent_id": "uuid",
+    "stage_selection_template_id": "uuid",
+    "data_extraction_template_id": "uuid",
+    "response_generation_template_id": "uuid",
+    "created_at": "timestamp",
+    "stage_selection_config": {
+        "template_id": "uuid",
+        "template_name": "string",
+        "content": "string",
+        "system_prompt": "string",
+        "variables": []
+    },
+    "data_extraction_config": {
+        "template_id": "uuid",
+        "template_name": "string",
+        "content": "string",
+        "system_prompt": "string",
+        "variables": []
+    },
+    "response_generation_config": {
+        "template_id": "uuid",
+        "template_name": "string",
+        "content": "string",
+        "system_prompt": "string",
+        "variables": []
+    }
+}
+```
+
+### POST /stages
+
+Creates a new stage.
+
+**Request Body:**
+```json
+{
+    "business_id": "uuid",
+    "stage_name": "string",
+    "stage_description": "string",
+    "stage_type": "string",
+    "agent_id": "uuid",  // optional
+    "stage_selection_template_id": "uuid",
+    "data_extraction_template_id": "uuid",
+    "response_generation_template_id": "uuid"
+}
+```
+
+### PUT /stages/{stage_id}
+
+Updates an existing stage.
+
+**Request Body:**
+```json
+{
+    "business_id": "uuid",
+    "stage_name": "string",
+    "stage_description": "string",
+    "stage_type": "string",
+    "agent_id": "uuid",  // optional
+    "stage_selection_template_id": "uuid",
+    "data_extraction_template_id": "uuid",
+    "response_generation_template_id": "uuid"
+}
+```
+
+## Frontend Routes
+
+- `/stages` - Stage list/management view
+- `/stages/:stageId` - Stage detail view
+- `/stage-editor/:stageId` - Stage editor view
+- `/stage-editor/new` - New stage creation view
+
+## Usage Examples
+
+### Viewing a Stage
+
+1. Navigate to the stage list at `/stages`
+2. Click on a stage to view its details
+3. The stage view will show:
+   - Basic information about the stage
+   - Template configurations
+   - Creation timestamp
+
+### Editing a Stage
+
+1. View a stage's details
+2. Click the "Edit Stage" button
+3. Modify the stage's information in the editor
+4. Save changes
+
+### Creating a New Stage
+
+1. Navigate to the stage list
+2. Click "Create Stage"
+3. Fill in the required information:
+   - Stage name and description
+   - Stage type
+   - Template selections
+4. Save the new stage
+
+## Error Handling
+
+The stage management system includes error handling for:
+- Invalid stage IDs
+- Missing or invalid business IDs
+- Template configuration errors
+- Database connection issues
+- Authentication/authorization failures
+
+## Security Considerations
+
+1. **Authentication**
+   - All stage endpoints require a valid business API key
+   - API key is passed via secure HttpOnly cookie
+
+2. **Authorization**
+   - Stages can only be accessed by their owning business
+   - Business ID validation on all requests
+
+3. **Data Validation**
+   - Input validation on all stage fields
+   - Template ID validation against prompt_templates table
+   - Business ID validation against businesses table 
+
+================================================================================
+File: sumary.txt
+Path: .\backend\documentation\sumary.txt
+Size: 9305
+Modified: 2025-03-30T02:57:42.742334
+Created: 2025-04-01T17:32:05.095179
+Hash: 1bd3c3470f3052fc75252d2bd61f82b8ddc564667be9c62f7032f268ad95d9de
+Lines: 113
+================================================================================
+Okay, here's a comprehensive explanation of the Intelligent Conversation Management Platform (ICMP) project, designed to be understood by both technical and non-technical audiences:
+
+**What is ICMP?**
+
+Imagine a world where businesses can effortlessly handle customer conversations, providing personalized support and efficient service – all powered by artificial intelligence. That's the vision behind the Intelligent Conversation Management Platform (ICMP).
+
+At its core, ICMP is an AI-driven system designed to automate and enhance customer interactions for businesses. It's like a smart virtual assistant that can:
+
+*   **Understand customer needs:** Identify the customer's intent and the key information they're providing.
+*   **Route conversations intelligently:** Direct the customer to the right "agent" or support flow based on their needs.
+*   **Generate helpful responses:** Craft relevant and personalized answers using AI and predefined knowledge.
+*   **Learn and improve over time:** Analyze conversation data to optimize the system's performance and better serve customers.
+
+**Why is ICMP Important?**
+
+In today's fast-paced world, customers expect instant and personalized service. ICMP helps businesses meet these demands by:
+
+*   **Reducing wait times:** Automating initial interactions and providing quick answers to common questions.
+*   **Improving customer satisfaction:** Delivering tailored support and a seamless conversational experience.
+*   **Increasing efficiency:** Freeing up human agents to focus on complex issues and high-value interactions.
+*   **Providing valuable insights:** Capturing and analyzing conversation data to identify trends, improve processes, and make data-driven decisions.
+
+**How Does ICMP Work? (Technical Overview)**
+
+ICMP is built using a combination of cutting-edge technologies:
+
+*   **React (Frontend):** Provides a user-friendly interface for businesses to configure the system and monitor conversations.
+*   **Flask (Backend):** Serves as the central brain, handling API requests, processing data, and orchestrating the AI components.
+*   **PostgreSQL (Database):** Stores structured data about businesses, agents, conversation flows, and customer interactions.
+*   **OpenAI (LLM Integration):** Leverages the power of large language models (LLMs) for natural language processing, intent recognition, and response generation.
+*   **Three-Prompt System:** A key innovation that breaks down message processing into 
+
+
+A core innovation within ICMP is its "Three-Prompt System," a structured approach to message processing that breaks down complex conversational tasks into three distinct, AI-powered stages. This allows for greater control, accuracy, and personalization in how the system understands and responds to customer interactions.
+
+**Here's a detailed breakdown of each stage:**
+
+*   **1. Stage Selection (Intent Detection): Determining the Conversational Context**
+
+    *   **Purpose:** To accurately identify the current stage or frame of the conversation, guiding the system on how to best interpret the customer's input.
+    *   **Process:**
+        *   The system utilizes a pre-defined prompt *template*, associated with the *previous stage* in the dialog (if any). These templates are *defined* by the ICMP administrator.
+        *   The prompt template is dynamically populated with relevant data:
+            *   **Stage List:** A list of available and relevant stages within the current business's conversation flow.
+            *   **Last Conversation Summary:** A concise summary of the previous turns in the conversation, extracted from the database.
+        *   This combined information is then sent to the LLM.
+    *   **LLM's Task:** Based on the provided template, stage list, and conversation history, the LLM determines the most appropriate stage for the current interaction.
+    *   **Example:**
+        *   **Template:** "Based on the last N conversations and {stage list} {summary of last conversations}, what most represents the current stage? Reply with {current stage} with confidence level."
+        *   **Data:** "{stage list}" might be replaced with "[Greeting, Order Assistance, Technical Support]", and "{summary of last conversations}" with "The user asked for the status of their order twice and then asked about payment options."
+        *   **LLM Response:** "Order Assistance, confidence: 0.95"
+    *   **Output:** The system obtains the appropriate stage and a score for proceeding for doing next stages
+
+*   **2. Data Extraction (Information Identification): Identifying Key Information and Actions**
+
+    *   **Purpose:** To extract specific pieces of information and identify necessary actions from the customer's response, enabling the system to update the database or trigger subsequent processes.
+    *   **Process:**
+        *   The system uses a specialized prompt *template* that is associated with the *selected stage*.
+        *   The customer's *current message* is inserted into the template.
+        *   This structured prompt is sent to the LLM.
+    *   **LLM's Task:** The LLM analyzes the customer's message within the context of the selected stage to identify relevant information (e.g., name, address, order number) and potential actions (e.g., update shipping address, confirm order, cancel subscription).
+    *   **Example:**
+        *   **Selected Stage:** "Update Shipping Address"
+        *   **Template:** "From the following customer message: '{customer_message}', extract the new shipping address, including street, city, state, and zip code."
+        *   **Customer Message:** "I need to change my shipping address. It's now 123 Main St, Anytown, CA 91234."
+        *   **LLM Response:** "{'street': '123 Main St', 'city': 'Anytown', 'state': 'CA', 'zip_code': '91234'}"
+    *   **Output:** The system now contains the updated address
+
+*   **3. Response Generation (Process Completion): Crafting Personalized and Actionable Replies**
+
+    *   **Purpose:** To generate a relevant, personalized, and helpful response to the customer, advancing the conversation towards a successful resolution.
+    *   **Process:**
+        *   A response *template* is used (tied to the *selected stage*).
+        *   The template is populated with:
+            *   Information extracted from the database (e.g., account details, order status).
+            *   The results of the data extraction stage (e.g., new shipping address).
+        *   This complete prompt is sent to the LLM.
+    *   **LLM's Task:** The LLM crafts a natural-language response that incorporates the extracted data, confirms actions taken, and moves the conversation forward.
+    *   **Example:**
+        *   **Template:** "OK. I've updated the shipping address on order {order_number} to {new_shipping_address}. Is there anything else I can help you with?"
+        *   **Data:** `{order_number}` is "12345", `{new_shipping_address}` is "123 Main St, Anytown, CA 91234" (extracted in the previous stage).
+        *   **LLM Response:** "OK. I've updated the shipping address on order 12345 to 123 Main St, Anytown, CA 91234. Is there anything else I can help you with?"
+
+*   **Output:** The system provides an personalized answers
+
+This three-stage process ensures that the AI is grounded in the context of the conversation, has the necessary information to provide accurate responses, and can guide the customer toward a successful outcome.
+Also remember that you can repeat this flow if necessary
+
+Now, with this information and after the test can we move?
+**Key Features:**
+
+*   **Multi-Agent Routing:** Directs conversations to the most appropriate agent or automated workflow.
+*   **Customizable Conversation Workflows:** Allows businesses to design flexible and dynamic conversational flows tailored to their specific needs.
+*   **Robust Analytics:** Provides insights into conversation data to improve system performance and customer satisfaction.
+*   **Template-Based Prompts:** Uses predefined templates to guide the AI's responses and ensure consistent branding.
+*   **API Key Authentication:** Ensures secure access to the system's API endpoints.
+
+**Current Status:**
+
+The project is currently in the Proof of Concept (POC) phase, focused on implementing the core functionality. Key components are partially implemented, and there's a concerted effort to connect the frontend UI to the backend API.
+
+**Future Directions:**
+
+The future of ICMP includes exciting possibilities, such as:
+
+*   **Multi-Language Support:** Expanding the system to handle conversations in multiple languages.
+*   **Real-Time Updates:** Implementing real-time conversation monitoring and agent collaboration.
+*   **Integration with Other Systems:** Connecting ICMP with CRM, e-commerce, and other business platforms.
+*   **Improved Security:** Implementing more robust authentication and data protection measures.
+
+**In Summary:**
+
+ICMP is a powerful platform with the potential to revolutionize how businesses interact with their customers. By combining AI, robust architecture, and a focus on personalization, ICMP aims to make customer conversations more efficient, effective, and enjoyable for everyone involved.
+
+================================================================================
+File: TEMPLATE_SYSTEM.md
+Path: .\backend\documentation\TEMPLATE_SYSTEM.md
+Size: 7957
+Modified: 2025-04-14T17:41:31.202605
+Created: 2025-04-10T12:44:10.912492
+Hash: ca7f07f577076da09eda718befbcdbcfaf8361e2f148d0087b7af50a0a874e8d
+Lines: 217
+================================================================================
+# Template System
+
+## Overview
+
+The template system is a core component of the ICMP Events API, responsible for managing and applying templates used in various stages of message processing. Templates contain text with variable placeholders that are substituted at runtime with context-specific values.
+
+## Database Schema
+
+### Templates Table
+
+The system uses the `templates` table with the following structure:
+
+```sql
+CREATE TABLE templates (
+    template_id UUID PRIMARY KEY NOT NULL,
+    business_id UUID NOT NULL REFERENCES businesses(business_id),
+    template_name VARCHAR(255) NOT NULL,
+    template_type VARCHAR(50) NOT NULL,
+    content TEXT NOT NULL,
+    system_prompt TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+Key fields:
+- `template_id`: Unique identifier for the template
+- `business_id`: References the business that owns this template
+- `template_name`: Human-readable name for the template
+- `template_type`: Categorizes templates (e.g., stage_selection, data_extraction, response_generation)
+- `content`: The main template text with variable placeholders
+- `system_prompt`: Optional system prompt for LLM context setting
+
+### Legacy Schema Migration
+
+Previously, templates were stored in the `prompt_templates` table:
+
+```sql
+CREATE TABLE prompt_templates (
+    template_id CHARACTER VARYING(255) PRIMARY KEY NOT NULL,
+    template_text TEXT NOT NULL,
+    description TEXT,
+    variables TEXT[] NOT NULL DEFAULT '{}',
+    template_name CHARACTER VARYING(255),
+    template_type CHARACTER VARYING(50) DEFAULT 'stage_selection'
+);
+```
+
+We've migrated all functionality to use the `templates` table. A migration script is available at `backend/migrations/01_cleanup_template_tables.sql` to ensure all data is properly migrated and the redundant table can be safely removed.
+
+## Template Types
+
+The system supports several template types:
+
+1. **Stage Selection Templates** (`stage_selection`)
+   - Used to determine which stage should handle a user's message
+   - Example: Analyzing user intent to route to appropriate stages
+
+2. **Data Extraction Templates** (`data_extraction`)
+   - Used to extract structured data from user messages
+   - Example: Extracting order numbers, names, or other entities
+
+3. **Response Generation Templates** (`response_generation`)
+   - Used to generate AI responses based on extracted data and context
+   - Example: Creating personalized replies incorporating user information
+
+4. **Default Templates**
+   - Prefixed versions of the above (e.g., `default_stage_selection`)
+   - Used as fallbacks when business-specific templates aren't available
+
+## Template Variables
+
+Templates support variable substitution using both `{variable_name}` and `{{variable_name}}` syntax. Variables are automatically extracted from template content and can be populated at runtime with values from:
+
+- User information
+- Conversation context
+- Business data
+- Stage-specific data
+
+Example template with variables:
+```
+Hello {{user_name}}, welcome to {{business_name}}! 
+Your last 10 messages: {{last_10_messages}}
+```
+
+### Variable Providers
+
+The system uses a modular variable provider system located in `backend/message_processing/variables/`. Each variable has its own dedicated provider file:
+
+1. User Variables:
+   - `user_name.py`: Provides the user's full name
+   - `user_message.py`: Provides the current message content
+
+2. Business Variables:
+   - `business_name.py`: Provides the business name
+
+3. Conversation Variables:
+   - `last_10_messages.py`: Provides the last 10 messages in the conversation
+   - `conversation_history.py`: Provides the full conversation history
+   - `N.py`: Provides the message count
+
+4. Stage Variables:
+   - `available_stages.py`: Provides detailed stage information
+   - `stage_list.py`: Provides a list of stage names
+
+5. Utility Variables:
+   - `current_time.py`: Provides the current time
+   - `current_date.py`: Provides the current date
+
+### Adding New Variables
+
+To add a new variable:
+
+1. Create a new file in `backend/message_processing/variables/`
+2. Define a provider function using the `@TemplateVariableProvider.register_provider` decorator
+3. Add the import to `backend/message_processing/variables/__init__.py`
+
+Example variable provider:
+```python
+@TemplateVariableProvider.register_provider('my_variable')
+def provide_my_variable(conn, **kwargs) -> str:
+    return "my value"
+```
+
+## Backend Implementation
+
+### Template Service
+
+The `TemplateService` class in `backend/message_processing/template_service.py` provides core functionality:
+
+- `get_template()`: Retrieves a template by ID from the database
+- `apply_template()`: Performs variable substitution on a template
+- `build_context()`: Constructs a context object for variable substitution
+
+### API Endpoints
+
+Template-related API endpoints are defined in:
+
+1. `backend/routes/templates.py`: Core CRUD operations
+   - GET `/templates`: List all templates
+   - POST `/templates`: Create a new template
+   - GET `/templates/{template_id}`: Get a specific template
+   - PUT `/templates/{template_id}`: Update a template
+   - DELETE `/templates/{template_id}`: Delete a template
+
+2. `backend/routes/template_management.py`: Additional management endpoints
+   - GET `/templates/default-templates`: List default templates
+   - GET `/templates/by-type/{template_type}`: List templates by type
+   - GET `/templates/by-business/{business_id}`: List templates by business
+
+## Frontend Components
+
+The frontend provides UI components for template management:
+
+1. `TemplateManagement.js`: Main component for listing and managing templates
+2. `TemplateEditor.js`: Component for creating and editing templates
+3. `TemplateSection.js`: Component for creating templates within another view
+
+These components allow users to:
+- Create, edit, and delete templates
+- Preview templates with sample data
+- Organize templates by type and business
+- Extract and manage variables
+
+## Integration with Stages
+
+Templates are integrated with the stage system:
+
+1. Each stage references three template types:
+   - `stage_selection_template_id`: Determines if the stage should handle a message
+   - `data_extraction_template_id`: Extracts data from the message
+   - `response_generation_template_id`: Generates a response
+
+2. The stage processing flow:
+   - Evaluate stage selection templates to choose a stage
+   - Use the selected stage's data extraction template
+   - Generate a response using the response generation template
+
+## Best Practices
+
+When working with templates:
+
+1. **Variable Naming**:
+   - Use descriptive names for variables
+   - Follow dot notation for nested properties (e.g., `user.first_name`)
+   
+2. **Template Organization**:
+   - Organize templates by logical function
+   - Use consistent naming conventions
+   - Include descriptive template names
+
+3. **Error Handling**:
+   - Include fallback text for missing variables
+   - Design templates to gracefully handle missing context
+
+4. **Testing**:
+   - Preview templates before deployment
+   - Test with a variety of input data
+
+## Troubleshooting
+
+Common issues and solutions:
+
+1. **Missing Variables**: If variables aren't being substituted, check:
+   - Variable names match in template and context
+   - Context is being properly built
+   - Variable syntax uses correct braces `{like_this}`
+
+2. **Template Selection Issues**: If wrong templates are being used:
+   - Verify template type is correct
+   - Check stage template IDs
+   - Examine stage selection logic
+
+3. **Performance Concerns**: For template performance issues:
+   - Keep templates reasonably sized
+   - Limit the number of variables
+   - Consider caching frequently used templates 
+
+================================================================================
+File: TESTING_STRATEGY.md
+Path: .\backend\documentation\TESTING_STRATEGY.md
+Size: 3440
+Modified: 2025-04-02T12:53:56.068352
+Created: 2025-04-02T12:53:53.299266
+Hash: fe20e78619ddf71f1396e4cced74cea9cd9ac510eea83189ff5e928f181960d5
+Lines: 91
+================================================================================
+# Testing Strategy
+
+This document outlines the testing approach for the ICMP application.
+
+## Frontend Testing (`/front-end`)
+
+*   **Framework:** Jest (via Create React App scripts)
+*   **Library:** React Testing Library (`@testing-library/react`)
+*   **Assertions:** `@testing-library/jest-dom`
+
+### Types of Tests
+
+1.  **Unit Tests:** Test individual components or utility functions in isolation. Mock dependencies (child components, API calls, hooks).
+2.  **Integration Tests:** Test the interaction between several components, often involving user events and state changes. Use `test-utils.js` for rendering with context if needed. Mock API calls using `jest.fn()` and `global.fetch`.
+    *   Example: `front-end/src/components/__tests__/Configuration.test.js` tests the Configuration component, mocking `fetch`, `useNavigate`, and prop functions.
+3.  **End-to-End (E2E) Tests:** (Future) Use tools like Cypress or Playwright to simulate user flows across the entire application (frontend + backend).
+
+### Running Tests
+
+```bash
+cd front-end
+npm test # or yarn test
+```
+
+### Mocking
+
+*   **API Calls:** Mock `global.fetch` using `jest.fn()`, providing mock responses:
+    ```javascript
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ success: true }),
+      })
+    );
+    ```
+*   **Modules/Hooks:** Use `jest.mock('module-name')`:
+    ```javascript
+    jest.mock('react-router-dom', () => ({
+      ...jest.requireActual('react-router-dom'),
+      useNavigate: () => mockNavigate, // mockNavigate is a jest.fn()
+    }));
+    ```
+
+### Coverage
+
+*   Run tests with coverage: `npm test -- --coverage`
+*   [Specify coverage goals if any]
+
+## Backend Testing (`/backend`)
+
+*   **Framework:** Pytest
+*   **Library:** Flask test client
+
+### Types of Tests
+
+1.  **Unit Tests:** Test individual functions, classes, or decorators in isolation. Mock database interactions and external API calls (OpenAI).
+2.  **Integration Tests:** Test API endpoints using the Flask test client. This involves sending HTTP requests to the test application and asserting responses. Can use a test database.
+    *   Example: `backend/tests/test_auth.py` tests authentication endpoints and decorators using the test client.
+
+### Running Tests
+
+```bash
+cd backend
+pytest # Ensure pytest is installed (add to requirements-dev.txt)
+```
+
+### Test Setup / Fixtures (Pytest)
+
+*   Use fixtures (`@pytest.fixture`) to set up reusable test resources:
+    *   Flask application instance (`app`).
+    *   Flask test client (`client`).
+    *   Database connection / Test database setup & teardown.
+    *   Mocked external services.
+
+### Mocking
+
+*   Use `unittest.mock` (or `pytest-mock`) to patch functions/classes:
+    *   Mock database functions (`db.get_db_connection`, `db.execute_query`).
+    *   Mock OpenAI calls (`openai_helper.call_openai`).
+    *   Mock Flask `current_app` configuration.
+
+### Test Database
+
+*   For integration tests, configure tests to use a separate test database to avoid interfering with development data.
+*   Use fixtures to manage the creation, seeding, and dropping of the test database or tables around test runs.
+
+### Coverage
+
+*   Install `pytest-cov`: `pip install pytest-cov`
+*   Run tests with coverage: `pytest --cov=./` (adjust path as needed)
+*   [Specify coverage goals if any] 
+
+================================================================================
+File: `stages` table and the three prompt system.txt
+Path: .\backend\documentation\`stages` table and the three prompt system.txt
+Size: 14059
+Modified: 2025-03-27T15:17:37.001215
+Created: 2025-04-01T23:24:02.774802
+Hash: 4e9c54454a3d485355d925b541b5ce6874dfb5a509638ae3107ee56a676d9897
+Lines: 300
+================================================================================
+Thank you for the clarification! Let’s refine the understanding of the `stages` table and the three prompt system based on your input. You’re indicating that the `stages` table doesn’t store the full prompt templates directly but instead contains **template IDs** (e.g., `255544...`) that reference external templates. These templates are then used to draft prompts dynamically, incorporating data extracted from the database (e.g., conversation history, stage lists). Below, I’ll update the explanation for future AIs, including your example, and adjust the logic and data flow accordingly.
+
+---
+
+### Updated Explanation for Future AI: Three Prompt System with Template IDs
+
+#### Revised Overview
+The "three prompt system" in `icmp_events_api` processes messages in three stages—intent detection, data extraction, and response generation—using OpenAI. Unlike the previous assumption where full prompt templates were stored directly in the `stages` table, the table now contains **template IDs** (e.g., UUIDs or other identifiers). These IDs reference predefined prompt templates stored elsewhere (e.g., in code, a config file, or another table). The templates are rendered dynamically by combining the template structure with data extracted from the database, such as conversation history or stage metadata.
+
+#### Purpose
+- **Separation of Concerns**: Template IDs in the database decouple prompt logic from storage, allowing templates to be managed independently.
+- **Dynamic Prompting**: Templates use placeholders (e.g., `{stage list}`, `{summary of last conversations}`) filled with real-time DB data.
+- **Customization**: Businesses can associate specific template IDs with stages, tailoring the message processing flow.
+
+#### Example from User
+- **Stage Selection Prompt Template ID**: `255544...`
+- **Template**: 
+  ```
+  "Based on the last N conversations and {stage list} {summary of last conversations}, what most represents the current stage? Reply with {current stage} with confidence level."
+  ```
+- **Rendered Prompt**: 
+  ```
+  "Based on the last 3 conversations and [Greet, Assist, Close] [User asked for help twice, then thanked], what most represents the current stage? Reply with Assist with confidence level."
+  ```
+- **OpenAI Response**: 
+  ```
+  "Assist, confidence: 0.9"
+  ```
+
+---
+
+### Interaction with Database and Stages
+
+#### Updated Database Schema: `stages` Table
+The `stages` table now stores template IDs instead of full prompts:
+```sql
+CREATE TABLE IF NOT EXISTS stages (
+    stage_id UUID PRIMARY KEY,
+    business_id UUID NOT NULL REFERENCES businesses(business_id),
+    stage_name TEXT NOT NULL,
+    stage_description TEXT NOT NULL,
+    stage_type TEXT NOT NULL,
+    stage_selection_template_id TEXT NOT NULL DEFAULT 'default_selection_id',
+    data_extraction_template_id TEXT NOT NULL DEFAULT 'default_extraction_id',
+    response_generation_template_id TEXT NOT NULL DEFAULT 'default_generation_id',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+- **Key Columns**:
+  - `stage_selection_template_id`: ID referencing the intent detection template.
+  - `data_extraction_template_id`: ID for the data extraction template.
+  - `response_generation_template_id`: ID for the response generation template.
+- **Change**: Replaced full prompt text with template IDs (e.g., UUIDs or strings like `255544...`).
+
+#### Template Storage
+- **Location**: Templates are not in the `stages` table. They could be:
+  - Hardcoded in `openai_helper.py` or a new `templates.py` file.
+  - Stored in a separate `templates` table (e.g., `template_id`, `template_text`).
+  - Loaded from a config file (e.g., JSON/YAML).
+- **Assumption**: For this explanation, assume templates are hardcoded in `openai_helper.py` with a lookup function (e.g., `get_template(template_id)`).
+
+#### Example Templates (Hypothetical `templates.py`)
+```python
+TEMPLATES = {
+    "255544...": "Based on the last N conversations and {stage list} {summary of last conversations}, what most represents the current stage? Reply with {current stage} with confidence level",
+    "default_extraction_id": "Extract key entities from this message: {message}",
+    "default_generation_id": "Generate a response based on intent: {intent} and extracted data: {extracted_data}"
+}
+
+def get_template(template_id):
+    return TEMPLATES.get(template_id, "Default prompt: {message}")
+```
+
+#### Database Interaction
+1. **Storage**: `POST /stages` inserts a row with template IDs (e.g., `255544...` for selection).
+2. **Retrieval**: `POST /message` queries the `stages` table for template IDs by `business_id`.
+3. **Data Extraction**: Additional DB queries fetch context (e.g., last N conversations from `conversations`).
+4. **Rendering**: Template IDs are used to fetch templates, which are populated with DB data.
+
+#### Data Schema
+- **Request Schema** (unchanged from `message_handling.py`):
+  ```python
+  message_schema = {
+      "type": "object",
+      "properties": {
+          "business_id": {"type": "string", "format": "uuid"},
+          "user_id": {"type": "string", "format": "uuid"},
+          "message": {"type": "string"}
+      },
+      "required": ["business_id", "user_id", "message"]
+  }
+  ```
+
+---
+
+### Updated Logic and Data Flow for Endpoints
+
+#### `POST /message`
+##### Logic
+1. **Request Validation**:
+   - Ensure JSON format and validate against `message_schema`.
+   - Return `400` if invalid.
+
+2. **Fetch Stage Data**:
+   - Query `stages` for the first matching row:
+     ```sql
+     SELECT stage_selection_template_id, data_extraction_template_id, response_generation_template_id
+     FROM stages 
+     WHERE business_id = %s 
+     LIMIT 1;
+     ```
+   - If no stage, return `404`.
+
+3. **Fetch Conversation Context** (New Step):
+   - Query `conversations` for the last N (e.g., 3) conversations:
+     ```sql
+     SELECT conversation_id, business_id, user_id, created_at 
+     FROM conversations 
+     WHERE business_id = %s AND user_id = %s 
+     ORDER BY created_at DESC 
+     LIMIT 3;
+     ```
+   - Summarize (e.g., concatenate messages or use OpenAI for summary—assumed in `openai_helper.py`).
+
+4. **Three Prompt Processing**:
+   - **Step 1: Intent Detection**:
+     - Get template via `stage_selection_template_id` (e.g., `255544...`).
+     - Fetch stage list (e.g., all `stage_name` for `business_id`).
+     - Render template with DB data:
+       ```python
+       template = get_template("255544...")
+       prompt = render_prompt(template, {
+           "stage list": "[Greet, Assist, Close]",
+           "summary of last conversations": "User asked for help twice",
+           "N": "3"
+       })
+       # "Based on the last 3 conversations and [Greet, Assist, Close] User asked for help twice, what most represents the current stage? Reply with Assist with confidence level"
+       ```
+     - Call OpenAI → Result: `"Assist, confidence: 0.9"`.
+   - **Step 2: Data Extraction**:
+     - Get template via `data_extraction_template_id`.
+     - Render: `"Extract key entities from this message: Hello, I need help"`
+     - Call OpenAI → Result: `"entities: {issue: help}"`.
+   - **Step 3: Response Generation**:
+     - Get template via `response_generation_template_id`.
+     - Render with context: 
+       ```python
+       "Generate a response based on intent: Assist and extracted data: {issue: help}"
+       ```
+     - Call OpenAI → Result: `"I’m here to assist you!"`.
+
+5. **Store Conversation**:
+   - Insert into `conversations` with new `conversation_id` and `session_id`.
+
+6. **Response**:
+   - Return `200` with `{"response": "I’m here to assist you!", "conversation_id": "<uuid>"}`.
+
+##### Data Flow
+```
+Client → POST /message
+  Request: {"business_id": "uuid", "user_id": "uuid", "message": "Hello, I need help"}
+  ↓
+Flask App → auth.py (require_api_key)
+  ↓
+routes/message_handling.py → handle_message_route
+  1. Validates JSON schema
+  2. Queries stages table → Fetches template IDs
+  3. Queries conversations table → Fetches last N conversations
+  4. Three Prompt System:
+     - Fetch template (255544...) → Render with DB data → OpenAI (Intent: "Assist, 0.9")
+     - Fetch template → Render with message → OpenAI (Extract: "{issue: help}")
+     - Fetch template → Render with intent+extracted → OpenAI (Response: "I’m here to assist!")
+  5. Inserts into conversations table
+  6. Returns response
+  ↓
+Client ← {"response": "I’m here to assist you!", "conversation_id": "uuid"}
+```
+
+#### `POST /stages`
+##### Logic
+1. **Request Validation**:
+   - Validate against updated `stage_schema`:
+     ```python
+     stage_schema = {
+         "type": "object",
+         "properties": {
+             "business_id": {"type": "string", "format": "uuid"},
+             "stage_name": {"type": "string"},
+             "stage_description": {"type": "string"},
+             "stage_type": {"type": "string"},
+             "stage_selection_template_id": {"type": "string"},
+             "data_extraction_template_id": {"type": "string"},
+             "response_generation_template_id": {"type": "string"}
+         },
+         "required": ["business_id", "stage_name", "stage_description", "stage_type"]
+     }
+     ```
+
+2. **Database Insert**:
+   - Use provided template IDs or defaults:
+     ```sql
+     INSERT INTO stages (stage_id, business_id, stage_name, stage_description, stage_type, 
+                         stage_selection_template_id, data_extraction_template_id, response_generation_template_id)
+     VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+     ```
+
+3. **Response**:
+   - Return `201` with `{"stage_id": "<uuid>"}`.
+
+##### Data Flow
+```
+Client → POST /stages
+  Request: {"business_id": "uuid", "stage_name": "Greet", "stage_description": "...", "stage_type": "response", "stage_selection_template_id": "255544..."}
+  ↓
+Flask App → auth.py
+  ↓
+routes/stage_management.py → create_stage_route
+  1. Validates JSON schema
+  2. Inserts into stages table with template IDs
+  3. Returns stage_id
+  ↓
+Client ← {"stage_id": "uuid"}
+```
+
+---
+
+### Updated Code Snippet (`message_handling.py`)
+```python
+def handle_message_route(request, schemas, get_db_connection, call_openai, render_prompt):
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    
+    data = request.get_json()
+    try:
+        validate(data, message_schema)
+    except ValidationError as e:
+        return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid request format", "details": str(e)}), 400
+
+    conn = get_db_connection()
+    try:
+        c = conn.cursor()
+        # Fetch template IDs
+        c.execute("SELECT stage_selection_template_id, data_extraction_template_id, response_generation_template_id FROM stages WHERE business_id = %s LIMIT 1;", (data["business_id"],))
+        stage_row = c.fetchone()
+        if not stage_row:
+            return jsonify({"error_code": "NOT_FOUND", "message": "No stages found for this business"}), 404
+        
+        stage = {
+            "selection_template_id": stage_row[0],
+            "extraction_template_id": stage_row[1],
+            "generation_template_id": stage_row[2]
+        }
+        
+        # Fetch conversation context
+        c.execute("SELECT conversation_id FROM conversations WHERE business_id = %s AND user_id = %s ORDER BY created_at DESC LIMIT 3;", (data["business_id"], data["user_id"]))
+        last_convos = [row[0] for row in c.fetchall()]
+        summary = "User asked for help twice"  # Simplified; could use OpenAI to summarize
+        
+        # Fetch stage list
+        c.execute("SELECT stage_name FROM stages WHERE business_id = %s;", (data["business_id"],))
+        stage_list = [row[0] for row in c.fetchall()]
+        
+        # Step 1: Intent
+        selection_template = get_template(stage["selection_template_id"])
+        selection_prompt = render_prompt(selection_template, {"stage list": str(stage_list), "summary of last conversations": summary, "N": "3"})
+        selection_response = call_openai(selection_prompt)
+        
+        # Step 2: Extraction
+        extraction_template = get_template(stage["extraction_template_id"])
+        extraction_prompt = render_prompt(extraction_template, {"message": data["message"]})
+        extraction_response = call_openai(extraction_prompt)
+        
+        # Step 3: Response
+        generation_template = get_template(stage["generation_template_id"])
+        generation_prompt = render_prompt(generation_template, {"intent": selection_response, "extracted_data": extraction_response})
+        final_response = call_openai(generation_prompt)
+
+        # Store conversation
+        conversation_id = str(uuid.uuid4())
+        session_id = str(uuid.uuid4())
+        c.execute("INSERT INTO conversations (conversation_id, business_id, user_id, session_id) VALUES (%s, %s, %s, %s);", 
+                  (conversation_id, data["business_id"], data["user_id"], session_id))
+        conn.commit()
+        return jsonify({"response": final_response, "conversation_id": conversation_id}), 200
+    except Exception as e:
+        conn.rollback()
+        log.error(f"Error in handle_message: {str(e)}")
+        return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+    finally:
+        release_db_connection(conn)
+```
+
+---
+
+### For Future AI
+- **Key Update**: `stages` holds template IDs, not prompts. Templates are external and rendered with DB-extracted data.
+- **Dynamic Context**: The system pulls conversation history and stage metadata to enrich prompts.
+- **Next Steps**: Implement a `templates` table or config file for template management; enhance `conversations` to store message text for better summaries.
+
+This aligns with your clarification—hope it’s clear! Let me know if further adjustments are needed.
+
+================================================================================
+File: conversation_summary_template.txt
+Path: .\backend\templates\conversation_summary_template.txt
+Size: 1535
+Modified: 2025-04-14T14:06:07.282374
+Created: 2025-04-14T14:06:03.756283
+Hash: 59f42c3d3689fb5ab9486bff36e035bd17fdde35d8f79d0d06178f2426f7b9cc
+Lines: 46
+================================================================================
+You are a conversation summarizer. Your task is to create a concise, informative summary of the conversation that captures the key points, decisions, and actions taken.
+
+Context:
+- Business: {business_name}
+- User: {user_name}
+- Conversation ID: {conversation_id}
+- Start Time: {start_time}
+- Last Updated: {last_updated}
+
+Conversation History:
+{conversation_history}
+
+Instructions:
+1. Analyze the conversation flow and identify:
+   - Main topics discussed
+   - Key decisions made
+   - Actions taken or requested
+   - Any pending items or follow-ups needed
+   - Overall sentiment of the conversation
+
+2. Create a structured summary with the following sections:
+   - Overview (2-3 sentences)
+   - Key Points (bullet points)
+   - Decisions/Actions Taken
+   - Pending Items (if any)
+   - Next Steps (if applicable)
+
+3. Keep the summary:
+   - Professional and objective
+   - Focused on actionable items
+   - Clear and concise
+   - Free of personal opinions
+   - Suitable for business context
+
+Format your response as a JSON object with the following structure:
+{
+    "overview": "Brief summary of the conversation",
+    "key_points": ["Point 1", "Point 2", ...],
+    "decisions": ["Decision 1", "Decision 2", ...],
+    "pending_items": ["Item 1", "Item 2", ...],
+    "next_steps": ["Step 1", "Step 2", ...],
+    "sentiment": "positive/neutral/negative",
+    "confidence_score": 0.95
+}
+
+Remember to maintain confidentiality and only include information that is relevant to the business context. 
+
+================================================================================
+File: stage_selection_template.txt
+Path: .\backend\templates\stage_selection_template.txt
+Size: 1375
+Modified: 2025-04-12T16:40:43.812411
+Created: 2025-04-12T16:40:40.239421
+Hash: b27bbe171065d3357da722b907b93d962fa9f2988799e18443c41a0db4e933c0
+Lines: 45
+================================================================================
+You are a conversation flow manager. Your task is to determine which conversation stage best matches the user's message.
+
+Available stages:
+1. Default Conversation Stage
+   - Purpose: Handle general conversation when no specific context is clear
+   - Use when: Message is a greeting or too vague to categorize
+
+2. Introduction
+   - Purpose: Handle user introductions and initial inquiries
+   - Use when: User is introducing themselves or asking about the service
+
+3. Products
+   - Purpose: Handle product-related queries
+   - Use when: User mentions specific products or asks about pricing/features
+
+4. Not Sure
+   - Purpose: Handle unclear or ambiguous messages
+   - Use when: Message intent is unclear or doesn't match other categories
+
+5. Test
+   - Purpose: Handle test-related queries
+   - Use when: User is explicitly testing the system
+
+Instructions:
+1. Analyze the user's message content carefully
+2. Compare against each stage's purpose and criteria
+3. Select the most appropriate stage
+4. Respond ONLY with the stage name in the format: "stage_name"
+
+Example responses:
+- "introduction"
+- "products"
+- "not_sure"
+
+Current message to analyze:
+{{message}}
+
+Previous stage (if any):
+{{previous_stage}}
+
+Conversation history (if any):
+{{conversation_history}}
+
+Response format:
+Respond with ONLY the stage name, nothing else. 
+
+================================================================================
+File: README.md
+Path: .\front-end\public\README.md
+Size: 767
+Modified: 2025-04-01T23:46:02.963441
+Created: 2025-04-01T23:46:00.490151
+Hash: 736a7535ad08cbfa7cf65f2f63c3bb577987eafdbe142e47d4172bd7257a2dc1
+Lines: 26
+================================================================================
+# Static Files
+
+This directory contains the static files for the ICMP Events API frontend.
+
+## Required Files
+
+1. `favicon.ico` - A 16x16 or 32x32 pixel icon file for the browser tab
+2. `logo192.png` - A 192x192 pixel PNG logo for mobile devices
+3. `logo512.png` - A 512x512 pixel PNG logo for larger displays
+
+## How to Add Files
+
+1. Create or obtain the required image files
+2. Place them in this directory
+3. Ensure the files match the names exactly:
+   - `favicon.ico`
+   - `logo192.png`
+   - `logo512.png`
+
+## File Specifications
+
+- `favicon.ico`: Should be 16x16 or 32x32 pixels
+- `logo192.png`: Should be 192x192 pixels
+- `logo512.png`: Should be 512x512 pixels
+
+All files should be optimized for web use to ensure fast loading times. 
+
+================================================================================
+File: files.app.txt
+Path: .\front-end\src\components\files.app.txt
+Size: 1679
+Modified: 2025-03-31T18:05:57.577093
+Created: 2025-03-31T18:05:57.051458
+Hash: 84ffbffe5a4622ea47abd4469acb54bab2352cd602a7b21f276ad8ee9d9fcc9f
+Lines: 44
+================================================================================
+import os
+import datetime
+
+def create_file_list(start_dir=".", output_file="file_list.txt"):
+    """
+    Creates a text file containing a listing of all files and directories
+    within a specified directory (and its subdirectories).
+
+    Args:
+        start_dir (str): The root directory to start the listing from. Defaults to the current directory.
+        output_file (str): The name of the output text file. Defaults to "file_list.txt".
+    """
+
+    try:
+        with open(output_file, "w") as f:
+            f.write(f"File and Directory Listing - {datetime.datetime.now()}\n")
+            f.write("-" * 40 + "\n")
+
+            for root, dirs, files in os.walk(start_dir):
+                # Write the directory name
+                f.write(f"Directory: {root}\n")
+
+                # Write the files in the directory
+                for file in files:
+                    f.write(f"  - File: {file}\n")
+
+                # Add a separator after each directory (optional)
+                f.write("-" * 20 + "\n")
+
+        print(f"File list created successfully: {output_file}")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+
+if __name__ == "__main__":
+    # Get the directory from the user (optional - can be hardcoded if needed)
+    dir_to_list = input("Enter the directory to list (or press Enter for current directory): ")
+    if not dir_to_list:
+        dir_to_list = "." #Current Directory
+    output_filename = input("Enter the output filename (or press Enter for 'file_list.txt'): ")
+    if not output_filename:
+        output_filename = "file_list.txt"
+    create_file_list(dir_to_list, output_filename)
+

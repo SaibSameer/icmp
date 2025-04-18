@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Business Event Property Schema",
+  "description": "Stores JSON schemas used to validate the custom_event_properties field in the events table.",
+  "type": "object",
+  "properties": {
+    "schema_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the schema."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of the business that owns this schema."
+    },
+    "schema_name": {
+      "type": "string",
+      "description": "A descriptive name for the schema (unique per business)."
+    },
+    "schema_description": {
+      "type": "string",
+      "description": "A description of the schema's purpose."
+    },
+    "schema_json": {
+      "type": "object",
+      "description": "The actual JSON schema definition for the custom_event_properties."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp indicating when the schema was created."
+    }
+  },
+  "required": [
+    "schema_id",
+    "business_id",
+    "schema_name",
+    "schema_json"
+  ],
+  "additionalProperties": false
+}

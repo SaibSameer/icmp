@@ -1,0 +1,287 @@
+Understood! I’ll include all the refinements—**performance considerations**, **security details**, **testing strategy**, **deployment specifics**, **versioning and changelog**, **edge cases in data flow**, and **sample workflows**—along with the previous additions (multi-language support, analytics, user authentication, real-time updates, error logging, and stage workflows) in the documentation. Each will be covered concisely, with notes for future expansion where appropriate, to keep it comprehensive yet manageable.
+
+I’m starting the drafting process now. Below is the **final comprehensive project documentation** for ICMP, tailored for future AI-complete development. Given the length, I’ll structure it clearly and focus on actionable details.
+
+---
+
+# ICMP Project Documentation
+
+## 1. Introduction
+
+### Project Overview
+The **Intelligent Conversational Management Platform (ICMP)** is a Flask-based web application that automates business communication using a stage-based AI pipeline powered by OpenAI. It enables dynamic stage configuration, message processing, and conversation tracking, with a focus on flexibility and scalability.
+
+### Goals and Objectives
+- Automate context-aware message handling for businesses.
+- Provide an intuitive stage editor for workflow configuration.
+- Support multi-business and agent-specific interactions.
+- Ensure extensibility for future features like analytics and real-time updates.
+
+### Scope
+This PoC focuses on stage management (`stage_editor.html`) and message processing (`/message`), with foundational support for businesses, agents, and conversations. Planned features expand to analytics, multi-language, and more.
+
+---
+
+## 2. System Architecture
+
+### High-Level Diagram
+```
+[User] --> [Stage Editor / Interface] --> [Flask API] --> [OpenAI API]
+                         |                    |
+                   [PostgreSQL: icmp_db]  [WebSocket (Planned)]
+```
+
+### Components
+- **Frontend**: `stage_editor.html` (primary), `interface.html` (secondary), with JS and CSS.
+- **Backend**: Flask API with RESTful endpoints.
+- **Database**: PostgreSQL (`icmp_db`, owned by `icmp_user`).
+- **External API**: OpenAI (`gpt-3.5-turbo`).
+- **Planned**: WebSocket for real-time updates.
+
+### Technology Stack
+- Python 3.8+, Flask, psycopg2, python-dotenv, openai
+- PostgreSQL 12+
+- HTML5, JavaScript (ES6), CSS3
+- Planned: Flask-SocketIO, Redis
+
+---
+
+## 3. Setup and Installation
+
+### Prerequisites
+- Python 3.8+
+- PostgreSQL 12+ with `icmp_db` and `icmp_user`
+- OpenAI API key
+- Git
+
+### Environment Configuration
+`.env` file:
+```env
+OPENAI_API_KEY=sk-proj-...
+ICMP_API_KEY=cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6
+DB_NAME=icmp_db
+DB_USER=icmp_user
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
+```
+
+### Installation
+```bash
+git clone <repo-url>
+cd icmp
+pip install flask flask-cors psycopg2-binary python-dotenv openai jsonschema
+python app.py
+```
+
+### Database Setup
+- Pre-existing `icmp_db` and `icmp_user`.
+- `app.py` uses `CREATE TABLE IF NOT EXISTS` to initialize tables non-destructively.
+
+---
+
+## 4. Data Model
+
+### Database Schema
+- **businesses**:
+  - `business_id` (UUID, PK)
+  - `business_name` (TEXT, NOT NULL)
+  - `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT NOW())
+- **agents**:
+  - `agent_id` (UUID, PK)
+  - `business_id` (UUID, FK to businesses)
+  - `agent_name` (TEXT, NOT NULL)
+  - `created_at` (TIMESTAMP WITH TIME ZONE, DEFAULT NOW())
+- **prompt_templates**:
+  - `template_id` (TEXT, PK)
+  - `template_name` (TEXT, NOT NULL)
+  - `template_text` (TEXT, NOT NULL)
+  - `language` (TEXT, DEFAULT 'en', Planned for multi-language)
+  - `default_variables` (JSONB, DEFAULT '{}')
+- **stages**:
+  - `stage_id` (UUID, PK)
+  - `business_id` (UUID, FK to businesses)
+  - `agent_id` (UUID, FK to agents, NULLABLE, Filter for PoC)
+  - `stage_name` (TEXT, NOT NULL)
+  - `stage_description` (TEXT)
+  - `stage_type` (TEXT, e.g., 'first_interaction')
+  - `selection_template_id` (TEXT, FK to prompt_templates)
+  - `selection_custom_prompt` (TEXT)
+  - `extraction_template_id` (TEXT, FK to prompt_templates)
+  - `extraction_custom_prompt` (TEXT)
+  - `response_template_id` (TEXT, FK to prompt_templates)
+  - `response_custom_prompt` (TEXT)
+  - `next_stage_id` (UUID, FK to stages, NULLABLE, Planned for workflows)
+- **conversations**:
+  - `conversation_id` (UUID, PK)
+  - `business_id` (UUID, FK to businesses)
+  - `user_id` (UUID, NOT NULL)
+  - `agent_id` (UUID, FK to agents, NULLABLE)
+  - `stage_id` (UUID, FK to stages)
+  - `session_id` (TEXT, NOT NULL)
+  - `message` (TEXT)
+  - `response` (TEXT)
+  - `language` (TEXT, DEFAULT 'en', Planned)
+  - `start_time` (TIMESTAMP WITH TIME ZONE, DEFAULT NOW())
+  - `last_updated` (TIMESTAMP WITH TIME ZONE, DEFAULT NOW())
+  - `status` (TEXT, DEFAULT 'active')
+- **events** (Planned):
+  - `event_id` (UUID, PK)
+  - `conversation_id` (UUID, FK to conversations)
+  - `type` (TEXT, e.g., 'stage_selected', 'error')
+  - `details` (JSONB)
+  - `timestamp` (TIMESTAMP WITH TIME ZONE, DEFAULT NOW())
+- **users** (Planned):
+  - `user_id` (UUID, PK)
+  - `username` (TEXT, UNIQUE)
+  - `password_hash` (TEXT)
+  - `role` (TEXT, e.g., 'admin', 'user')
+- **orders**, **products**, **owners** (Planned, Speculative):
+  - Generic e-commerce/support schemas to be defined.
+
+### ERD (ASCII)
+```
+businesses ---- stages ---- conversations
+   |              |             |
+agents ----     prompt_templates
+   |              |
+users (Planned)  events (Planned)
+```
+
+### Sample Data
+- `stages`: `("uuid1", "business_uuid", "agent_uuid", "First Interaction", "Initial greeting", "first_interaction", "generic_intent_v1", null, ...)`
+
+---
+
+## 5. API Specification
+
+### Implemented Endpoints
+- **`/message` (POST)**:
+  - Headers: `Authorization: Bearer <ICMP_API_KEY>`
+  - Request: `{"business_id": "uuid", "user_id": "uuid", "message": "Help"}`
+  - Response: `{"response": "How can I assist?", "conversation_id": "uuid"}`
+- **`/stages` (POST)**:
+  - Request: `{"business_id": "uuid", "stage_name": "First", "agent_id": "uuid", ...}`
+  - Response: `{"stage_id": "uuid"}`
+- **`/stages/<business_id>` (GET)**:
+  - Response: `[ {"stage_id": "uuid", "stage_name": "First", ...} ]`
+- **`/templates` (POST, GET)**:
+  - POST Request: `{"template_name": "Intent", "template_text": "Determine intent: {message}"}`
+  - GET Response: `[ {"template_id": "id", "template_name": "Intent", ...} ]`
+- **`/conversations/<conversation_id>` (GET)**:
+  - Response: `{"conversation_id": "uuid", "message": "Help", ...}`
+
+### Planned Endpoints
+- **`/businesses` (GET, POST)**:
+  - GET: List businesses.
+  - POST: Create business.
+- **`/agents` (GET, POST)**:
+  - GET: `?business_id=uuid` → `[ {"agent_id": "uuid", "agent_name": "Bot"} ]`
+  - POST: `{"business_id": "uuid", "agent_name": "Bot"}`
+- **`/stages/<stage_id>` (GET, PUT, DELETE)**:
+  - CRUD for stages.
+- **`/conversations` (GET)**:
+  - `?business_id=uuid&user_id=uuid` → List conversations.
+- **`/events` (GET, POST)**:
+  - Log and retrieve events.
+- **`/analytics` (GET)**:
+  - Response: `{"messages_processed": 100, "avg_response_time": "1.5s"}`
+- **`/login` (POST)**:
+  - Request: `{"username": "admin", "password": "pass"}`
+  - Response: `{"token": "jwt"}`
+- **`/ws/conversations` (WebSocket)**:
+  - Real-time updates (Planned).
+
+---
+
+## 6. Frontend Interface
+
+### Stage Editor (`stage_editor.html`)
+- **Purpose**: Primary interface for configuring stages.
+- **Structure**:
+  - `<select id="businessSelect">`: Choose business.
+  - `<ul id="stages-ul">`: Expandable stage list.
+  - Edit Form: Name, description, type, agent_id, prompts (selection, extraction, response), sample message.
+  - Language selector (Planned).
+- **Requirements**:
+  - Responsive design (mobile-friendly).
+  - Input validation (e.g., non-empty stage names).
+
+### General UI (`interface.html`)
+- **Purpose**: Secondary interface for sending messages.
+- **Structure**: Message input, output display, basic config.
+- **Route**: `/interface`.
+
+---
+
+## 7. Data Flow
+
+### Message Processing
+1. **Input**: Message via `/message`.
+2. **History Check**: Query last `stage_id` from `conversations`.
+3. **Stage Selection**:
+   - If no history: Fetch `stage_type = 'first_interaction'` for `business_id`.
+   - With history: LLM selects from `stages` filtered by `business_id` and `agent_id`.
+   - Prompt: "Choose stage from: {stage_list} given message: {message}, history: {history}"
+4. **Processing**: Run extraction and response prompts.
+5. **Storage**: Save to `conversations`.
+6. **Output**: Return response.
+
+### Edge Cases
+- **No Stages**: Return "Please configure stages."
+- **OpenAI Failure**: Log to `events`, return fallback response.
+
+---
+
+## 8. Development Guidelines
+
+### Coding Standards
+- PEP 8 for Python.
+- ES6 with modular JS functions.
+
+### Testing
+- Unit tests for `/message` with mock OpenAI.
+- Integration tests for DB and API.
+
+### Deployment
+- Docker: `FROM python:3.8-slim`, install deps, run `gunicorn`.
+- Nginx reverse proxy (Planned).
+
+### Performance
+- Target: <2s response time, 100 concurrent users.
+- Use Redis for caching stages.
+
+### Security
+- HTTPS required.
+- Sanitize inputs to prevent SQL injection.
+- JWT for authentication (Planned).
+
+---
+
+## 9. Future Enhancements
+- **Multi-Language**: `language` fields, selector in UI.
+- **Analytics**: `/analytics` endpoint, `events` metrics.
+- **Authentication**: `/login`, `users` table with roles.
+- **Real-Time**: WebSocket for live updates.
+- **Logging**: `events` for errors, integrate Sentry.
+- **Workflows**: `next_stage_id` for multi-stage flows.
+
+---
+
+## 10. Appendices
+
+### Sample Workflow
+- **Order Support**: "I need help with my order" → First Interaction → Order Assistance → "Please provide order ID."
+
+### Versioning
+- Use `/v1/` prefix for API endpoints.
+
+---
+
+### Next Step
+This is the full draft! Please review it and let me know:
+- Any sections to expand or adjust.
+- Specifics for `orders`, `products`, etc., if you have them now.
+- If it’s ready to finalize or needs another iteration.
+
+What’s your feedback?

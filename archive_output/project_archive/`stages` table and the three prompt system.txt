@@ -1,0 +1,300 @@
+Thank you for the clarification! Let’s refine the understanding of the `stages` table and the three prompt system based on your input. You’re indicating that the `stages` table doesn’t store the full prompt templates directly but instead contains **template IDs** (e.g., `255544...`) that reference external templates. These templates are then used to draft prompts dynamically, incorporating data extracted from the database (e.g., conversation history, stage lists). Below, I’ll update the explanation for future AIs, including your example, and adjust the logic and data flow accordingly.
+
+---
+
+### Updated Explanation for Future AI: Three Prompt System with Template IDs
+
+#### Revised Overview
+The "three prompt system" in `icmp_events_api` processes messages in three stages—intent detection, data extraction, and response generation—using OpenAI. Unlike the previous assumption where full prompt templates were stored directly in the `stages` table, the table now contains **template IDs** (e.g., UUIDs or other identifiers). These IDs reference predefined prompt templates stored elsewhere (e.g., in code, a config file, or another table). The templates are rendered dynamically by combining the template structure with data extracted from the database, such as conversation history or stage metadata.
+
+#### Purpose
+- **Separation of Concerns**: Template IDs in the database decouple prompt logic from storage, allowing templates to be managed independently.
+- **Dynamic Prompting**: Templates use placeholders (e.g., `{stage list}`, `{summary of last conversations}`) filled with real-time DB data.
+- **Customization**: Businesses can associate specific template IDs with stages, tailoring the message processing flow.
+
+#### Example from User
+- **Stage Selection Prompt Template ID**: `255544...`
+- **Template**: 
+  ```
+  "Based on the last N conversations and {stage list} {summary of last conversations}, what most represents the current stage? Reply with {current stage} with confidence level."
+  ```
+- **Rendered Prompt**: 
+  ```
+  "Based on the last 3 conversations and [Greet, Assist, Close] [User asked for help twice, then thanked], what most represents the current stage? Reply with Assist with confidence level."
+  ```
+- **OpenAI Response**: 
+  ```
+  "Assist, confidence: 0.9"
+  ```
+
+---
+
+### Interaction with Database and Stages
+
+#### Updated Database Schema: `stages` Table
+The `stages` table now stores template IDs instead of full prompts:
+```sql
+CREATE TABLE IF NOT EXISTS stages (
+    stage_id UUID PRIMARY KEY,
+    business_id UUID NOT NULL REFERENCES businesses(business_id),
+    stage_name TEXT NOT NULL,
+    stage_description TEXT NOT NULL,
+    stage_type TEXT NOT NULL,
+    stage_selection_template_id TEXT NOT NULL DEFAULT 'default_selection_id',
+    data_extraction_template_id TEXT NOT NULL DEFAULT 'default_extraction_id',
+    response_generation_template_id TEXT NOT NULL DEFAULT 'default_generation_id',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+- **Key Columns**:
+  - `stage_selection_template_id`: ID referencing the intent detection template.
+  - `data_extraction_template_id`: ID for the data extraction template.
+  - `response_generation_template_id`: ID for the response generation template.
+- **Change**: Replaced full prompt text with template IDs (e.g., UUIDs or strings like `255544...`).
+
+#### Template Storage
+- **Location**: Templates are not in the `stages` table. They could be:
+  - Hardcoded in `openai_helper.py` or a new `templates.py` file.
+  - Stored in a separate `templates` table (e.g., `template_id`, `template_text`).
+  - Loaded from a config file (e.g., JSON/YAML).
+- **Assumption**: For this explanation, assume templates are hardcoded in `openai_helper.py` with a lookup function (e.g., `get_template(template_id)`).
+
+#### Example Templates (Hypothetical `templates.py`)
+```python
+TEMPLATES = {
+    "255544...": "Based on the last N conversations and {stage list} {summary of last conversations}, what most represents the current stage? Reply with {current stage} with confidence level",
+    "default_extraction_id": "Extract key entities from this message: {message}",
+    "default_generation_id": "Generate a response based on intent: {intent} and extracted data: {extracted_data}"
+}
+
+def get_template(template_id):
+    return TEMPLATES.get(template_id, "Default prompt: {message}")
+```
+
+#### Database Interaction
+1. **Storage**: `POST /stages` inserts a row with template IDs (e.g., `255544...` for selection).
+2. **Retrieval**: `POST /message` queries the `stages` table for template IDs by `business_id`.
+3. **Data Extraction**: Additional DB queries fetch context (e.g., last N conversations from `conversations`).
+4. **Rendering**: Template IDs are used to fetch templates, which are populated with DB data.
+
+#### Data Schema
+- **Request Schema** (unchanged from `message_handling.py`):
+  ```python
+  message_schema = {
+      "type": "object",
+      "properties": {
+          "business_id": {"type": "string", "format": "uuid"},
+          "user_id": {"type": "string", "format": "uuid"},
+          "message": {"type": "string"}
+      },
+      "required": ["business_id", "user_id", "message"]
+  }
+  ```
+
+---
+
+### Updated Logic and Data Flow for Endpoints
+
+#### `POST /message`
+##### Logic
+1. **Request Validation**:
+   - Ensure JSON format and validate against `message_schema`.
+   - Return `400` if invalid.
+
+2. **Fetch Stage Data**:
+   - Query `stages` for the first matching row:
+     ```sql
+     SELECT stage_selection_template_id, data_extraction_template_id, response_generation_template_id
+     FROM stages 
+     WHERE business_id = %s 
+     LIMIT 1;
+     ```
+   - If no stage, return `404`.
+
+3. **Fetch Conversation Context** (New Step):
+   - Query `conversations` for the last N (e.g., 3) conversations:
+     ```sql
+     SELECT conversation_id, business_id, user_id, created_at 
+     FROM conversations 
+     WHERE business_id = %s AND user_id = %s 
+     ORDER BY created_at DESC 
+     LIMIT 3;
+     ```
+   - Summarize (e.g., concatenate messages or use OpenAI for summary—assumed in `openai_helper.py`).
+
+4. **Three Prompt Processing**:
+   - **Step 1: Intent Detection**:
+     - Get template via `stage_selection_template_id` (e.g., `255544...`).
+     - Fetch stage list (e.g., all `stage_name` for `business_id`).
+     - Render template with DB data:
+       ```python
+       template = get_template("255544...")
+       prompt = render_prompt(template, {
+           "stage list": "[Greet, Assist, Close]",
+           "summary of last conversations": "User asked for help twice",
+           "N": "3"
+       })
+       # "Based on the last 3 conversations and [Greet, Assist, Close] User asked for help twice, what most represents the current stage? Reply with Assist with confidence level"
+       ```
+     - Call OpenAI → Result: `"Assist, confidence: 0.9"`.
+   - **Step 2: Data Extraction**:
+     - Get template via `data_extraction_template_id`.
+     - Render: `"Extract key entities from this message: Hello, I need help"`
+     - Call OpenAI → Result: `"entities: {issue: help}"`.
+   - **Step 3: Response Generation**:
+     - Get template via `response_generation_template_id`.
+     - Render with context: 
+       ```python
+       "Generate a response based on intent: Assist and extracted data: {issue: help}"
+       ```
+     - Call OpenAI → Result: `"I’m here to assist you!"`.
+
+5. **Store Conversation**:
+   - Insert into `conversations` with new `conversation_id` and `session_id`.
+
+6. **Response**:
+   - Return `200` with `{"response": "I’m here to assist you!", "conversation_id": "<uuid>"}`.
+
+##### Data Flow
+```
+Client → POST /message
+  Request: {"business_id": "uuid", "user_id": "uuid", "message": "Hello, I need help"}
+  ↓
+Flask App → auth.py (require_api_key)
+  ↓
+routes/message_handling.py → handle_message_route
+  1. Validates JSON schema
+  2. Queries stages table → Fetches template IDs
+  3. Queries conversations table → Fetches last N conversations
+  4. Three Prompt System:
+     - Fetch template (255544...) → Render with DB data → OpenAI (Intent: "Assist, 0.9")
+     - Fetch template → Render with message → OpenAI (Extract: "{issue: help}")
+     - Fetch template → Render with intent+extracted → OpenAI (Response: "I’m here to assist!")
+  5. Inserts into conversations table
+  6. Returns response
+  ↓
+Client ← {"response": "I’m here to assist you!", "conversation_id": "uuid"}
+```
+
+#### `POST /stages`
+##### Logic
+1. **Request Validation**:
+   - Validate against updated `stage_schema`:
+     ```python
+     stage_schema = {
+         "type": "object",
+         "properties": {
+             "business_id": {"type": "string", "format": "uuid"},
+             "stage_name": {"type": "string"},
+             "stage_description": {"type": "string"},
+             "stage_type": {"type": "string"},
+             "stage_selection_template_id": {"type": "string"},
+             "data_extraction_template_id": {"type": "string"},
+             "response_generation_template_id": {"type": "string"}
+         },
+         "required": ["business_id", "stage_name", "stage_description", "stage_type"]
+     }
+     ```
+
+2. **Database Insert**:
+   - Use provided template IDs or defaults:
+     ```sql
+     INSERT INTO stages (stage_id, business_id, stage_name, stage_description, stage_type, 
+                         stage_selection_template_id, data_extraction_template_id, response_generation_template_id)
+     VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+     ```
+
+3. **Response**:
+   - Return `201` with `{"stage_id": "<uuid>"}`.
+
+##### Data Flow
+```
+Client → POST /stages
+  Request: {"business_id": "uuid", "stage_name": "Greet", "stage_description": "...", "stage_type": "response", "stage_selection_template_id": "255544..."}
+  ↓
+Flask App → auth.py
+  ↓
+routes/stage_management.py → create_stage_route
+  1. Validates JSON schema
+  2. Inserts into stages table with template IDs
+  3. Returns stage_id
+  ↓
+Client ← {"stage_id": "uuid"}
+```
+
+---
+
+### Updated Code Snippet (`message_handling.py`)
+```python
+def handle_message_route(request, schemas, get_db_connection, call_openai, render_prompt):
+    if not request.is_json:
+        return jsonify({"error": "Request must be JSON"}), 400
+    
+    data = request.get_json()
+    try:
+        validate(data, message_schema)
+    except ValidationError as e:
+        return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid request format", "details": str(e)}), 400
+
+    conn = get_db_connection()
+    try:
+        c = conn.cursor()
+        # Fetch template IDs
+        c.execute("SELECT stage_selection_template_id, data_extraction_template_id, response_generation_template_id FROM stages WHERE business_id = %s LIMIT 1;", (data["business_id"],))
+        stage_row = c.fetchone()
+        if not stage_row:
+            return jsonify({"error_code": "NOT_FOUND", "message": "No stages found for this business"}), 404
+        
+        stage = {
+            "selection_template_id": stage_row[0],
+            "extraction_template_id": stage_row[1],
+            "generation_template_id": stage_row[2]
+        }
+        
+        # Fetch conversation context
+        c.execute("SELECT conversation_id FROM conversations WHERE business_id = %s AND user_id = %s ORDER BY created_at DESC LIMIT 3;", (data["business_id"], data["user_id"]))
+        last_convos = [row[0] for row in c.fetchall()]
+        summary = "User asked for help twice"  # Simplified; could use OpenAI to summarize
+        
+        # Fetch stage list
+        c.execute("SELECT stage_name FROM stages WHERE business_id = %s;", (data["business_id"],))
+        stage_list = [row[0] for row in c.fetchall()]
+        
+        # Step 1: Intent
+        selection_template = get_template(stage["selection_template_id"])
+        selection_prompt = render_prompt(selection_template, {"stage list": str(stage_list), "summary of last conversations": summary, "N": "3"})
+        selection_response = call_openai(selection_prompt)
+        
+        # Step 2: Extraction
+        extraction_template = get_template(stage["extraction_template_id"])
+        extraction_prompt = render_prompt(extraction_template, {"message": data["message"]})
+        extraction_response = call_openai(extraction_prompt)
+        
+        # Step 3: Response
+        generation_template = get_template(stage["generation_template_id"])
+        generation_prompt = render_prompt(generation_template, {"intent": selection_response, "extracted_data": extraction_response})
+        final_response = call_openai(generation_prompt)
+
+        # Store conversation
+        conversation_id = str(uuid.uuid4())
+        session_id = str(uuid.uuid4())
+        c.execute("INSERT INTO conversations (conversation_id, business_id, user_id, session_id) VALUES (%s, %s, %s, %s);", 
+                  (conversation_id, data["business_id"], data["user_id"], session_id))
+        conn.commit()
+        return jsonify({"response": final_response, "conversation_id": conversation_id}), 200
+    except Exception as e:
+        conn.rollback()
+        log.error(f"Error in handle_message: {str(e)}")
+        return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+    finally:
+        release_db_connection(conn)
+```
+
+---
+
+### For Future AI
+- **Key Update**: `stages` holds template IDs, not prompts. Templates are external and rendered with DB-extracted data.
+- **Dynamic Context**: The system pulls conversation history and stage metadata to enrich prompts.
+- **Next Steps**: Implement a `templates` table or config file for template management; enhance `conversations` to store message text for better summaries.
+
+This aligns with your clarification—hope it’s clear! Let me know if further adjustments are needed.

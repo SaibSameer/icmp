@@ -1,0 +1,12 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center horizontally */
+  padding: 20px;
+}
+
+.App > * { /* Style direct children of App */
+  margin-bottom: 20px; /* Add spacing between sections */
+  width: 80%; /* Set a reasonable width */
+  max-width: 800px; /* Limit the maximum width */
+}

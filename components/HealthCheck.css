@@ -1,0 +1,14 @@
+.health-check-container {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 5px;
+}
+
+.health-data {
+  margin-top: 10px;
+}
+
+.health-data p {
+  margin-bottom: 5px;
+}

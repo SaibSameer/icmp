@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Configuration",
+  "description": "Represents system-wide configuration settings for the ICMP.",
+  "type": "object",
+  "properties": {
+    "llm_settings": {
+      "type": "object",
+      "description": "Default settings for LLM integration.",
+      "properties": {
+        "default_model": {
+          "type": "string",
+          "description": "Default LLM model to use."
+        },
+        "api_key": {
+          "type": "string",
+          "description": "API key for accessing the LLM service."
+        },
+        "rate_limit_per_minute": {
+          "type": "integer",
+          "description": "Maximum number of requests per minute to the LLM service."
+        }
+      },
+      "required": ["default_model", "api_key", "rate_limit_per_minute"],
+      "additionalProperties": false
+    },
+    "security_settings": {
+      "type": "object",
+      "description": "Security-related configuration settings.",
+      "properties": {
+        "api_key_rotation_policy": {
+          "type": "string",
+          "description": "Policy for rotating API keys (e.g., 'monthly', 'quarterly')."
+        },
+        "password_complexity_rules": {
+          "type": "string",
+          "description": "Rules for password complexity (e.g., minimum length, required characters)."
+        }
+      },
+      "additionalProperties": false
+    },
+    "data_storage_settings": {
+      "type": "object",
+      "description": "Configuration settings for data storage.",
+      "properties": {
+        "retention_policy": {
+          "type": "string",
+          "description": "Data retention policy (e.g., '30 days', '1 year')."
+        },
+        "backup_frequency": {
+          "type": "string",
+          "description": "Frequency of data backups (e.g., 'daily', 'weekly')."
+        }
+      },
+      "additionalProperties": false
+    },
+    "multi_tenancy_settings": {
+      "type": "object",
+      "description": "Configuration settings for multi-tenancy.",
+      "properties": {
+        "resource_limits_per_business": {
+          "type": "object",
+          "description": "Resource limits per business.",
+          "properties": {
+            "max_agents": {
+              "type": "integer",
+              "description": "Maximum number of agents allowed per business."
+            },
+            "max_stages": {
+              "type": "integer",
+              "description": "Maximum number of stages allowed per business."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "default_prompts": {
+      "type": "object",
+      "description": "Fallback prompts for various scenarios.",
+      "properties": {
+        "stage_selection_fallback": {
+          "type": "string",
+          "description": "Fallback prompt for stage selection."
+        },
+        "data_extraction_fallback": {
+          "type": "string",
+          "description": "Fallback prompt for data extraction."
+        },
+        "response_generation_fallback": {
+          "type": "string",
+          "description": "Fallback prompt for response generation."
+        }
+      },
+      "additionalProperties": false
+    },
+    "feature_flags": {
+      "type": "object",
+      "description": "Enable/disable features for specific businesses or users.",
+      "additionalProperties": {
+        "type": "boolean",
+        "description": "Flag to enable/disable a specific feature."
+      }
+    },
+      "logging_levels": {
+      "type": "object",
+      "description": "Logging level configuration.",
+      "properties": {
+        "default_level": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+          "description": "Default logging level."
+        }
+      },
+      "additionalProperties": false
+    },
+      "alerting_thresholds": {
+      "type": "object",
+      "description": "Thresholds for performance monitoring alerts.",
+      "properties": {
+        "llm_response_time": {
+          "type": "integer",
+          "description": "Maximum acceptable LLM response time (ms)."
+        }
+      },
+      "additionalProperties": false
+    },
+      "regional_settings": {
+      "type": "object",
+      "description": "Regional-specific settings.",
+      "properties": {
+        "default_currency": {
+          "type": "string",
+          "description": "Default currency."
+        },
+        "date_format": {
+          "type": "string",
+          "description": "Default date format."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "llm_settings",
+    "security_settings",
+    "data_storage_settings",
+    "multi_tenancy_settings",
+    "default_prompts"
+  ],
+  "additionalProperties": false
+}

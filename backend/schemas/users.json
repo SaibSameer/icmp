@@ -1,0 +1,141 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "User",
+  "description": "Represents a user interacting with the ICMP.",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the user."
+    },
+    "name": {
+      "type": "string",
+      "description": "User's full name."
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "description": "User's email address."
+    },
+    "phone": {
+      "type": "string",
+      "description": "User's phone number."
+    },
+    "language": {
+      "type": "string",
+      "description": "User's preferred language."
+    },
+    "timezone": {
+      "type": "string",
+      "description": "User's timezone."
+    },
+    "communication_preferences": {
+      "type": "object",
+      "description": "User's communication preferences.",
+      "properties": {
+        "email_notifications": {
+          "type": "boolean",
+          "description": "Enable/disable email notifications."
+        },
+        "sms_notifications": {
+          "type": "boolean",
+          "description": "Enable/disable SMS notifications."
+        }
+      },
+      "additionalProperties": false
+    },
+    "location": {
+      "type": "string",
+      "description": "User's location."
+    },
+    "age": {
+      "type": "integer",
+      "description": "User's age."
+    },
+    "membership_tier": {
+      "type": "string",
+      "description": "User's membership tier."
+    },
+    "conversation_history_summary": {
+      "type": "object",
+      "description": "Summary of past interactions with each business.",
+      "additionalProperties": {
+        "type": "string",
+        "description": "Summary of interactions with a specific business."
+      },
+      "note": "Keys are business_ids, values are summaries."
+    },
+    "finished_orders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "List of finished order IDs."
+    },
+    "unfinished_orders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "List of unfinished order IDs."
+    },
+    "managing_businesses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "List of business IDs the user manages."
+    },
+      "segmentation_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Tags for marketing and analytics segmentation."
+    },
+    "external_ids": {
+      "type": "object",
+      "description": "IDs from external systems (CRM, etc.).",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+     "verification_status": {
+      "type": "object",
+      "description": "Verification status of email and phone.",
+      "properties": {
+        "email_verified": {
+          "type": "boolean",
+          "description": "Is the email address verified?"
+        },
+        "phone_verified": {
+          "type": "boolean",
+          "description": "Is the phone number verified?"
+        }
+      },
+      "additionalProperties": false
+    },
+      "privacy_settings": {
+      "type": "object",
+      "description": "User's privacy settings.",
+      "properties": {
+        "data_sharing_consent": {
+          "type": "boolean",
+          "description": "Consent to share data with third parties."
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "user_id",
+    "name",
+    "email",
+    "phone"
+  ],
+  "additionalProperties": false
+}
