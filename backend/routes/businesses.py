@@ -34,10 +34,6 @@ business_schema = {
 @bp.route('/<business_id>', methods=['GET'])
 @require_business_api_key
 def get_business(business_id):
-    # UUID validation is now handled by the decorator
-    # if not is_valid_uuid(business_id):
-    #     return jsonify({"error_code": "SERVER_ERROR", "message": "Error validating credentials: Invalid business_id format"}), 500
-
     conn = get_db_connection()
     try:
         c = conn.cursor()
@@ -53,17 +49,17 @@ def get_business(business_id):
         if not business:
             return jsonify({"error_code": "NOT_FOUND", "message": "Business not found"}), 404
 
-        # Corrected the way data is fetched with fallbacks for mock test data
+        # Handle tuple result instead of dictionary
         business_data = {
-            "business_id": business.get('business_id'),
-            "api_key": business.get('api_key'),
-            "owner_id": business.get('owner_id'),
-            "business_name": business.get('business_name') or business.get('name'),  # Fallback for tests
-            "business_description": business.get('business_description') or business.get('description', ''),
-            "address": business.get('address', ''),
-            "phone_number": business.get('phone_number', ''),
-            "website": business.get('website', ''),
-            "first_stage_id": business.get('first_stage_id')
+            "business_id": str(business[0]),  # Convert UUID to string
+            "api_key": business[1],
+            "owner_id": str(business[2]),  # Convert UUID to string
+            "business_name": business[3],
+            "business_description": business[4] or '',
+            "address": business[5] or '',
+            "phone_number": business[6] or '',
+            "website": business[7] or '',
+            "first_stage_id": str(business[8]) if business[8] else None  # Convert UUID to string if not None
         }
         return jsonify(business_data), 200
 
