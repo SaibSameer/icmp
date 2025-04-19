@@ -16,6 +16,12 @@ TESTING = os.environ.get('TESTING') == 'True' or 'pytest' in sys.modules or '--p
 # Get database configuration
 DB_CONFIG = get_db_config()
 
+# Add TCP-specific parameters to force TCP connection
+if 'host' in DB_CONFIG:
+    DB_CONFIG['sslmode'] = 'require'  # Required for Render
+    if DB_CONFIG['host'] != 'localhost':
+        DB_CONFIG['client_encoding'] = 'utf8'
+
 # Log configuration (with sensitive information masked)
 masked_config = DB_CONFIG.copy()
 if 'password' in masked_config:
@@ -29,15 +35,21 @@ CONNECTION_POOL = None
 if not TESTING:
     try:
         CONNECTION_POOL = psycopg2.pool.SimpleConnectionPool(
-            minconn=3,
-            maxconn=20,  # Increase from 10 to 20 to handle more simultaneous connections
+            minconn=1,  # Start with fewer connections
+            maxconn=10,  # Reduce max connections
             **DB_CONFIG,
             cursor_factory=DictCursor  # Use DictCursor for easier access to columns by name
         )
         if CONNECTION_POOL:
+            # Test the connection
+            test_conn = CONNECTION_POOL.getconn()
+            if test_conn:
+                log.info("Database connection test successful")
+                CONNECTION_POOL.putconn(test_conn)
             log.info("Database connection pool created successfully")
     except Exception as e:
         log.error(f"Error creating connection pool: {e}", exc_info=True)
+        # Don't raise the exception, let the application continue with CONNECTION_POOL as None
 else:
     log.info("Running in test mode - using mock database connection")
 

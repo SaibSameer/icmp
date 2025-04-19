@@ -45,23 +45,24 @@ class LLMService:
         log.info("LLMService initialized with database connection pool")
         
         # Log database connection pool status
-        try:
-            conn = self.db_pool.getconn()
-            if conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT 1")
-                result = cursor.fetchone()
-                if result and result[0] == 1:
-                    log.info("Database connection pool is working correctly")
+        if self.db_pool:
+            try:
+                conn = self.db_pool.getconn()
+                if conn:
+                    cursor = conn.cursor()
+                    cursor.execute("SELECT 1")
+                    result = cursor.fetchone()
+                    if result and result[0] == 1:
+                        log.info("Database connection pool is working correctly")
+                    else:
+                        log.error("Database connection pool test query failed")
+                    self.db_pool.putconn(conn)
                 else:
-                    log.error("Database connection pool test query failed")
-            else:
-                log.error("Failed to get connection from pool during initialization")
-        except Exception as e:
-            log.error(f"Error testing database connection pool: {str(e)}", exc_info=True)
-        finally:
-            if conn:
-                self.db_pool.putconn(conn)
+                    log.error("Failed to get connection from pool during initialization")
+            except Exception as e:
+                log.error(f"Error testing database connection pool: {str(e)}", exc_info=True)
+        else:
+            log.warning("No database connection pool available")
     
     def _save_llm_call(self, business_id: str, input_text: str, response: str, 
                       system_prompt: str, call_type: str, conversation_id: str = None,
