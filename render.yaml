@@ -4,13 +4,14 @@ services:
     env: node
     buildCommand: |
       cd front-end && 
-      npm set unsafe-perm true && 
-      npm install --legacy-peer-deps && 
+      npm cache clean --force &&
+      rm -rf node_modules package-lock.json &&
+      npm install &&
       npm run build
     startCommand: cd front-end && npm run serve
     envVars:
       - key: NODE_VERSION
-        value: 16.20.0
+        value: 18.19.0
       - key: NODE_ENV
         value: production
       - key: REACT_APP_API_KEY
