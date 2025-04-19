@@ -3,7 +3,7 @@
 // API Configuration
 const API_CONFIG = {
   // Base URL for API requests
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
+  BASE_URL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000',
   
   // API endpoints
   ENDPOINTS: {
@@ -27,6 +27,7 @@ const API_CONFIG = {
 // Enhanced debugging for environment variables
 console.log('Environment Variables Debug:');
 console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
+console.log('REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
 console.log('All environment variables:', process.env);
 console.log('API Configuration:', {
   baseUrl: API_CONFIG.BASE_URL,
