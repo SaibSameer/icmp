@@ -88,6 +88,8 @@ def create_app(test_config=None):
                      "http://localhost:8000", 
                      "http://127.0.0.1:8000",
                      "http://192.168.0.105:8000",
+                     "https://icmp-events-api.onrender.com",
+                     "https://icmp-events-frontend.onrender.com",
                      "null",
                      "file://"  # Allow requests from file:// protocol
                  ],
