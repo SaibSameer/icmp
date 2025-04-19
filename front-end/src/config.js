@@ -24,7 +24,10 @@ const API_CONFIG = {
   }
 };
 
-// Log API configuration for debugging
+// Enhanced debugging for environment variables
+console.log('Environment Variables Debug:');
+console.log('REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
+console.log('All environment variables:', process.env);
 console.log('API Configuration:', {
   baseUrl: API_CONFIG.BASE_URL,
   endpoints: API_CONFIG.ENDPOINTS
