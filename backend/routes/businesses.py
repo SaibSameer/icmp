@@ -69,7 +69,12 @@ def get_business(business_id):
             "website": business[7] or '',
             "first_stage_id": str(business[8]) if business[8] else None  # Convert UUID to string if not None
         }
-        return jsonify(business_data), 200
+        
+        # Add CORS headers to the response
+        response = jsonify(business_data)
+        response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response, 200
 
     except Exception as e:
         log.error(f"Error retrieving business: {str(e)}")

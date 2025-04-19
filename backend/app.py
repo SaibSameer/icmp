@@ -94,9 +94,24 @@ def create_app(test_config=None):
                      "null",
                      "file://"  # Allow requests from file:// protocol
                  ],
-                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                 "allow_headers": ["Content-Type", "Authorization", "businessapikey", "Accept", "Origin"],
-                 "expose_headers": ["Content-Type", "Authorization", "businessapikey"],
+                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+                 "allow_headers": [
+                     "Content-Type",
+                     "Authorization",
+                     "businessapikey",
+                     "Accept",
+                     "Origin",
+                     "X-Requested-With",
+                     "Access-Control-Request-Method",
+                     "Access-Control-Request-Headers"
+                 ],
+                 "expose_headers": [
+                     "Content-Type",
+                     "Authorization",
+                     "businessapikey",
+                     "Access-Control-Allow-Origin",
+                     "Access-Control-Allow-Credentials"
+                 ],
                  "supports_credentials": True,
                  "max_age": 3600  # Cache preflight requests for 1 hour
              }
