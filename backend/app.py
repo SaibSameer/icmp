@@ -22,30 +22,31 @@ if parent_dir not in sys.path:
 if current_dir not in sys.path:
     sys.path.append(current_dir)
 
-# Load environment variables
+# Load environment variables from backend/.env
 from dotenv import load_dotenv
-load_dotenv()
+env_path = os.path.join(current_dir, '.env')
+load_dotenv(env_path)
 
 # Import modules from our app
-from auth import require_api_key
-from db import get_db_connection, release_db_connection, execute_query, CONNECTION_POOL
-from config import Config
+from backend.auth import require_api_key
+from backend.db import get_db_connection, release_db_connection, execute_query, CONNECTION_POOL
+from backend.config import Config
 
 # Routes imports
-from routes.message_handling import bp as message_bp
-from routes.routing import bp as routing_bp
-from routes.templates import templates_bp
-from routes.stages import stages_bp
-from routes.template_management import template_management_bp
-from routes.conversation_management import conversation_bp
-from routes.businesses import bp as businesses_bp
-from routes.auth_bp import bp as auth_bp
-from routes.configuration import bp as config_bp
-from routes.agents import agents_bp
-from routes.users import users_bp
-from routes.template_variables import template_variables_bp
-from routes.llm import llm_bp
-from routes.data_extraction import data_extraction_bp
+from backend.routes.message_handling import bp as message_bp
+from backend.routes.routing import bp as routing_bp
+from backend.routes.templates import templates_bp
+from backend.routes.stages import stages_bp
+from backend.routes.template_management import template_management_bp
+from backend.routes.conversation_management import conversation_bp
+from backend.routes.businesses import bp as businesses_bp
+from backend.routes.auth_bp import bp as auth_bp
+from backend.routes.configuration import bp as config_bp
+from backend.routes.agents import agents_bp
+from backend.routes.users import users_bp
+from backend.routes.template_variables import template_variables_bp
+from backend.routes.llm import llm_bp
+from backend.routes.data_extraction import data_extraction_bp
 
 # Import here to avoid circular imports
 from create_default_stage import create_default_stage

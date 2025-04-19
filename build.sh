@@ -4,13 +4,24 @@
 # Exit on error
 set -o errexit
 
+# Print each command before executing
+set -x
+
 # Install Python dependencies
 echo "Installing Python dependencies..."
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 
 # Install backend dependencies
 echo "Installing backend dependencies..."
-pip install -r backend/requirements.txt
+cd backend
+pip install -r requirements.txt
+cd ..
+
+# Verify installations
+echo "Verifying installations..."
+pip list | grep jsonschema
+pip list | grep psycopg2-binary
 
 # Create necessary directories if they don't exist
 echo "Creating necessary directories..."

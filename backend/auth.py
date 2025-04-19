@@ -2,8 +2,8 @@ import logging
 import functools
 from flask import jsonify, request, current_app
 from werkzeug.security import check_password_hash
-from db import get_db_connection, release_db_connection
-from utils import is_valid_uuid
+from backend.db import get_db_connection, release_db_connection
+from backend.utils import is_valid_uuid
 from functools import wraps
 import uuid
 

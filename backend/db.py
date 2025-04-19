@@ -5,6 +5,7 @@ from psycopg2 import pool
 from psycopg2.extras import DictCursor, RealDictCursor
 from dotenv import load_dotenv
 import sys
+from db_config import get_db_config
 
 load_dotenv()
 log = logging.getLogger(__name__)
@@ -12,14 +13,14 @@ log = logging.getLogger(__name__)
 # Force testing mode with environment variable or if running with pytest
 TESTING = os.environ.get('TESTING') == 'True' or 'pytest' in sys.modules or '--pytest' in sys.argv
 
-# Database configuration from environment variables
-DB_CONFIG = {
-    "dbname": os.environ.get("DB_NAME", "icmp_db"),
-    "user": os.environ.get("DB_USER", "icmp_user"),
-    "password": os.environ.get("DB_PASSWORD"),
-    "host": os.environ.get("DB_HOST", "localhost"),
-    "port": os.environ.get("DB_PORT", "5432")
-}
+# Get database configuration
+DB_CONFIG = get_db_config()
+
+# Log configuration (with sensitive information masked)
+masked_config = DB_CONFIG.copy()
+if 'password' in masked_config:
+    masked_config['password'] = '****'
+log.info(f"Attempting database connection with configuration: {masked_config}")
 
 # Initialize connection pool
 CONNECTION_POOL = None
