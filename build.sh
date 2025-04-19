@@ -16,6 +16,10 @@ pip install -r requirements.txt
 echo "Installing backend dependencies..."
 cd backend
 pip install -r requirements.txt
+
+# Initialize database
+echo "Initializing database..."
+python init_db.py
 cd ..
 
 # Verify installations
