@@ -13,12 +13,20 @@ def get_db_config():
         try:
             # Parse the URL
             parsed = urlparse(database_url)
+            
+            # Ensure we're using the full hostname for Render
+            hostname = parsed.hostname
+            if not hostname.endswith('.render.com') and 'dpg-' in hostname:
+                hostname = f"{hostname}.oregon-postgres.render.com"
+            
             config = {
                 "dbname": parsed.path[1:],  # Remove leading slash
                 "user": parsed.username,
                 "password": parsed.password,
-                "host": parsed.hostname,
-                "port": str(parsed.port or 5432)
+                "host": hostname,
+                "port": str(parsed.port or 5432),
+                "sslmode": "require",  # Required for Render
+                "client_encoding": "utf8"
             }
             log.info(f"Using database configuration from DATABASE_URL with host: {config['host']}")
             return config
@@ -26,12 +34,19 @@ def get_db_config():
             log.error(f"Error parsing DATABASE_URL: {e}")
     
     # Otherwise use individual environment variables
+    host = os.environ.get("DB_HOST", "localhost")
+    # Ensure we're using the full hostname for Render
+    if not host.endswith('.render.com') and 'dpg-' in host:
+        host = f"{host}.oregon-postgres.render.com"
+    
     config = {
         "dbname": os.environ.get("DB_NAME", "icmp_db"),
         "user": os.environ.get("DB_USER", "icmp_user"),
         "password": os.environ.get("DB_PASSWORD"),
-        "host": os.environ.get("DB_HOST", "localhost"),
-        "port": os.environ.get("DB_PORT", "5432")
+        "host": host,
+        "port": os.environ.get("DB_PORT", "5432"),
+        "sslmode": "require" if 'render.com' in host else "prefer",
+        "client_encoding": "utf8" if 'render.com' in host else "utf8"
     }
     
     log.info(f"Using database configuration from individual variables with host: {config['host']}")
