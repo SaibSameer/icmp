@@ -2,11 +2,15 @@ services:
   - type: web
     name: icmp
     env: node
-    buildCommand: cd front-end && npm install --legacy-peer-deps && npm run build
-    startCommand: cd front-end && npx serve -s build -l $PORT
+    buildCommand: |
+      cd front-end && 
+      npm set unsafe-perm true && 
+      npm install --legacy-peer-deps && 
+      npm run build
+    startCommand: cd front-end && npm run serve
     envVars:
       - key: NODE_VERSION
-        value: 18.15.0
+        value: 16.20.0
       - key: NODE_ENV
         value: production
       - key: REACT_APP_API_KEY

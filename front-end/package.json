@@ -18,11 +18,12 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "npx react-scripts start",
-    "build": "CI=false npx react-scripts build",
-    "test": "npx react-scripts test",
-    "eject": "npx react-scripts eject",
-    "serve": "npx serve -s build"
+    "preinstall": "npm install -g react-scripts serve",
+    "start": "react-scripts start",
+    "build": "CI=false react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "serve": "serve -s build -l ${PORT:-3000}"
   },
   "eslintConfig": {
     "extends": [
