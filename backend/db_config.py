@@ -25,7 +25,7 @@ def get_db_config():
                 "password": parsed.password,
                 "host": hostname,
                 "port": str(parsed.port or 5432),
-                "sslmode": "require",  # Required for Render
+                "sslmode": "require" if 'render.com' in hostname else "disable",  # Only require SSL for Render
                 "client_encoding": "utf8"
             }
             log.info(f"Using database configuration from DATABASE_URL with host: {config['host']}")
@@ -45,8 +45,8 @@ def get_db_config():
         "password": os.environ.get("DB_PASSWORD"),
         "host": host,
         "port": os.environ.get("DB_PORT", "5432"),
-        "sslmode": "require" if 'render.com' in host else "prefer",
-        "client_encoding": "utf8" if 'render.com' in host else "utf8"
+        "sslmode": "require" if 'render.com' in host else "disable",  # Only require SSL for Render
+        "client_encoding": "utf8"
     }
     
     log.info(f"Using database configuration from individual variables with host: {config['host']}")

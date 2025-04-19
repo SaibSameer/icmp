@@ -60,12 +60,22 @@ def init_database():
         );''')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users (email);')
 
+        # Create agents table
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS agents (
+            agent_id UUID PRIMARY KEY NOT NULL,
+            business_id UUID NOT NULL REFERENCES businesses(business_id) ON DELETE CASCADE,
+            agent_name TEXT NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_agents_business_id ON agents (business_id);')
+
         # Create stages table
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS stages (
             stage_id UUID PRIMARY KEY,
             business_id UUID REFERENCES businesses(business_id),
-            agent_id UUID,
+            agent_id UUID REFERENCES agents(agent_id),
             stage_name TEXT NOT NULL,
             stage_description TEXT NOT NULL,
             stage_type TEXT NOT NULL,
@@ -82,7 +92,7 @@ def init_database():
             conversation_id UUID PRIMARY KEY,
             business_id UUID REFERENCES businesses(business_id),
             user_id UUID,
-            agent_id UUID,
+            agent_id UUID REFERENCES agents(agent_id),
             stage_id UUID REFERENCES stages(stage_id),
             session_id TEXT NOT NULL,
             start_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
