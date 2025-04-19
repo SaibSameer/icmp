@@ -1,27 +1,14 @@
 services:
   - type: web
-    name: icmp-events-api
-    env: python
-    buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: gunicorn application:application
+    name: icmp
+    env: node
+    buildCommand: cd front-end && npm install --legacy-peer-deps && npm run build
+    startCommand: cd front-end && npx serve -s build -l $PORT
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.9.0
-      - key: DB_NAME
-        sync: false
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
-        sync: false
-      - key: DB_HOST
-        sync: false
-      - key: DB_PORT
-        sync: false
-      - key: OPENAI_API_KEY
-        sync: false
-      - key: ICMP_API_KEY
-        sync: false
+      - key: NODE_VERSION
+        value: 18.15.0
+      - key: NODE_ENV
+        value: production
       - key: REACT_APP_API_KEY
-        sync: false
-      - key: DATABASE_URL
-        sync: false 
+        value: 2f3df4e4-71d6-4f3c-9f02-e6101287e8d8
+    autoDeploy: true 
