@@ -11,7 +11,7 @@ import re
 
 log = logging.getLogger(__name__)
 
-stages_bp = Blueprint('stages', __name__, url_prefix='/stages')
+stages_bp = Blueprint('stages', __name__, url_prefix='/api/stages')
 
 @stages_bp.route('', methods=['GET'])
 @require_business_api_key
@@ -248,230 +248,143 @@ def post_stages():
                 
                 template_row = cursor.fetchone()
                 if not template_row:
-                    log.warning(f"Template {original_id} not found, using original ID")
-                    new_template_ids[template_type] = original_id
-                    continue
+                    log.error(f"Template not found: {original_id}")
+                    return jsonify({"error": f"Template not found: {original_id}"}), 404
                 
-                log.info(f"Found template for {template_type}: {template_row}")
-                
-                # Create a new template with a copy of the data
+                # Create a new template ID
                 new_template_id = str(uuid.uuid4())
-                # Handle both dictionary access and test mock data
-                template_name = (template_row.get('template_name') or template_row.get('name', 'Unnamed template')) if isinstance(template_row, dict) else template_row[0]
-                new_template_name = f"{template_name} (Copy for {stage_name})"
                 
-                # Get template details handling both dict and list/tuple formats
-                template_type_value = (template_row.get('template_type') if isinstance(template_row, dict) else template_row[1]) or ''
-                content = (template_row.get('content') if isinstance(template_row, dict) else template_row[2]) or ''
-                system_prompt = (template_row.get('system_prompt') if isinstance(template_row, dict) else template_row[3]) or ''
-                business_id_value = (template_row.get('business_id') if isinstance(template_row, dict) else template_row[4]) or business_id
-                
-                log.info(f"Creating template copy with: type={template_type_value}, name={new_template_name}")
-                
+                # Insert the new template
                 cursor.execute(
                     """
-                    INSERT INTO templates
-                    (template_id, business_id, template_name, template_type, content, system_prompt)
-                    VALUES (%s, %s, %s, %s, %s, %s)
-                    RETURNING template_id
+                    INSERT INTO templates (
+                        template_id, template_name, template_type, content, 
+                        system_prompt, business_id, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
                     """,
                     (
                         new_template_id,
-                        business_id_value,
-                        new_template_name,
-                        template_type_value,
-                        content,
-                        system_prompt
+                        template_row['template_name'],
+                        template_row['template_type'],
+                        template_row['content'],
+                        template_row['system_prompt'],
+                        business_id
                     )
                 )
                 
                 # Store the new template ID
-                new_template_ids[template_type] = new_template_id
-                log.info(f"Created copy of template {original_id} as {new_template_id} for {template_type}")
-        
-        # Insert the new stage with the new template IDs
-        if using_template_ids:
-            log.info(f"Creating stage with template IDs: {json.dumps(new_template_ids, default=str)}")
+                new_template_ids[f"{template_type}_template_id"] = new_template_id
+                
+            # Insert the new stage with the new template IDs
             cursor.execute(
                 """
                 INSERT INTO stages (
-                    stage_id, business_id, agent_id, stage_name, stage_description, stage_type,
-                    stage_selection_template_id, data_extraction_template_id, response_generation_template_id
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING stage_id;
+                    stage_id, business_id, agent_id, stage_name, stage_description,
+                    stage_type, stage_selection_template_id, data_extraction_template_id,
+                    response_generation_template_id, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
                 """,
                 (
-                    stage_id, business_id, agent_id, stage_name, stage_description, stage_type,
-                    new_template_ids.get('stage_selection', data['stage_selection_template_id']),
-                    new_template_ids.get('data_extraction', data['data_extraction_template_id']),
-                    new_template_ids.get('response_generation', data['response_generation_template_id'])
+                    stage_id,
+                    business_id,
+                    agent_id,
+                    stage_name,
+                    stage_description,
+                    stage_type,
+                    new_template_ids['stage_selection_template_id'],
+                    new_template_ids['data_extraction_template_id'],
+                    new_template_ids['response_generation_template_id']
                 )
             )
-        else:
-            # Handle template configs case (this would be more complex in production)
-            # For tests, just create with placeholder template IDs
+            
+            conn.commit()
+            
+            # Return the created stage with the new template IDs
+            return jsonify({
+                "stage_id": stage_id,
+                "business_id": business_id,
+                "agent_id": agent_id,
+                "stage_name": stage_name,
+                "stage_description": stage_description,
+                "stage_type": stage_type,
+                "stage_selection_template_id": new_template_ids['stage_selection_template_id'],
+                "data_extraction_template_id": new_template_ids['data_extraction_template_id'],
+                "response_generation_template_id": new_template_ids['response_generation_template_id']
+            }), 201
+            
+        elif using_template_configs:
+            # Create new templates from the configs
+            for template_type, config in [
+                ('stage_selection', data['stage_selection_config']),
+                ('data_extraction', data['data_extraction_config']),
+                ('response_generation', data['response_generation_config'])
+            ]:
+                # Create a new template ID
+                new_template_id = str(uuid.uuid4())
+                
+                # Insert the new template
+                cursor.execute(
+                    """
+                    INSERT INTO templates (
+                        template_id, template_name, template_type, content, 
+                        system_prompt, business_id, created_at, updated_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    """,
+                    (
+                        new_template_id,
+                        config.get('template_name', f"{template_type} Template"),
+                        template_type,
+                        config.get('content', ''),
+                        config.get('system_prompt', ''),
+                        business_id
+                    )
+                )
+                
+                # Store the new template ID
+                new_template_ids[f"{template_type}_template_id"] = new_template_id
+                
+            # Insert the new stage with the new template IDs
             cursor.execute(
                 """
                 INSERT INTO stages (
-                    stage_id, business_id, agent_id, stage_name, stage_description, stage_type,
-                    stage_selection_template_id, data_extraction_template_id, response_generation_template_id
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING stage_id;
+                    stage_id, business_id, agent_id, stage_name, stage_description,
+                    stage_type, stage_selection_template_id, data_extraction_template_id,
+                    response_generation_template_id, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
                 """,
                 (
-                    stage_id, business_id, agent_id, stage_name, stage_description, stage_type,
-                    '00000000-0000-0000-0000-000000000001', 
-                    '00000000-0000-0000-0000-000000000002',
-                    '00000000-0000-0000-0000-000000000003'
+                    stage_id,
+                    business_id,
+                    agent_id,
+                    stage_name,
+                    stage_description,
+                    stage_type,
+                    new_template_ids['stage_selection_template_id'],
+                    new_template_ids['data_extraction_template_id'],
+                    new_template_ids['response_generation_template_id']
                 )
             )
-        
-        # Get the inserted ID (should match our generated UUID)
-        result = cursor.fetchone()
-        if isinstance(result, dict):
-            stage_id = result.get('stage_id', stage_id)
-        elif result and len(result) > 0:
-            stage_id = result[0]
-        conn.commit()
-        
-        # Return the stage ID and the new template IDs
-        response_data = {
-            "stage_id": stage_id, 
-            "message": "Stage created successfully",
-            "template_ids": new_template_ids if using_template_ids else {}
-        }
-        
-        return jsonify(response_data), 201
-        
+            
+            conn.commit()
+            
+            # Return the created stage with the new template IDs
+            return jsonify({
+                "stage_id": stage_id,
+                "business_id": business_id,
+                "agent_id": agent_id,
+                "stage_name": stage_name,
+                "stage_description": stage_description,
+                "stage_type": stage_type,
+                "stage_selection_template_id": new_template_ids['stage_selection_template_id'],
+                "data_extraction_template_id": new_template_ids['data_extraction_template_id'],
+                "response_generation_template_id": new_template_ids['response_generation_template_id']
+            }), 201
+            
     except Exception as e:
+        log.error(f"Error creating stage: {str(e)}", exc_info=True)
         if conn:
             conn.rollback()
-        log.error(f"Error creating stage: {str(e)}", exc_info=True)
-        return jsonify({"error": "Failed to create stage", "details": str(e)}), 500
-    finally:
-        if conn:
-            release_db_connection(conn)
-
-# Helper function to fetch stages (used by both GET and POST routes)
-def fetch_stages(business_id, agent_id_filter=None):
-    conn = None
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Initialize query and columns
-        query = ""
-        columns = []
-        
-        # Check if running tests
-        is_test = os.environ.get('TESTING') == 'True' or True  # For now, always assume it's a test
-        if is_test:
-            # In test mode, just pass back the database rows exactly as they are
-            # Check for the mock row structure from the test
-            query = """
-                SELECT 
-                    stage_id, business_id, agent_id, stage_name, 
-                    stage_description, stage_type, created_at,
-                    stage_selection_template_id, data_extraction_template_id, 
-                    response_generation_template_id
-                FROM stages 
-                WHERE business_id = %s
-            """
-            columns = [
-                'stage_id', 'business_id', 'agent_id', 'stage_name', 
-                'stage_description', 'stage_type', 'created_at',
-                'stage_selection_template_id', 'data_extraction_template_id', 'response_generation_template_id'
-            ]
-            
-            # Construct response matching test's expected structure
-            result_list = []
-            for row in cursor.fetchall():
-                stage_dict = {
-                    'stage_id': str(row[0]) if row[0] else None,
-                    'business_id': str(row[1]) if row[1] else None,
-                    'agent_id': str(row[2]) if row[2] else None,
-                    'stage_name': row[3],
-                    'stage_description': row[4],
-                    'stage_type': row[5],
-                    'created_at': row[6].isoformat() if hasattr(row[6], 'isoformat') else row[6],
-                    'stage_selection_template_id': row[7],
-                    'data_extraction_template_id': row[8],
-                    'response_generation_template_id': row[9]
-                }
-                result_list.append(stage_dict)
-        else:
-            query = """
-                SELECT 
-                    stage_id, business_id, agent_id, stage_name, 
-                    stage_description, stage_type, created_at,
-                    selection_custom_prompt, extraction_custom_prompt, response_custom_prompt
-                FROM stages 
-                WHERE business_id = %s
-            """
-            columns = [
-                'stage_id', 'business_id', 'agent_id', 'stage_name', 
-                'stage_description', 'stage_type', 'created_at',
-                'selection_custom_prompt', 'extraction_custom_prompt', 'response_custom_prompt'
-            ]
-        
-        params = [business_id]
-
-        # Add agent_id filtering logic
-        if agent_id_filter:
-            if agent_id_filter.lower() == 'null':
-                query += " AND agent_id IS NULL"
-            elif is_valid_uuid(agent_id_filter):
-                query += " AND agent_id = %s"
-                params.append(agent_id_filter)
-            else:
-                # Invalid agent_id format if provided and not 'null'
-                return jsonify({"error": "Invalid agent_id format"}), 400
-
-        query += " ORDER BY created_at DESC"
-        
-        cursor.execute(query, tuple(params))
-        stages = cursor.fetchall()
-        
-        result_list = []
-        
-        # Get template names if needed
-        template_info = {}
-        
-        # Check if we need to look up template information
-        for stage in stages:
-            # Copy the test-code logic
-            stage_dict = {}
-            
-            # Process columns according to the test expectations
-            for i, col in enumerate(columns):
-                stage_val = stage[i]
-                if col in ['stage_id', 'business_id', 'agent_id'] and stage_val:
-                    stage_dict[col] = str(stage_val)
-                elif col == 'created_at' and hasattr(stage_val, 'isoformat'):
-                    stage_dict[col] = stage_val.isoformat()
-                else:
-                    stage_dict[col] = stage_val
-            
-            # Add placeholders for compatibility with front-end
-            stage_dict.setdefault('stage_selection_template_id', None)
-            stage_dict.setdefault('data_extraction_template_id', None)
-            stage_dict.setdefault('response_generation_template_id', None)
-            
-            # Remove custom prompt fields from response
-            stage_dict.pop('selection_custom_prompt', None)
-            stage_dict.pop('extraction_custom_prompt', None)
-            stage_dict.pop('response_custom_prompt', None)
-            
-            result_list.append(stage_dict)
-            
-        return jsonify(result_list), 200
-
-    except Exception as e:
-        log.error(f"Error fetching stages for business {business_id} (agent filter: {agent_id_filter}): {str(e)}", exc_info=True)
-        # Use a more specific error message if possible
-        return jsonify({"error": "Failed to fetch stage data", "details": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
     finally:
         if conn:
             release_db_connection(conn)
@@ -482,266 +395,120 @@ def update_stage(stage_id):
     # Validate stage_id format
     if not is_valid_uuid(stage_id):
         return jsonify({"error": "Invalid stage_id format"}), 400
-
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Request must be JSON and contain data"}), 400
-
-    # Log the received data for debugging
-    log.info(f"Received update for stage {stage_id} with data: {data}")
-
-    # Retrieve business_id - essential for WHERE clause
-    # Attempt to get from body first, then args (consistent with require_business_api_key logic)
-    business_id = data.get('business_id')
-    if not business_id:
-        business_id = request.args.get('business_id') 
-    
-    # Although decorator validates, we need business_id for the query
-    # A more robust solution might involve enhancing the decorator to provide business_id
-    if not business_id or not is_valid_uuid(business_id):
-         return jsonify({"error": "Missing or invalid business_id in request body or query args"}), 400
-
-    # Fields allowed for update
-    basic_fields = [
-        'agent_id', 'stage_name', 'stage_description', 'stage_type'
-    ]
-    template_config_fields = [
-        'stage_selection_config', 'data_extraction_config', 'response_generation_config'
-    ]
-
-    # Check which template fields are present in the request
-    present_template_fields = [field for field in template_config_fields if field in data]
-    log.info(f"Template fields in request: {present_template_fields}")
-
-    # Validate template configs
-    for field in present_template_fields:
-        if not isinstance(data[field], dict):
-            log.error(f"Field '{field}' is not an object: {data[field]}")
-            return jsonify({"error": f"Field '{field}' must be an object"}), 400
-        if 'content' not in data[field]:
-            log.error(f"Field '{field}' is missing content: {data[field]}")
-            return jsonify({"error": f"Field '{field}' must have content property"}), 400
-
-    conn = None
+        
     try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Request must be JSON and contain data"}), 400
+            
         conn = get_db_connection()
-        cursor = conn.cursor()
-
-        # Get stage data to retrieve template IDs
-        cursor.execute("""
-            SELECT stage_id, stage_name, 
-                stage_selection_template_id, data_extraction_template_id, response_generation_template_id
-            FROM stages 
-            WHERE stage_id = %s AND business_id = %s;
-        """, (stage_id, business_id))
+        if not conn:
+            return jsonify({"error": "Database connection failed"}), 500
+            
+        try:
+            cursor = conn.cursor()
+            
+            # Check if stage exists
+            cursor.execute(
+                "SELECT * FROM stages WHERE stage_id = %s",
+                (stage_id,)
+            )
+            stage = cursor.fetchone()
+            if not stage:
+                return jsonify({"error": "Stage not found"}), 404
                 
-        stage_data = cursor.fetchone()
-        if not stage_data:
-            return jsonify({"error": "Stage not found or not owned by this business"}), 404
-        
-        log.info(f"Found stage: {stage_data[0]}, name: {stage_data[1]}")
-        
-        # Build update fields dict for stage update
-        update_fields = {}
-        
-        # Map template config fields to database column names
-        template_mapping = {
-            'stage_selection_config': 'stage_selection_template_id',
-            'data_extraction_config': 'data_extraction_template_id',
-            'response_generation_config': 'response_generation_template_id'
-        }
-        
-        # Process template updates
-        if present_template_fields:
-            log.info(f"Updating templates in templates table")
-            # Update each template if present in the request
-            for config_field in present_template_fields:
-                # Get the corresponding column name for this template
-                db_field = template_mapping.get(config_field)
-                if not db_field:
-                    continue
-                
-                # Get the corresponding template ID from the stage
-                template_index = {
-                    'stage_selection_template_id': 2,
-                    'data_extraction_template_id': 3,
-                    'response_generation_template_id': 4
-                }
-                
-                index = template_index.get(db_field)
-                if index and index < len(stage_data):
-                    template_id = stage_data[index]
+            # Update stage fields
+            update_fields = []
+            update_values = []
+            
+            for field in ['stage_name', 'stage_description', 'stage_type', 'agent_id']:
+                if field in data:
+                    update_fields.append(f"{field} = %s")
+                    update_values.append(data[field])
                     
-                    if template_id:
-                        log.info(f"Processing {config_field} -> {db_field} with template_id: {template_id}")
-                        content = data[config_field].get('content')
-                        system_prompt = data[config_field].get('system_prompt', '')
-                        
-                        if content:
-                            log.info(f"Updating template {template_id} with content: {content[:50]}...")
-                            
-                            # Update the template content and system_prompt
-                            cursor.execute(
-                                """
-                                UPDATE templates 
-                                SET content = %s, system_prompt = %s, updated_at = CURRENT_TIMESTAMP
-                                WHERE template_id = %s;
-                                """,
-                                (content, system_prompt, template_id)
-                            )
-                            
-                            rows_affected = cursor.rowcount
-                            log.info(f"Updated template {template_id} in templates table, rows affected: {rows_affected}")
-                            
-                            # If no rows were affected, log warning
-                            if rows_affected == 0:
-                                log.warning(f"No rows updated for template {template_id}")
-        
-        # Add basic fields to update
-        for field in basic_fields:
-            if field in data:
-                value = data[field]
-                # Basic validation: non-empty strings, null/UUID for agent_id
-                if field == 'agent_id':
-                    if value is not None and not is_valid_uuid(value):
-                        return jsonify({"error": f"Invalid {field} format"}), 400
-                    update_fields[field] = value
-                    log.info(f"Adding update for {field}: {value}")
-                elif isinstance(value, str) and value.strip():
-                    update_fields[field] = value.strip()
-                    log.info(f"Adding update for {field}: {value}")
-                elif value is None and field != 'agent_id': # Allow None only for agent_id
-                    return jsonify({"error": f"Field '{field}' cannot be null"}), 400
-                elif not isinstance(value, str): 
-                    return jsonify({"error": f"Field '{field}' must be a non-empty string"}), 400
-                # If empty string and not agent_id, could choose to ignore or error - let's error for now
-                elif field != 'agent_id': 
-                    return jsonify({"error": f"Field '{field}' cannot be empty"}), 400
-
-        # Update stage if there are changes to basic fields
-        if update_fields:
-            # Build dynamic SET clause
-            set_clause = ", ".join([f"{field} = %s" for field in update_fields])
-            params = list(update_fields.values())
-            params.append(stage_id)
-            params.append(business_id) # Add business_id for the WHERE clause
-
-            sql = f"""
+            if not update_fields:
+                return jsonify({"error": "No fields to update"}), 400
+                
+            # Add updated_at timestamp
+            update_fields.append("updated_at = NOW()")
+            
+            # Construct and execute update query
+            query = f"""
                 UPDATE stages 
-                SET {set_clause}
-                WHERE stage_id = %s AND business_id = %s;
+                SET {', '.join(update_fields)}
+                WHERE stage_id = %s
             """
-
-            log.info(f"Updating stage with SQL: {sql}, params: {params}")
-            cursor.execute(sql, tuple(params))
-            log.info(f"Stage update rows affected: {cursor.rowcount}")
-
-        conn.commit()
-        log.info(f"Stage {stage_id} updated successfully for business {business_id}")
-        return jsonify({"message": "Stage updated successfully"}), 200
-
+            update_values.append(stage_id)
+            
+            cursor.execute(query, tuple(update_values))
+            conn.commit()
+            
+            # Return updated stage
+            cursor.execute(
+                "SELECT * FROM stages WHERE stage_id = %s",
+                (stage_id,)
+            )
+            updated_stage = cursor.fetchone()
+            
+            return jsonify(updated_stage), 200
+            
+        except Exception as e:
+            log.error(f"Database error: {str(e)}", exc_info=True)
+            return jsonify({"error": f"Database error: {str(e)}"}), 500
+        finally:
+            if conn:
+                release_db_connection(conn)
     except Exception as e:
-        if conn:
-            conn.rollback()
-        log.error(f"Error updating stage {stage_id} for business {business_id}: {str(e)}", exc_info=True)
-        return jsonify({"error": "Failed to update stage", "details": str(e)}), 500
-    finally:
-        if conn:
-            release_db_connection(conn)
+        log.error(f"Error handling request: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 @stages_bp.route('/<stage_id>', methods=['DELETE'])
 @require_business_api_key
 def delete_stage(stage_id):
     # Validate stage_id format
     if not is_valid_uuid(stage_id):
-        log.error(f"Invalid stage_id format: {stage_id}")
         return jsonify({"error": "Invalid stage_id format"}), 400
-
-    # Retrieve business_id - essential for WHERE clause
-    # Try args first, then body (DELETE might not have body)
-    business_id = request.args.get('business_id')
-    log.info(f"DELETE stage request for stage_id: {stage_id}, business_id from args: {business_id}")
-    
-    if not business_id and request.is_json:
-        try:
-            body_data = request.get_json()
-            business_id = body_data.get('business_id')
-            log.info(f"business_id from JSON body: {business_id}")
-        except Exception as e:
-            log.error(f"Error parsing JSON body: {str(e)}")
-    
-    # Validate business_id existence and format
-    if not business_id:
-        log.error("Missing business_id in stage deletion request")
-        return jsonify({"error": "Missing business_id in query args or request body"}), 400
         
-    if not is_valid_uuid(business_id):
-        log.error(f"Invalid business_id format: {business_id}")
-        return jsonify({"error": "Invalid business_id format"}), 400
-
     conn = None
     try:
         conn = get_db_connection()
         if not conn:
-            log.error("Failed to get database connection for stage deletion")
             return jsonify({"error": "Database connection failed"}), 500
             
         cursor = conn.cursor()
-
-        # First check if the stage exists and belongs to this business
+        
+        # Check if stage exists
         cursor.execute(
-            "SELECT 1 FROM stages WHERE stage_id = %s AND business_id = %s", 
-            (stage_id, business_id)
+            "SELECT * FROM stages WHERE stage_id = %s",
+            (stage_id,)
+        )
+        stage = cursor.fetchone()
+        if not stage:
+            return jsonify({"error": "Stage not found"}), 404
+            
+        # Delete associated templates
+        for template_field in ['stage_selection_template_id', 'data_extraction_template_id', 'response_generation_template_id']:
+            template_id = stage[template_field]
+            if template_id:
+                cursor.execute(
+                    "DELETE FROM templates WHERE template_id = %s",
+                    (template_id,)
+                )
+                
+        # Delete the stage
+        cursor.execute(
+            "DELETE FROM stages WHERE stage_id = %s",
+            (stage_id,)
         )
         
-        if not cursor.fetchone():
-            # Check if it exists at all
-            cursor.execute("SELECT 1 FROM stages WHERE stage_id = %s", (stage_id,))
-            if cursor.fetchone():
-                log.warning(f"Stage {stage_id} exists but doesn't belong to business {business_id}")
-                return jsonify({"error": "Stage found but not owned by this business"}), 403
-            else:
-                log.warning(f"Stage {stage_id} not found")
-                return jsonify({"error": "Stage not found"}), 404
-
-        # Check if any conversations are using this stage
-        cursor.execute(
-            "SELECT COUNT(*) FROM conversations WHERE stage_id = %s AND business_id = %s",
-            (stage_id, business_id)
-        )
-        
-        conversation_count = cursor.fetchone()[0]
-        if conversation_count > 0:
-            log.warning(f"Cannot delete stage {stage_id} because {conversation_count} conversations are using it")
-            return jsonify({
-                "error_code": "FOREIGN_KEY_VIOLATION",
-                "message": f"Cannot delete stage because {conversation_count} conversations are using it. Please reassign these conversations to another stage first.",
-                "conversation_count": conversation_count
-            }), 400
-
-        # Now delete the stage
-        log.info(f"Deleting stage {stage_id} for business {business_id}")
-        cursor.execute(
-            "DELETE FROM stages WHERE stage_id = %s AND business_id = %s",
-            (stage_id, business_id)
-        )
-        
-        # Check if deletion was successful
-        if cursor.rowcount == 0:
-            log.warning(f"No rows affected when deleting stage {stage_id}")
-            return jsonify({"error": "Failed to delete stage - no rows affected"}), 500
-
         conn.commit()
-        log.info(f"Stage {stage_id} deleted successfully for business {business_id}")
+        return jsonify({"message": "Stage deleted successfully"}), 200
         
-        # Return 204 No Content for successful DELETE
-        return '', 204
-
     except Exception as e:
+        log.error(f"Error deleting stage: {str(e)}", exc_info=True)
         if conn:
             conn.rollback()
-        log.error(f"Error deleting stage {stage_id} for business {business_id}: {str(e)}", exc_info=True)
-        return jsonify({"error": "Failed to delete stage", "details": str(e)}), 500
+        return jsonify({"error": str(e)}), 500
     finally:
         if conn:
             release_db_connection(conn)
@@ -749,146 +516,107 @@ def delete_stage(stage_id):
 @stages_bp.route('/preview', methods=['POST'])
 @require_business_api_key
 def preview_templates():
-    """
-    Preview templates for a stage by generating sample content
-    """
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "Request must be JSON and contain data"}), 400
-
-    required_fields = ['business_id', 'templates']
-    missing_fields = [field for field in required_fields if field not in data]
-    
-    if missing_fields:
-        return jsonify({"error": f"Missing required fields: {', '.join(missing_fields)}"}), 400
-
-    business_id = data.get('business_id')
-    stage_id = data.get('stage_id')  # Optional for preview
-    templates = data.get('templates')
-
-    # Validate business_id format
-    if not is_valid_uuid(business_id):
-        return jsonify({"error": "Invalid business_id format"}), 400
-    
-    # Validate stage_id format if provided
-    if stage_id and not is_valid_uuid(stage_id):
-        return jsonify({"error": "Invalid stage_id format"}), 400
-
-    # Generate sample template previews
-    preview_data = {
-        "selection_preview": "Sample stage selection preview content...",
-        "extraction_preview": "Sample data extraction preview content...",
-        "response_preview": "Sample response generation preview content..."
-    }
-
-    # Add more sophisticated template processing logic here if needed
-
-    return jsonify(preview_data), 200
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Request must be JSON and contain data"}), 400
+            
+        # Extract template configs
+        stage_selection_config = data.get('stage_selection_config', {})
+        data_extraction_config = data.get('data_extraction_config', {})
+        response_generation_config = data.get('response_generation_config', {})
+        
+        # Extract variables from each template
+        stage_selection_vars = extractVariablesFromContent(stage_selection_config.get('content', ''))
+        data_extraction_vars = extractVariablesFromContent(data_extraction_config.get('content', ''))
+        response_generation_vars = extractVariablesFromContent(response_generation_config.get('content', ''))
+        
+        return jsonify({
+            "stage_selection_variables": stage_selection_vars,
+            "data_extraction_variables": data_extraction_vars,
+            "response_generation_variables": response_generation_vars
+        }), 200
+        
+    except Exception as e:
+        log.error(f"Error previewing templates: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
 
 @stages_bp.route('/<stage_id>', methods=['GET'])
 @require_business_api_key
 def get_stage(stage_id):
-    """Get a single stage with its template text and variables"""
+    # Validate stage_id format
     if not is_valid_uuid(stage_id):
         return jsonify({"error": "Invalid stage_id format"}), 400
-
-    business_id = request.args.get('business_id')
-    if not business_id or not is_valid_uuid(business_id):
-        return jsonify({"error": "Missing or invalid business_id in query args"}), 400
-
+        
     conn = None
     try:
         conn = get_db_connection()
+        if not conn:
+            return jsonify({"error": "Database connection failed"}), 500
+            
         cursor = conn.cursor()
-
-        # Get the stage data
-        query = """
-            SELECT 
-                stage_id, business_id, agent_id, stage_name, 
-                stage_description, stage_type, created_at,
-                stage_selection_template_id, data_extraction_template_id, 
-                response_generation_template_id
-            FROM stages 
-            WHERE stage_id = %s AND business_id = %s;
-        """
-            
-        cursor.execute(query, (stage_id, business_id))
         
-        stage_row = cursor.fetchone()
-        if not stage_row:
-            return jsonify({"error": "Stage not found or not owned by this business"}), 404
-        
-        # Define columns matching the SELECT statement order
-        columns = [
-            'stage_id', 'business_id', 'agent_id', 'stage_name', 
-            'stage_description', 'stage_type', 'created_at',
-            'stage_selection_template_id', 'data_extraction_template_id', 
-            'response_generation_template_id'
-        ]
-        
-        stage_dict = {}
-        for i, col_name in enumerate(columns):
-            value = stage_row[i]
-            # Ensure UUIDs and datetimes are strings for JSON
-            if isinstance(value, uuid.UUID):
-                stage_dict[col_name] = str(value)
-            elif hasattr(value, 'isoformat'): # Check for datetime objects
-                stage_dict[col_name] = value.isoformat()
-            else:
-                stage_dict[col_name] = value # Handles None, strings, etc.
-
-        # Get template details if available
-        template_ids = [
-            stage_dict.get('stage_selection_template_id'),
-            stage_dict.get('data_extraction_template_id'),
-            stage_dict.get('response_generation_template_id')
-        ]
-        
-        # Remove None values
-        template_ids = [tid for tid in template_ids if tid]
-        
-        if template_ids:
-            placeholders = ', '.join(['%s'] * len(template_ids))
-            query = f"""
-                SELECT template_id, template_name, content, system_prompt
-                FROM templates
-                WHERE template_id IN ({placeholders});
+        # Get stage details
+        cursor.execute(
             """
-            
-            cursor.execute(query, tuple(template_ids))
-            templates = cursor.fetchall()
-            
-            # Add template configurations while keeping the template IDs
-            for template in templates:
-                template_id = str(template[0])
-                template_data = {
-                    'template_id': template_id,
-                    'template_name': template[1],
-                    'content': template[2],
-                    'system_prompt': template[3] if template[3] else '',
-                    'variables': extractVariablesFromContent(template[2])
-                }
-                
-                if template_id == stage_dict.get('stage_selection_template_id'):
-                    stage_dict['stage_selection_config'] = template_data
-                elif template_id == stage_dict.get('data_extraction_template_id'):
-                    stage_dict['data_extraction_config'] = template_data
-                elif template_id == stage_dict.get('response_generation_template_id'):
-                    stage_dict['response_generation_config'] = template_data
-
-        # Commit the transaction
-        conn.commit()
+            SELECT s.*, 
+                   ss.template_name as stage_selection_template_name,
+                   ss.content as stage_selection_content,
+                   ss.system_prompt as stage_selection_system_prompt,
+                   de.template_name as data_extraction_template_name,
+                   de.content as data_extraction_content,
+                   de.system_prompt as data_extraction_system_prompt,
+                   rg.template_name as response_generation_template_name,
+                   rg.content as response_generation_content,
+                   rg.system_prompt as response_generation_system_prompt
+            FROM stages s
+            LEFT JOIN templates ss ON s.stage_selection_template_id = ss.template_id
+            LEFT JOIN templates de ON s.data_extraction_template_id = de.template_id
+            LEFT JOIN templates rg ON s.response_generation_template_id = rg.template_id
+            WHERE s.stage_id = %s
+            """,
+            (stage_id,)
+        )
         
-        return jsonify(stage_dict), 200
+        stage = cursor.fetchone()
+        if not stage:
+            return jsonify({"error": "Stage not found"}), 404
+            
+        # Format response
+        response = {
+            "stage_id": stage['stage_id'],
+            "business_id": stage['business_id'],
+            "agent_id": stage['agent_id'],
+            "stage_name": stage['stage_name'],
+            "stage_description": stage['stage_description'],
+            "stage_type": stage['stage_type'],
+            "stage_selection_template": {
+                "template_id": stage['stage_selection_template_id'],
+                "template_name": stage['stage_selection_template_name'],
+                "content": stage['stage_selection_content'],
+                "system_prompt": stage['stage_selection_system_prompt']
+            },
+            "data_extraction_template": {
+                "template_id": stage['data_extraction_template_id'],
+                "template_name": stage['data_extraction_template_name'],
+                "content": stage['data_extraction_content'],
+                "system_prompt": stage['data_extraction_system_prompt']
+            },
+            "response_generation_template": {
+                "template_id": stage['response_generation_template_id'],
+                "template_name": stage['response_generation_template_name'],
+                "content": stage['response_generation_content'],
+                "system_prompt": stage['response_generation_system_prompt']
+            },
+            "created_at": stage['created_at'].isoformat() if stage['created_at'] else None,
+            "updated_at": stage['updated_at'].isoformat() if stage['updated_at'] else None
+        }
+        
+        return jsonify(response), 200
         
     except Exception as e:
-        log.error(f"Error fetching stage {stage_id} for business {business_id}: {str(e)}", exc_info=True)
-        if conn:
-            try:
-                conn.rollback()
-            except:
-                pass
-        return jsonify({"error": "Failed to fetch stage data", "details": str(e)}), 500
+        log.error(f"Error getting stage: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
     finally:
         if conn:
             release_db_connection(conn)
@@ -896,63 +624,46 @@ def get_stage(stage_id):
 @stages_bp.route('/template/<template_id>', methods=['GET'])
 @require_business_api_key
 def get_template(template_id):
-    """Get detailed information about a specific template"""
+    # Validate template_id format
+    if not is_valid_uuid(template_id):
+        return jsonify({"error": "Invalid template_id format"}), 400
+        
+    conn = None
     try:
         conn = get_db_connection()
+        if not conn:
+            return jsonify({"error": "Database connection failed"}), 500
+            
         cursor = conn.cursor()
         
-        # Get template information from the templates table
-        cursor.execute("""
-            SELECT template_id, business_id, template_name, template_type, 
-                   content, system_prompt, created_at, updated_at
-            FROM templates
-            WHERE template_id = %s
-        """, (template_id,))
+        # Get template details
+        cursor.execute(
+            "SELECT * FROM templates WHERE template_id = %s",
+            (template_id,)
+        )
         
         template = cursor.fetchone()
-        
         if not template:
-            log.warning(f"Template not found: {template_id}")
             return jsonify({"error": "Template not found"}), 404
-        
-        # Create template data dictionary
-        template_data = {
-            'template_id': str(template[0]),
-            'business_id': str(template[1]),
-            'template_name': template[2],
-            'template_type': template[3],
-            'content': template[4],
-            'system_prompt': template[5] if template[5] else '',
-            'created_at': template[6].isoformat() if template[6] else None,
-            'updated_at': template[7].isoformat() if template[7] else None,
-            'variables': extractVariablesFromContent(template[4])
-        }
-        
-        log.info(f"Retrieved template: {template_id}")
-        return jsonify(template_data), 200
+            
+        return jsonify(template), 200
         
     except Exception as e:
-        log.error(f"Error retrieving template {template_id}: {str(e)}", exc_info=True)
-        return jsonify({"error": "Failed to retrieve template", "details": str(e)}), 500
+        log.error(f"Error getting template: {str(e)}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
     finally:
-        if 'conn' in locals():
+        if conn:
             release_db_connection(conn)
 
 def extractVariablesFromContent(content):
-    """
-    Extract variables from template content using regex.
-    
-    Args:
-        content: Template content with variables in {curly_braces}
-        
-    Returns:
-        List of variable names
-    """
+    """Extract variables from template content."""
     if not content:
         return []
+        
+    # Find all variables in the format {{variable_name}}
+    variables = re.findall(r'{{(.*?)}}', content)
     
-    # Find all patterns matching {variable_name}
-    matches = re.findall(r'\{([^}]+)\}', content)
+    # Remove duplicates and sort
+    variables = sorted(list(set(variables)))
     
-    # Return unique variables
-    return list(set(matches))
+    return variables

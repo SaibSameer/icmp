@@ -11,7 +11,7 @@ const API_CONFIG = {
     MESSAGE: '/api/message',
     CONVERSATIONS: '/conversations',
     BUSINESSES: '/businesses',
-    STAGES: '/stages',
+    STAGES: '/api/stages',
     TEMPLATES: '/api/templates',
     DEBUG: '/debug'
   },

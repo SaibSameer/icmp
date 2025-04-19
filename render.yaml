@@ -16,6 +16,8 @@ services:
         value: production
       - key: REACT_APP_API_KEY
         value: 2f3df4e4-71d6-4f3c-9f02-e6101287e8d8
+      - key: REACT_APP_API_URL
+        value: https://icmp-api.onrender.com
     autoDeploy: true
 
   - type: web

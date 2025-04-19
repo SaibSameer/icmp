@@ -507,7 +507,7 @@ def create_app(test_config=None):
     # Make sure frontend calls the correct endpoint for default templates (/api/templates/default-templates)
     app.register_blueprint(template_management_bp, url_prefix='/api/templates')
     
-    app.register_blueprint(stages_bp, url_prefix='/stages')
+    app.register_blueprint(stages_bp, url_prefix='/api/stages')
     app.register_blueprint(conversation_bp, url_prefix='/conversations')
     app.register_blueprint(businesses_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')

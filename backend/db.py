@@ -18,7 +18,6 @@ DB_CONFIG = get_db_config()
 
 # Add TCP-specific parameters to force TCP connection
 if 'host' in DB_CONFIG:
-    DB_CONFIG['sslmode'] = 'require'  # Required for Render
     if DB_CONFIG['host'] != 'localhost':
         DB_CONFIG['client_encoding'] = 'utf8'
 
@@ -48,8 +47,8 @@ if not TESTING:
                 CONNECTION_POOL.putconn(test_conn)
             log.info("Database connection pool created successfully")
     except Exception as e:
-        log.error(f"Error creating connection pool: {e}", exc_info=True)
-        # Don't raise the exception, let the application continue with CONNECTION_POOL as None
+        log.error(f"Error creating connection pool: {e}")
+        CONNECTION_POOL = None
 else:
     log.info("Running in test mode - using mock database connection")
 

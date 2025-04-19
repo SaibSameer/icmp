@@ -39,15 +39,23 @@ def get_db_config():
     if not host.endswith('.render.com') and 'dpg-' in host:
         host = f"{host}.oregon-postgres.render.com"
     
+    # Determine if we're in production (Render) or local development
+    is_production = 'render.com' in host or os.environ.get('ENVIRONMENT') == 'production'
+    
     config = {
         "dbname": os.environ.get("DB_NAME", "icmp_db"),
         "user": os.environ.get("DB_USER", "icmp_user"),
         "password": os.environ.get("DB_PASSWORD"),
         "host": host,
         "port": os.environ.get("DB_PORT", "5432"),
-        "sslmode": "require" if 'render.com' in host else "disable",  # Only require SSL for Render
+        "sslmode": "require" if is_production else "disable",  # Only require SSL in production
         "client_encoding": "utf8"
     }
     
-    log.info(f"Using database configuration from individual variables with host: {config['host']}")
+    # Log the configuration (with sensitive information masked)
+    masked_config = config.copy()
+    if 'password' in masked_config:
+        masked_config['password'] = '****'
+    log.info(f"Using database configuration: {masked_config}")
+    
     return config 

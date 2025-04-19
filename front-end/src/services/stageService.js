@@ -28,7 +28,7 @@ export const fetchStages = async (businessId) => {
   const headers = getAuthHeaders();
   console.log("[Service] Using headers:", headers);
   
-  const response = await fetch(`/stages?business_id=${businessId}`, {
+  const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages?business_id=${businessId}`, {
     method: 'GET',
     credentials: 'include', // Send cookies
     headers: headers
@@ -54,7 +54,7 @@ export const createStage = async (stageData) => {
   const headers = getAuthHeaders();
   console.log("[Service] Using headers:", headers);
   
-  const response = await fetch(`/stages`, {
+  const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages`, {
     method: 'POST',
     credentials: 'include',
     headers: headers,
@@ -83,7 +83,7 @@ export const fetchStageDetails = async (stageId) => {
         const headers = getAuthHeaders();
         console.log("[Service] Using headers:", headers);
         
-        const response = await fetch(`/stages/${stageId}?business_id=${businessId}`, {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages/${stageId}?business_id=${businessId}`, {
             method: 'GET',
             credentials: 'include',
             headers: headers
@@ -124,7 +124,7 @@ export const updateStage = async (stageId, stageData) => {
     const headers = getAuthHeaders();
     console.log("[Service] Using headers:", headers);
     
-    const response = await fetch(`/stages/${stageId}`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages/${stageId}`, {
         method: 'PUT',
         credentials: 'include',
         headers: headers,
@@ -149,7 +149,7 @@ export const deleteStage = async (stageId, businessId) => {
     const headers = getAuthHeaders();
     console.log("[Service] Using headers:", headers);
     
-    const response = await fetch(`/stages/${stageId}?business_id=${businessId}`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages/${stageId}?business_id=${businessId}`, {
         method: 'DELETE',
         credentials: 'include',
         headers: headers
