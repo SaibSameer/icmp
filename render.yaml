@@ -16,4 +16,21 @@ services:
         value: production
       - key: REACT_APP_API_KEY
         value: 2f3df4e4-71d6-4f3c-9f02-e6101287e8d8
-    autoDeploy: true 
+    autoDeploy: true
+
+  - type: web
+    name: icmp-api
+    env: python
+    buildCommand: |
+      pip install -r backend/requirements.txt
+      python backend/init_db.py
+    startCommand: cd backend && gunicorn application:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: DATABASE_URL
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ICMP_API_KEY
+        sync: false 
