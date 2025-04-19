@@ -353,94 +353,37 @@ const TemplateEditor = () => {
   
   // Handle template save
   const handleSaveTemplate = async () => {
-    if (!template.template_name || !template.content || !template.template_type) {
-      showSnackbar('Template name, content, and type are required', 'error');
+    if (!template.template_name || !template.content) {
+      showSnackbar('Template name and content are required', 'error');
       return;
     }
-    
-    // Validate credentials if needed
-    if (!businessId || !businessApiKey) {
-      showSnackbar('Business ID and API Key are required', 'error');
-      setShowBusinessIdInput(true);
-      return;
-    }
-    
+
     setIsLoading(true);
     try {
-      // Check if we're creating a new template or editing an existing one
-      const isNewTemplate = templateId === 'new' || !template.template_id;
+      const method = templateId === 'new' ? 'POST' : 'PUT';
+      const endpoint = templateId === 'new' ? '/templates' : `/templates/${templateId}`;
       
-      // Use the API_CONFIG for consistent endpoints
-      const endpoint = isNewTemplate 
-        ? API_CONFIG.ENDPOINTS.TEMPLATES 
-        : `${API_CONFIG.ENDPOINTS.TEMPLATES}/${template.template_id}`;
-      
-      const url = `${API_CONFIG.BASE_URL}${endpoint}`;
-      
-      console.log(`Saving template to URL: ${url}, method: ${isNewTemplate ? 'POST' : 'PUT'}`);
-      
-      const method = isNewTemplate ? 'POST' : 'PUT';
-      
-      // Prepare the request payload with the correct field names
-      const payload = {
-        template_name: template.template_name,
-        content: template.content,
-        system_prompt: template.system_prompt || '',
-        template_type: template.template_type,
-        business_id: normalizeUUID(businessId),
-      };
-      
-      // Only include template_id for existing templates
-      if (!isNewTemplate && template.template_id) {
-        payload.template_id = template.template_id;
-      }
-      
-      // Add agent_id if available
-      if (agentId) {
-        payload.agent_id = normalizeUUID(agentId);
-      }
-      
-      console.log('Payload with normalized IDs:', payload);
-      
-      const response = await fetch(url, {
+      const response = await fetch(endpoint, {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
           'Authorization': `Bearer ${businessApiKey}`
         },
-        credentials: 'include',
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          ...template,
+          business_id: businessId
+        })
       });
-      
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.message || `Failed to ${isNewTemplate ? 'create' : 'update'} template`);
+        throw new Error('Failed to save template');
       }
+
+      const savedTemplate = await response.json();
+      showSnackbar('Template saved successfully', 'success');
       
-      const data = await response.json();
-      showSnackbar(`Template ${isNewTemplate ? 'created' : 'updated'} successfully`, 'success');
-      
-      // If creating a new template, update the URL to edit mode
-      if (isNewTemplate && data.template_id) {
-        // Set a flag in localStorage to trigger a refresh on the templates list
-        localStorage.setItem('template_updated', 'true');
-        
-        // Update the browser URL without navigating away
-        window.history.replaceState(
-          null, 
-          '', 
-          `/template-editor/${data.template_id}?business_id=${businessId}${agentId ? `&agent_id=${agentId}` : ''}`
-        );
-        
-        // Update the template with the new ID
-        setTemplate(prev => ({
-          ...prev,
-          template_id: data.template_id
-        }));
-        
-        // Update the templateId state
-        setTemplateId(data.template_id);
+      if (templateId === 'new') {
+        navigate(`/template-editor/${savedTemplate.template_id}`);
       }
     } catch (err) {
       console.error('Error saving template:', err);
