@@ -31,9 +31,17 @@ business_schema = {
     "required": ["owner_id", "business_name"]
 }
 
-@bp.route('/<business_id>', methods=['GET'])
+@bp.route('/<business_id>', methods=['GET', 'OPTIONS'])
 @require_business_api_key
 def get_business(business_id):
+    if request.method == 'OPTIONS':
+        response = jsonify({'success': True})
+        response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,businessapikey')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+
     conn = get_db_connection()
     try:
         c = conn.cursor()
