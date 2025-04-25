@@ -96,7 +96,7 @@ def get_stages():
         return jsonify({"error": str(e)}), 500
 
 @stages_bp.route('', methods=['POST', 'OPTIONS'])
-@require_api_key
+@require_business_api_key
 def post_stages():
     # Handle CORS preflight requests
     if request.method == 'OPTIONS':
