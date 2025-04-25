@@ -58,6 +58,7 @@ class MessageHandler:
             Dictionary containing the response
         """
         log_id = str(uuid.uuid4())
+        processing_steps = []  # Initialize processing_steps at the start
         self._store_process_log(log_id, {
             'status': 'started',
             'timestamp': datetime.now().isoformat(),
@@ -120,7 +121,6 @@ class MessageHandler:
                             """,
                             (conversation_id, business_id, user_id, session_id, llm_call_id)
                         )
-                        # REMOVED: conn.commit() # Commit intermediate change
                         log.info(f"Created conversation: {conversation_id}")
                     else:
                         log.info(f"Using existing conversation: {conversation_id}")
@@ -147,16 +147,12 @@ class MessageHandler:
                     """,
                     (llm_call_id, conversation_id)
                 )
-                # REMOVED: conn.commit() # Commit intermediate change
                 
                 log.info(f"Using llm_call_id {llm_call_id} for conversation {conversation_id}")
                 
                 # Get current stage and templates
                 stage_result = self.get_stage_for_message(conn, user_id, conversation_id, business_id)
                 current_stage, selection_template_id, extraction_template_id, response_template_id = stage_result
-                
-                # Initialize processing steps list
-                processing_steps = []
                 
                 # Build context for template substitution
                 context = {
@@ -546,7 +542,6 @@ class MessageHandler:
                 """,
                 (conversation_id, business_id, user_id, session_id, llm_call_id)
             )
-            # REMOVED: conn.commit()
             log.info(f"New conversation created in DB: {conversation_id}")
             return conversation_id
             
@@ -604,7 +599,6 @@ class MessageHandler:
                 """,
                 (message_id, conversation_id, user_id, content, sender_type)
             )
-            # REMOVED: conn.commit()
             log.info(f"Message saved: ID={message_id}, Conversation={conversation_id}, Sender={sender_type}")
             return message_id
         except Exception as e:
