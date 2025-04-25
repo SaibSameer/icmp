@@ -19,6 +19,12 @@ stages_bp = Blueprint('stages', __name__, url_prefix='/api/stages')
 def redirect_stages():
     return redirect(url_for('stages.get_stages'))
 
+@stages_bp.route('/', methods=['POST', 'OPTIONS'])
+@require_business_api_key
+def post_stages_with_slash():
+    # Forward the request to the main post_stages function
+    return post_stages()
+
 @stages_bp.route('', methods=['GET'])
 @require_business_api_key
 def get_stages():
