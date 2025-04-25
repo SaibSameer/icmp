@@ -1,5 +1,5 @@
 # routes/stages.py
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect, url_for
 from db import get_db_connection, release_db_connection
 import uuid
 import logging
@@ -13,6 +13,17 @@ from psycopg2.extras import RealDictCursor
 log = logging.getLogger(__name__)
 
 stages_bp = Blueprint('stages', __name__, url_prefix='/api/stages')
+
+@stages_bp.route('/', methods=['GET'])
+@require_business_api_key
+def redirect_stages():
+    return redirect(url_for('stages.get_stages'))
+
+@stages_bp.route('/', methods=['POST'])
+@require_api_key
+def post_stages_with_slash():
+    # Forward the request to the main post_stages function
+    return post_stages()
 
 @stages_bp.route('', methods=['GET'])
 @require_business_api_key
@@ -84,9 +95,19 @@ def get_stages():
         log.error(f"Error handling request: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-@stages_bp.route('', methods=['POST'])
+@stages_bp.route('', methods=['POST', 'OPTIONS'])
 @require_api_key
 def post_stages():
+    # Handle CORS preflight requests
+    if request.method == 'OPTIONS':
+        response = jsonify({'success': True})
+        response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,businessapikey,Accept')
+        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Max-Age', '3600')
+        return response
+
     # Log authentication values for debugging
     log.info(f"POST stages request received.")
     log.info(f"Request headers: {dict(request.headers)}")
@@ -260,8 +281,8 @@ def post_stages():
                     """
                     INSERT INTO templates (
                         template_id, template_name, template_type, content, 
-                        system_prompt, business_id, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
+                        system_prompt, business_id, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW())
                     """,
                     (
                         new_template_id,
@@ -282,8 +303,8 @@ def post_stages():
                 INSERT INTO stages (
                     stage_id, business_id, agent_id, stage_name, stage_description,
                     stage_type, stage_selection_template_id, data_extraction_template_id,
-                    response_generation_template_id, created_at, updated_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    response_generation_template_id, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 """,
                 (
                     stage_id,
@@ -328,8 +349,8 @@ def post_stages():
                     """
                     INSERT INTO templates (
                         template_id, template_name, template_type, content, 
-                        system_prompt, business_id, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
+                        system_prompt, business_id, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW())
                     """,
                     (
                         new_template_id,
@@ -350,8 +371,8 @@ def post_stages():
                 INSERT INTO stages (
                     stage_id, business_id, agent_id, stage_name, stage_description,
                     stage_type, stage_selection_template_id, data_extraction_template_id,
-                    response_generation_template_id, created_at, updated_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    response_generation_template_id, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 """,
                 (
                     stage_id,
@@ -430,9 +451,6 @@ def update_stage(stage_id):
             if not update_fields:
                 return jsonify({"error": "No fields to update"}), 400
                 
-            # Add updated_at timestamp
-            update_fields.append("updated_at = NOW()")
-            
             # Construct and execute update query
             query = f"""
                 UPDATE stages 

@@ -154,7 +154,8 @@ export const getAuthHeaders = () => {
   return {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'businessapikey': businessApiKey
+    'businessapikey': businessApiKey,
+    'Authorization': `Bearer ${businessApiKey}`
   };
 };
 

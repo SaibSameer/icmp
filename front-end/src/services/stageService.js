@@ -50,21 +50,33 @@ export const createStage = async (stageData) => {
   console.log(`[Service] Creating stage for business: ${stageData.business_id}`);
   console.log(`[Service] Stage data:`, stageData);
   
-  // Log the headers for debugging
   const headers = getAuthHeaders();
   console.log("[Service] Using headers:", headers);
   
-  const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: headers,
-    body: JSON.stringify(stageData)
-  });
-  
-  // Log the response status for debugging
-  console.log(`[Service] Response status: ${response.status}`);
-  
-  return handleApiResponse(response);
+  try {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(stageData)
+    });
+    
+    console.log(`[Service] Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("[Service Error] createStage failed:", errorData);
+      throw new Error(errorData.error || errorData.message || `Failed to create stage (HTTP ${response.status})`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("[Service Error] createStage failed:", error);
+    throw error;
+  }
 };
 
 // Fetch details for a specific stage

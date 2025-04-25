@@ -372,24 +372,8 @@ const StageManager = () => {
       
       console.log('Creating stage with data:', stageData);
 
-      // Create the stage
-      const response = await fetch('/stages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('businessApiKey')}`
-        },
-        credentials: 'include',
-        body: JSON.stringify(stageData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create stage');
-      }
-
-      const result = await response.json();
+      // Use the createStage function from stageService
+      const result = await createStage(stageData);
       console.log('Stage created successfully:', result);
       
       showSnackbar('Stage created successfully', 'success');
@@ -412,7 +396,7 @@ const StageManager = () => {
 
   const navigateToStageView = (stageId) => {
     // Construct the URL with query parameters
-    let url = `/stages/${stageId}?business_id=${businessId}`;
+    let url = `/api/stages/${stageId}?business_id=${businessId}`;
     if (agentId) {
       url += `&agent_id=${agentId}`;
     }
