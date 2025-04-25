@@ -54,7 +54,7 @@ export const createStage = async (stageData) => {
   console.log("[Service] Using headers:", headers);
   
   try {
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages/`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages`, {
       method: 'POST',
       credentials: 'include',
       headers: {
