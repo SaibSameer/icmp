@@ -1,1061 +1,4 @@
 ================================================================================
-File: chat-window.html
-Path: .\chat-window.html
-Size: 42686
-Modified: 2025-04-12T18:24:59.745679
-Created: 2025-04-08T15:50:47.604070
-Hash: 3aa4dc8cd0f593e6976a9e5f7561fe8cec2202db0b511f5aa67d13500d938b2b
-Lines: 1047
-================================================================================
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICMP Message Tester</title>
-    <style>
-        :root {
-            --primary-color: #007bff;
-            --primary-hover: #0056b3;
-            --error-color: #dc3545;
-            --success-color: #28a745;
-            --border-color: #ddd;
-            --bg-light: #f5f5f5;
-            --text-color: #333;
-        }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6; 
-            padding: 0;
-            margin: 0;
-            display: flex;
-            background-color: var(--bg-light);
-            color: var(--text-color);
-        }
-
-        .main-content {
-            flex: 1;
-            max-width: 800px;
-            padding: 20px;
-            margin: 0 auto;
-            background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            min-height: 100vh;
-        }
-
-        .debug-panel {
-            width: 400px;
-            background: white;
-            padding: 20px;
-            border-left: 1px solid var(--border-color);
-            height: 100vh;
-            position: fixed;
-            right: 0;
-            top: 0;
-            overflow-y: auto;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            box-shadow: -2px 0 5px rgba(0,0,0,0.1);
-        }
-
-        .debug-panel.active {
-            transform: translateX(0);
-        }
-
-        .debug-toggle {
-            position: fixed;
-            right: 20px;
-            top: 20px;
-            z-index: 1000;
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-
-        .debug-toggle:hover {
-            background: var(--primary-hover);
-        }
-
-        .debug-section {
-            margin-bottom: 20px;
-            background: white;
-            padding: 15px;
-            border-radius: 4px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .debug-section h3 {
-            margin-top: 0;
-            color: var(--primary-color);
-            font-size: 1.1em;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
-        }
-
-        label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        input[type="text"], 
-        input[type="password"], 
-        textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 14px;
-            transition: border-color 0.2s;
-        }
-
-        input[type="text"]:focus,
-        input[type="password"]:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-        }
-
-        textarea { 
-            height: 120px; 
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-
-        button:hover { 
-            background-color: var(--primary-hover);
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        #responseArea, #historyArea {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            background-color: white;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: monospace;
-            font-size: 14px;
-            line-height: 1.4;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .error { 
-            color: var(--error-color);
-            border-color: var(--error-color);
-            background-color: #fff5f5;
-        }
-
-        .success {
-            color: var(--success-color);
-            border-color: var(--success-color);
-            background-color: #f0fff4;
-        }
-
-        h1 {
-            color: var(--text-color);
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--primary-color);
-        }
-
-        h2 {
-            color: var(--text-color);
-            margin-top: 30px;
-            font-size: 1.5em;
-        }
-
-        .section-divider {
-            margin: 30px 0;
-            border: none;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .loading {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 15px;
-            }
-            
-            .debug-panel {
-                width: 100%;
-            }
-        }
-
-        /* Conversation styling */
-        .conversation {
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background-color: white;
-        }
-
-        .conversation-header {
-            padding: 10px;
-            background-color: #f3f3f3;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            font-size: 12px;
-        }
-
-        .conversation-header span {
-            font-weight: 500;
-        }
-
-        .messages {
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .message {
-            margin-bottom: 15px;
-            padding: 12px;
-            border-radius: 12px;
-            position: relative;
-            max-width: 80%;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .message.user {
-            background-color: var(--primary-color);
-            color: white;
-            margin-left: auto;
-            margin-right: 10px;
-            border-bottom-right-radius: 4px;
-        }
-
-        .message.ai {
-            background-color: #f0f0f0;
-            color: var(--text-color);
-            margin-left: 10px;
-            margin-right: auto;
-            border-bottom-left-radius: 4px;
-        }
-
-        .message-content {
-            word-break: break-word;
-            white-space: pre-wrap;
-            line-height: 1.4;
-            margin-bottom: 5px;
-        }
-
-        .message-timestamp {
-            font-size: 11px;
-            opacity: 0.8;
-            margin-top: 4px;
-        }
-
-        .message-status {
-            font-size: 11px;
-            opacity: 0.8;
-            font-style: italic;
-        }
-
-        .message.user .message-timestamp,
-        .message.user .message-status {
-            color: rgba(255,255,255,0.9);
-        }
-
-        .no-messages {
-            text-align: center;
-            color: #666;
-            padding: 20px;
-            font-style: italic;
-        }
-
-        /* Login status display */
-        .login-status {
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        .logged-in {
-            color: var(--success-color);
-        }
-
-        .logged-out {
-            color: var(--error-color);
-        }
-    </style>
-</head>
-<body>
-    <div class="main-content">
-        <h1>ICMP Message Tester</h1>
-        
-        <div class="debug-section">
-            <h2>Configuration</h2>
-            <div class="form-group">
-                <label for="businessId">Business ID:</label>
-                <input type="text" id="businessId" placeholder="Enter your Business ID" value="7ae167a0-d864-43b9-bdaf-fcba35b33f27">
-            </div>
-            <div class="form-group">
-                <label for="userId">User ID:</label>
-                <input type="text" id="userId" placeholder="Enter your User ID">
-            </div>
-            <div class="form-group">
-                <label for="apiKey">Business API Key:</label>
-                <input type="password" id="apiKey" placeholder="Enter your API Key" value="da828cae6a3e46228aa09d65ba9066e3">
-            </div>
-            <div class="button-group">
-                <button onclick="login()" id="loginButton">Login</button>
-            </div>
-            <div id="loginStatus" class="login-status logged-out">Not logged in</div>
-        </div>
-
-        <div class="debug-section">
-            <h2>Send Message</h2>
-            <div class="form-group">
-                <label for="messageContent">Message:</label>
-                <textarea id="messageContent" placeholder="Enter your message here..."></textarea>
-            </div>
-            <div class="button-group">
-                <button onclick="sendMessage()" id="sendButton">Send Message</button>
-                <button onclick="fetchHistory()" id="historyButton">Fetch History</button>
-                <button onclick="testBackendConnection()" id="pingButton">Test Connection</button>
-            </div>
-        </div>
-
-        <div class="debug-section">
-            <h2>Response</h2>
-            <div id="responseArea">Response will appear here...</div>
-        </div>
-
-        <div class="debug-section">
-            <h2>Conversation History</h2>
-            <div id="historyArea">History will appear here...</div>
-        </div>
-
-        <div class="debug-section">
-            <h2>Authentication</h2>
-            <div class="login-container">
-                <div class="login-status-display">
-                    <span>Status: </span><span id="loginStatus" class="login-status logged-out">Not logged in</span>
-                </div>
-                <button onclick="login()" id="loginButton">Login</button>
-                <button onclick="logout()" id="logoutButton">Logout</button>
-            </div>
-        </div>
-    </div>
-
-    <button class="debug-toggle" onclick="toggleDebugPanel()">Toggle Debug Panel</button>
-    
-    <div class="debug-panel" id="debugPanel">
-        <div class="debug-section">
-            <h3>Request Details</h3>
-            <div id="requestDetails">No request details available</div>
-        </div>
-        <div class="debug-section">
-            <h3>Response Headers</h3>
-            <div id="responseHeaders">No response headers available</div>
-        </div>
-        <div class="debug-section">
-            <h3>Network Status</h3>
-            <div id="networkStatus">Ready</div>
-        </div>
-        <div class="debug-section">
-            <h3>CORS Troubleshooting</h3>
-            <p>Having connection issues? Try these options:</p>
-            <div class="button-group">
-                <button onclick="changeApiUrlTo('http://localhost:5000')">Use localhost:5000</button>
-                <button onclick="changeApiUrlTo('http://127.0.0.1:5000')">Use 127.0.0.1:5000</button>
-                <button onclick="changeApiUrlTo(window.location.protocol + '//' + window.location.hostname + ':5000')">Use current host</button>
-            </div>
-            <div id="corsStatus"></div>
-        </div>
-    </div>
-
-    <script>
-        // Constants
-        //const API_BASE_URL = 'http://localhost:5000';
-        // Alternative URL options (uncomment if needed)
-        const API_BASE_URL = 'http://127.0.0.1:5000';
-        // const API_BASE_URL = window.location.protocol + '//' + window.location.hostname + ':5000';
-        // Set global variable for easy updating
-        window.API_BASE_URL = API_BASE_URL;
-        const DEBUG_PANEL_ID = 'debugPanel';
-        const DEFAULT_BUSINESS_ID = '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
-        const DEFAULT_API_KEY = 'da828cae6a3e46228aa09d65ba9066e3';
-        
-        // State management
-        let currentStage = null;
-        let conversationHistory = [];
-        let isLoggedIn = false;
-        
-        // Initialize the app
-        function init() {
-            // Check if we're already logged in (if we saved API key to localStorage)
-            const savedApiKey = localStorage.getItem('businessApiKey');
-            if (savedApiKey) {
-                // Pre-fill the form with the saved API key
-                document.getElementById('apiKey').value = savedApiKey;
-                
-                // Check if businessId and userId are in localStorage or URL
-                const savedBusinessId = localStorage.getItem('businessId');
-                const savedUserId = localStorage.getItem('userId');
-                
-                if (savedBusinessId) {
-                    document.getElementById('businessId').value = savedBusinessId;
-                }
-                
-                if (savedUserId) {
-                    document.getElementById('userId').value = savedUserId;
-                }
-                
-                // Try to detect login state
-                // Since we can't access HTTP-only cookies, we just assume we're logged in
-                // if we have the API key in localStorage. User can always re-login if needed.
-                if (savedApiKey && savedBusinessId && savedUserId) {
-                    isLoggedIn = true;
-                    document.getElementById('loginStatus').textContent = 'Logged in';
-                    document.getElementById('loginStatus').className = 'login-status logged-in';
-                    document.getElementById('loginButton').textContent = 'Logged In';
-                    document.getElementById('loginButton').disabled = true;
-                }
-            }
-            
-            // Set default values if not already set
-            if (!document.getElementById('businessId').value) {
-                document.getElementById('businessId').value = DEFAULT_BUSINESS_ID;
-            }
-            
-            console.log('App initialized');
-        }
-        
-        // Call init when the page loads
-        window.addEventListener('DOMContentLoaded', init);
-        
-        // Utility functions
-        function updateNetworkStatus(status, isError = false) {
-            const statusElement = document.getElementById('networkStatus');
-            statusElement.textContent = status;
-            statusElement.className = isError ? 'error' : 'success';
-        }
-        
-        function updateRequestDetails(details) {
-            const detailsElement = document.getElementById('requestDetails');
-            detailsElement.innerHTML = `<pre>${JSON.stringify(details, null, 2)}</pre>`;
-        }
-        
-        function updateResponseHeaders(headers) {
-            const headersElement = document.getElementById('responseHeaders');
-            headersElement.innerHTML = `<pre>${JSON.stringify(headers, null, 2)}</pre>`;
-        }
-        
-        function showError(message) {
-            const responseArea = document.getElementById('responseArea');
-            responseArea.innerHTML = `<div class="error">${message}</div>`;
-            updateNetworkStatus('Error: ' + message, true);
-        }
-        
-        function showSuccess(message) {
-            const responseArea = document.getElementById('responseArea');
-            responseArea.innerHTML = `<div class="success">${message}</div>`;
-            updateNetworkStatus('Success', false);
-        }
-        
-        function validateInputs() {
-            const businessId = document.getElementById('businessId').value.trim();
-            const userId = document.getElementById('userId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            const message = document.getElementById('messageContent').value.trim();
-            
-            if (!businessId) {
-                showError('Business ID is required');
-                return false;
-            }
-            if (!userId) {
-                showError('User ID is required');
-                return false;
-            }
-            if (!apiKey) {
-                showError('API Key is required');
-                return false;
-            }
-            if (!message) {
-                showError('Message content is required');
-                return false;
-            }
-            
-            return true;
-        }
-        
-        async function login() {
-            const businessId = document.getElementById('businessId').value.trim();
-            const userId = document.getElementById('userId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            if (!businessId || !userId || !apiKey) {
-                showError('Business ID, User ID, and API Key are required to login');
-                return;
-            }
-            
-            // Ensure consistent naming convention for the API
-            const loginData = {
-                userId: userId,
-                businessId: businessId,
-                businessApiKey: apiKey
-            };
-            
-            updateRequestDetails(loginData);
-            updateNetworkStatus('Logging in...');
-            
-            try {
-                const url = `${window.API_BASE_URL}/api/save-config`;
-                console.log('Logging in with URL:', url);
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(loginData),
-                    credentials: 'include', // Important: include cookies
-                    mode: 'cors'
-                });
-                
-                // Log all headers for debugging
-                const headersObj = Object.fromEntries(response.headers);
-                console.log('Response status:', response.status);
-                console.log('Response headers:', headersObj);
-                updateResponseHeaders(headersObj);
-                
-                if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        console.error('Error response:', errorData);
-                        errorText = errorData.error || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                        console.error('Error response (text):', errorText);
-                    }
-                    
-                    throw new Error(`Login failed! status: ${response.status}, message: ${errorText}`);
-                }
-                
-                const data = await response.json();
-                console.log('Login response:', data);
-                
-                // Verify we received success from the server
-                if (data.success) {
-                    // Check for the cookie - this will only work on same domain
-                    // Otherwise the cookie is HTTP-only and JavaScript can't directly access it
-                    const cookies = document.cookie.split(';');
-                    const hasCookie = cookies.some(cookie => cookie.trim().startsWith('businessApiKey='));
-                    
-                    if (hasCookie || true) { // Always set to true for now since HTTP-only cookie can't be read
-                        isLoggedIn = true;
-                        showSuccess('Login successful!');
-                        document.getElementById('loginStatus').textContent = 'Logged in';
-                        document.getElementById('loginStatus').className = 'login-status logged-in';
-                        document.getElementById('loginButton').textContent = 'Logged In';
-                        document.getElementById('loginButton').disabled = true;
-                        
-                        // Also store credentials for subsequent requests
-                        localStorage.setItem('businessApiKey', apiKey);
-                        localStorage.setItem('businessId', businessId);
-                        localStorage.setItem('userId', userId);
-                    } else {
-                        console.error('Cookie not set despite successful response');
-                        isLoggedIn = false;
-                        throw new Error('Authentication cookie not set. Check CORS and cookie settings.');
-                    }
-                } else {
-                    isLoggedIn = false;
-                    throw new Error(data.error || 'Login failed for unknown reason');
-                }
-                
-            } catch (error) {
-                console.error('Login error:', error);
-                isLoggedIn = false;
-                showError(`Login failed: ${error.message}`);
-                document.getElementById('loginStatus').textContent = 'Not logged in';
-                document.getElementById('loginStatus').className = 'login-status logged-out';
-            }
-        }
-        
-        async function sendMessage() {
-            if (!isLoggedIn) {
-                showError('You must login first before sending messages');
-                return;
-            }
-            
-            if (!validateInputs()) return;
-            
-            const businessId = document.getElementById('businessId').value.trim();
-            const userId = document.getElementById('userId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            const message = document.getElementById('messageContent').value.trim();
-            
-            const requestData = {
-                business_id: businessId,
-                user_id: userId,
-                message: message
-            };
-            
-            // Create a copy of request data for display (with API key)
-            const displayData = {
-                ...requestData,
-                businessApiKey: apiKey
-            };
-            
-            updateRequestDetails(displayData);
-            updateNetworkStatus('Sending message...');
-            
-            try {
-                const url = `${window.API_BASE_URL}/api/message`;
-                console.log('Sending message to URL:', url);
-                console.log('Request data:', JSON.stringify(requestData));
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'businessapikey': apiKey // Make sure this matches what the server expects
-                    },
-                    body: JSON.stringify(requestData),
-                    credentials: 'include', // Include credentials (cookies)
-                    mode: 'cors' // Explicitly request CORS
-                });
-                
-                // Log all headers for debugging
-                const headersObj = Object.fromEntries(response.headers);
-                console.log('Response status:', response.status);
-                console.log('Response headers:', headersObj);
-                updateResponseHeaders(headersObj);
-                
-                if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        console.error('Error response:', errorData);
-                        errorText = errorData.message || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                        console.error('Error response (text):', errorText);
-                    }
-                    
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                }
-                
-                const data = await response.json();
-                console.log('Response data:', data);
-                showSuccess('Message sent successfully!');
-                
-                if (data.success && data.chat_window) {
-                    // Update conversation history with the new messages
-                    const { user_message, ai_response } = data.chat_window;
-                    
-                    // Add user message to history
-                    conversationHistory.push({
-                        id: user_message.id,
-                        type: 'user',
-                        content: user_message.content,
-                        timestamp: user_message.timestamp,
-                        status: user_message.status
-                    });
-                    
-                    // Add AI response to history
-                    conversationHistory.push({
-                        id: ai_response.id,
-                        type: 'ai',
-                        content: ai_response.content,
-                        timestamp: ai_response.timestamp,
-                        status: ai_response.status
-                    });
-                    
-                    // Display the messages in the response area
-                    const responseArea = document.getElementById('responseArea');
-                    responseArea.innerHTML = `
-                        <div class="conversation">
-                            <div class="messages">
-                                <div class="message user">
-                                    <div class="message-content">${user_message.content}</div>
-                                    <div class="message-timestamp">${new Date(user_message.timestamp).toLocaleString()}</div>
-                                    <div class="message-status">${user_message.status}</div>
-                                </div>
-                                <div class="message ai">
-                                    <div class="message-content">${ai_response.content}</div>
-                                    <div class="message-timestamp">${new Date(ai_response.timestamp).toLocaleString()}</div>
-                                    <div class="message-status">${ai_response.status}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    
-                    // Clear message input
-                    document.getElementById('messageContent').value = '';
-                    
-                    // Update the history display
-                    updateHistoryDisplay();
-                } else {
-                    showError('Invalid response format from server');
-                }
-                
-            } catch (error) {
-                console.error('Error details:', error);
-                showError(`Failed to send message: ${error.message}`);
-            }
-        }
-        
-        function updateHistoryDisplay() {
-            const historyArea = document.getElementById('historyArea');
-            
-            if (conversationHistory.length === 0) {
-                historyArea.innerHTML = '<div class="no-messages">No messages in conversation</div>';
-                return;
-            }
-            
-            const conversationHtml = conversationHistory.map(message => `
-                <div class="message ${message.type}">
-                    <div class="message-content">${message.content}</div>
-                    <div class="message-timestamp">${new Date(message.timestamp).toLocaleString()}</div>
-                    <div class="message-status">${message.status}</div>
-                </div>
-            `).join('');
-            
-            historyArea.innerHTML = `
-                <div class="conversation">
-                    <div class="messages">
-                        ${conversationHtml}
-                    </div>
-                </div>
-            `;
-        }
-        
-        async function fetchHistory() {
-            if (!isLoggedIn) {
-                showError('You must login first before fetching history');
-                return;
-            }
-            
-            const businessId = document.getElementById('businessId').value.trim();
-            const userId = document.getElementById('userId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            if (!businessId || !userId || !apiKey) {
-                showError('Business ID, User ID, and API Key are required to fetch history');
-                return;
-            }
-            
-            // Create request details for display (with API key)
-            const displayData = {
-                business_id: businessId,
-                user_id: userId,
-                businessApiKey: apiKey
-            };
-            
-            updateRequestDetails(displayData);
-            updateNetworkStatus('Fetching history...');
-            
-            try {
-                const url = `${window.API_BASE_URL}/conversations/${userId}?business_id=${businessId}`;
-                console.log('Fetching from URL:', url);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'businessapikey': apiKey // lowercase to match what the server expects in auth.py
-                    },
-                    credentials: 'include', // Include credentials (cookies)
-                    mode: 'cors' // Explicitly request CORS
-                });
-                
-                // Log all headers for debugging
-                const headersObj = Object.fromEntries(response.headers);
-                console.log('Response status:', response.status);
-                console.log('Response headers:', headersObj);
-                updateResponseHeaders(headersObj);
-                
-                if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        console.error('Error response:', errorData);
-                        errorText = errorData.message || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                        console.error('Error response (text):', errorText);
-                    }
-                    
-                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                }
-                
-                const data = await response.json();
-                console.log('Conversation data:', data);
-                
-                // Display history
-                const historyArea = document.getElementById('historyArea');
-                if (data.length === 0) {
-                    historyArea.innerHTML = '<div class="message">No conversations found for this user.</div>';
-                } else {
-                    historyArea.innerHTML = data.map(conv => `
-                        <div class="conversation">
-                            <div class="conversation-header">
-                                <span>Conversation ID: ${conv.conversation_id}</span>
-                                <span>Started: ${new Date(conv.start_time).toLocaleString()}</span>
-                                <span>Last Updated: ${new Date(conv.last_updated).toLocaleString()}</span>
-                                <span>Status: ${conv.status}</span>
-                                ${conv.language ? `<span>Language: ${conv.language}</span>` : ''}
-                            </div>
-                            <div class="messages">
-                                ${conv.message ? `
-                                    <div class="message user">
-                                        <div class="message-content">${conv.message}</div>
-                                        <div class="message-timestamp">${new Date(conv.start_time).toLocaleTimeString()}</div>
-                                    </div>
-                                    ${conv.response ? `
-                                        <div class="message ai">
-                                            <div class="message-content">${conv.response}</div>
-                                            <div class="message-timestamp">${new Date(conv.last_updated).toLocaleTimeString()}</div>
-                                        </div>
-                                    ` : '<div class="message pending">Waiting for response...</div>'}
-                                ` : '<div class="message">No messages in this conversation</div>'}
-                            </div>
-                        </div>
-                    `).join('');
-                }
-                
-                showSuccess('History fetched successfully!');
-                
-            } catch (error) {
-                console.error('Error details:', error);
-                showError(`Failed to fetch history: ${error.message}`);
-            }
-        }
-        
-        function generateUUID() {
-            // RFC4122 version 4 compliant UUID
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        }
-        
-        function toggleDebugPanel() {
-            const panel = document.getElementById(DEBUG_PANEL_ID);
-            panel.classList.toggle('active');
-        }
-        
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', () => {
-            // Set default values if fields are empty
-            const businessIdField = document.getElementById('businessId');
-            const apiKeyField = document.getElementById('apiKey');
-            
-            if (!businessIdField.value) {
-                businessIdField.value = DEFAULT_BUSINESS_ID;
-            }
-            
-            if (!apiKeyField.value) {
-                apiKeyField.value = DEFAULT_API_KEY;
-            }
-            
-            // Add input validation on change
-            const inputs = document.querySelectorAll('input, textarea');
-            inputs.forEach(input => {
-                input.addEventListener('input', () => {
-                    input.classList.remove('error');
-                });
-            });
-            
-            // Generate a valid UUID for the user_id field if empty
-            const userIdField = document.getElementById('userId');
-            if (!userIdField.value) {
-                userIdField.value = generateUUID();
-            }
-            
-            // Add keyboard shortcuts
-            document.addEventListener('keydown', (e) => {
-                // Ctrl/Cmd + Enter to send message
-                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    sendMessage();
-                }
-                // Ctrl/Cmd + H to fetch history
-                if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
-                    e.preventDefault();
-                    fetchHistory();
-                }
-                // Ctrl/Cmd + L to login
-                if ((e.ctrlKey || e.metaKey) && e.key === 'l') {
-                    e.preventDefault();
-                    login();
-                }
-            });
-        });
-
-        // Add this new function to test basic connectivity
-        async function testBackendConnection() {
-            updateNetworkStatus('Testing connection...');
-            try {
-                // First, try to ping the root endpoint
-                const url = `${window.API_BASE_URL}/`;
-                console.log('Testing connection to:', url);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    mode: 'cors',
-                    credentials: 'include'
-                });
-                
-                console.log('Ping response status:', response.status);
-                const text = await response.text();
-                console.log('Ping response:', text);
-                
-                const statusElement = document.getElementById('networkStatus');
-                statusElement.textContent = `Connection successful: ${response.status} - ${text}`;
-                statusElement.className = 'success';
-                
-                showSuccess(`Backend connection successful: ${text}`);
-                
-                // Try another endpoint as a secondary test
-                try {
-                    const pingResponse = await fetch(`${window.API_BASE_URL}/ping`, {
-                        method: 'GET',
-                        mode: 'cors'
-                    });
-                    
-                    const pingText = await pingResponse.text();
-                    console.log('Secondary ping response:', pingText);
-                } catch (pingError) {
-                    console.log('Secondary ping test failed (this is okay):', pingError);
-                }
-                
-            } catch (error) {
-                console.error('Connection test error:', error);
-                
-                // More detailed error info
-                let errorMessage = `Connection failed: ${error.message}`;
-                
-                // Check for common network errors
-                if (error.message.includes('Failed to fetch')) {
-                    errorMessage += '\nThis usually means the server is not running or not accessible.';
-                } else if (error.message.includes('NetworkError')) {
-                    errorMessage += '\nThis is likely a CORS issue. Check if the server has proper CORS headers.';
-                } else if (error.message.includes('Not Found')) {
-                    errorMessage += '\nThe server is running but the endpoint does not exist.';
-                }
-                
-                errorMessage += '\n\nTry these steps:\n1. Make sure the backend server is running\n2. Check if CORS is properly configured\n3. Try using http://127.0.0.1:5000 instead of localhost';
-                
-                showError(errorMessage);
-                
-                // Try alternative URL automatically
-                if (window.API_BASE_URL.includes('localhost')) {
-                    try {
-                        const altUrl = 'http://127.0.0.1:5000/';
-                        console.log('Trying alternative URL:', altUrl);
-                        
-                        const altResponse = await fetch(altUrl, {
-                            method: 'GET',
-                            mode: 'cors'
-                        });
-                        
-                        if (altResponse.ok) {
-                            const altText = await altResponse.text();
-                            console.log('Alternative URL response:', altText);
-                            showSuccess(`Alternative URL works! Try changing API_BASE_URL to 'http://127.0.0.1:5000'`);
-                        }
-                    } catch (altError) {
-                        console.error('Alternative URL also failed:', altError);
-                    }
-                }
-            }
-        }
-
-        // Function to change API URL dynamically
-        function changeApiUrlTo(newUrl) {
-            const oldUrl = window.API_BASE_URL;
-            window.API_BASE_URL = newUrl;
-            
-            const corsStatus = document.getElementById('corsStatus');
-            corsStatus.innerHTML = `<div class="success">Changed API URL from ${oldUrl} to ${newUrl}</div>`;
-            
-            // Test the connection with the new URL
-            testBackendConnection();
-        }
-
-        // Function to handle logout
-        function logout() {
-            // Clear localStorage
-            localStorage.removeItem('businessApiKey');
-            localStorage.removeItem('businessId');
-            localStorage.removeItem('userId');
-            
-            // Reset UI state
-            isLoggedIn = false;
-            document.getElementById('loginStatus').textContent = 'Not logged in';
-            document.getElementById('loginStatus').className = 'login-status logged-out';
-            document.getElementById('loginButton').textContent = 'Login';
-            document.getElementById('loginButton').disabled = false;
-            
-            // Clear cookie if possible
-            document.cookie = 'businessApiKey=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            
-            // Optionally clear the API key field for security
-            // document.getElementById('apiKey').value = '';
-            
-            showSuccess('Logged out successfully');
-            
-            // Make a call to the backend to clear cookies
-            fetch(`${window.API_BASE_URL}/auth/clear-cookies`, {
-                method: 'POST',
-                credentials: 'include',
-                mode: 'cors'
-            }).then(response => {
-                console.log('Logout response:', response.status);
-            }).catch(error => {
-                console.error('Error during logout:', error);
-            });
-        }
-    </script>
-</body>
-</html> 
-
-================================================================================
 File: llm.html
 Path: .\llm.html
 Size: 44414
@@ -3096,11 +2039,11 @@ Lines: 450
 ================================================================================
 File: message_handling.html
 Path: .\message_handling.html
-Size: 57113
-Modified: 2025-04-13T19:49:48.016386
+Size: 68025
+Modified: 2025-04-18T14:01:13.343683
 Created: 2025-04-11T15:15:10.708002
-Hash: 0f2a01fdb1ba28eac4f62b229c36451bcaebc440e33a0eea566cc76bda65bacc
-Lines: 1431
+Hash: a192fb935e96e5f7ee217f9c8647dd540d6d95c675e6010b5815bad9c9fa53fa
+Lines: 1616
 ================================================================================
 <!DOCTYPE html>
 <html lang="en">
@@ -3920,7 +2863,6 @@ Lines: 1431
                 if (data.success) {
                     showSuccess('Message sent successfully!');
                     
-                    // Display the response
                     const responseArea = document.getElementById('responseArea');
                     if (data.chat_window) {
                         const { user_message, ai_response } = data.chat_window;
@@ -3940,7 +2882,6 @@ Lines: 1431
                         `;
                     }
                     
-                    // If there's a process log ID, fetch and display the details
                     if (data.process_log_id) {
                         currentLogId = data.process_log_id;
                         setTimeout(() => fetchProcessLog(data.process_log_id), 500);
@@ -3948,7 +2889,12 @@ Lines: 1431
                         showError('No process log ID returned. Detailed debugging not available.');
                     }
                     
-                    // Refresh the recent logs
+                    // If processing steps are included directly in the response, update the view
+                    if (data.processing_steps && Array.isArray(data.processing_steps)) {
+                        console.log('Processing steps found in response, updating view');
+                        updateProcessingSteps(data);
+                    }
+                    
                     setTimeout(fetchRecentLogs, 1000);
                 } else {
                     showError(data.error || 'Unknown error sending message');
@@ -4004,6 +2950,7 @@ Lines: 1431
                 }
                 
                 const logData = await response.json();
+                console.log('Process log data received:', logData);
                 
                 // Display the process log
                 displayProcessLog(logData);
@@ -4013,6 +2960,9 @@ Lines: 1431
                 
                 // Display variable substitution if available
                 displayVariableSubstitution(logData);
+                
+                // Also update the simple view stages
+                updateProcessingSteps(logData);
                 
             } catch (error) {
                 console.error('Error fetching process log:', error);
@@ -4492,6 +3442,141 @@ Lines: 1431
             }
         }
         
+        // Display debug info on processing steps
+        function updateProcessingSteps(log) {
+            if (!log || !log.processing_steps || !Array.isArray(log.processing_steps)) {
+                console.log('No processing steps found in log data');
+                return;
+            }
+            
+            console.log('Updating simple view with processing steps:', log.processing_steps);
+            
+            // Find each step
+            const intentStep = log.processing_steps.find(step => 
+                step.step === 'intent_detection' || step.step === 'stage_selection');
+            
+            const extractionStep = log.processing_steps.find(step => 
+                step.step === 'data_extraction');
+            
+            const responseStep = log.processing_steps.find(step => 
+                step.step === 'response_generation');
+            
+            // Update intent detection section
+            if (intentStep) {
+                console.log('Intent step found:', intentStep);
+                document.getElementById('intentPrompt').textContent = intentStep.prompt || 'No prompt data';
+                document.getElementById('intentResponse').textContent = intentStep.response || 'No response data';
+            }
+            
+            // Update data extraction section (with detailed debugging)
+            if (extractionStep) {
+                console.log('Data extraction step found:', extractionStep);
+                
+                // Display template info if available
+                let templateInfo = '';
+                if (extractionStep.template_name) {
+                    templateInfo = `Template: ${extractionStep.template_name} (${extractionStep.template_id || 'No ID'})`;
+                    
+                    // Add template info to the data extraction section header
+                    const extractionHeader = document.querySelector('.process-step:nth-child(2) .step-header');
+                    if (extractionHeader) {
+                        extractionHeader.innerHTML = `Stage 2: Data Extraction <span style="font-size: 0.8em; color: #666;">${templateInfo}</span>`;
+                    }
+                }
+                
+                // Prioritize data within extracted_data if it exists
+                let promptContent = '';
+                let responseContent = '';
+                let foundInData = false;
+                
+                if (extractionStep.extracted_data && typeof extractionStep.extracted_data === 'object') {
+                    console.log('Checking for prompt/response in extracted_data:', extractionStep.extracted_data);
+                    
+                    promptContent = extractionStep.extracted_data.prompt || '';
+                    responseContent = extractionStep.extracted_data.response || extractionStep.extracted_data.raw_extraction || '';
+                    
+                    if (promptContent || responseContent) {
+                        foundInData = true;
+                        console.log('Found prompt/response in extracted_data:', promptContent, responseContent);
+                    } else {
+                         // Fallback if extracted_data exists but has no prompt/response
+                        console.log('extracted_data exists but no prompt/response found within it. Trying top-level.');
+                        promptContent = extractionStep.prompt || '';
+                        responseContent = extractionStep.response || '';
+                        // Use entire extracted_data as fallback response if top-level response is empty
+                        if ((!responseContent || responseContent === 'N/A') && typeof extractionStep.extracted_data === 'object') {
+                             const displayData = {...extractionStep.extracted_data};
+                             delete displayData._template_info; // Don't show internal metadata
+                             responseContent = JSON.stringify(displayData, null, 2);
+                             console.log('Using cleaned extracted_data object as fallback response.');
+                        }
+                    }
+                } else {
+                    // Fallback to top-level prompt/response if extracted_data is missing
+                    console.log('extracted_data missing or not an object. Using top-level prompt/response.');
+                    promptContent = extractionStep.prompt || '';
+                    responseContent = extractionStep.response || '';
+                }
+                
+                // Clean the response content before displaying
+                const cleanedResponse = cleanExtractionResponse(responseContent);
+                
+                // Display the content we found/derived
+                document.getElementById('extractionPrompt').textContent = promptContent || "No prompt data available";
+                document.getElementById('extractionResponse').textContent = cleanedResponse || "No response data available";
+
+                // Handle UI feedback (warnings/success messages)
+                const extractionContent = document.querySelector('.process-step:nth-child(2) .step-content');
+                if (extractionContent) {
+                    // Remove any existing status messages first
+                    const existingMessages = extractionContent.querySelectorAll('.feedback-message');
+                    existingMessages.forEach(msg => msg.remove());
+
+                    if (promptContent && cleanedResponse && cleanedResponse !== 'No response data available') {
+                        // Add success message if we successfully displayed data
+                        const successDiv = document.createElement('div');
+                        successDiv.className = 'feedback-message'; // Add class for easier removal
+                        successDiv.style.color = '#28a745';
+                        successDiv.style.fontWeight = 'bold';
+                        successDiv.style.marginBottom = '10px';
+                        successDiv.innerHTML = `<p>✅ Data extraction details displayed successfully.</p>`;
+                        if (extractionContent.firstChild) {
+                            extractionContent.insertBefore(successDiv, extractionContent.firstChild);
+                        } else {
+                            extractionContent.appendChild(successDiv);
+                        }
+                    } else {
+                        // Add warning if data seems missing or incomplete
+                        const warningDiv = document.createElement('div');
+                        warningDiv.className = 'feedback-message'; // Add class for easier removal
+                        warningDiv.style.color = '#dc3545';
+                        warningDiv.style.fontWeight = 'bold';
+                        warningDiv.style.marginBottom = '10px';
+                        warningDiv.innerHTML = `<p>⚠️ WARNING: Could not display complete data extraction details.</p>
+                            <p>Check the following:</p>
+                            <ul>
+                                <li>Review the raw 'processing_steps' data in the browser console.</li>
+                                <li>Verify the data extraction template (ID: ${extractionStep.template_id || 'None'}) is configured correctly.</li>
+                                <li>Ensure the backend service ('data_extraction_service.py' or similar) returns data in the expected format.</li>
+                            </ul>`;
+                        if (extractionContent.firstChild) {
+                            extractionContent.insertBefore(warningDiv, extractionContent.firstChild);
+                        } else {
+                            extractionContent.appendChild(warningDiv);
+                        }
+                    }
+                }
+            }
+            
+            // Update response generation section
+            if (responseStep) {
+                console.log('Response step found:', responseStep);
+                document.getElementById('responsePrompt').textContent = responseStep.prompt || 'No prompt data';
+                document.getElementById('responseResponse').textContent = responseStep.response || 'No response data';
+            }
+        }
+        
+        // Display message response
         function displayMessageResponse(data) {
             if (data.success) {
                 // Check if processing_steps exists before trying to access it
@@ -4504,7 +3589,7 @@ Lines: 1431
                     // Display Stage 2: Data Extraction
                     const extractionStep = data.processing_steps.find(step => step.step === 'data_extraction');
                     document.getElementById('extractionPrompt').textContent = extractionStep?.prompt || '';
-                    document.getElementById('extractionResponse').textContent = extractionStep?.response || '';
+                    document.getElementById('extractionResponse').textContent = cleanExtractionResponse(extractionStep?.response || '');
                     
                     // Display Stage 3: Response Generation
                     const responseStep = data.processing_steps.find(step => step.step === 'response_generation');
@@ -4529,10 +3614,554 @@ Lines: 1431
                 document.getElementById('responseArea').classList.add('error');
             }
         }
+        
+        // Helper function to clean up extraction responses
+        function cleanExtractionResponse(response) {
+            if (!response) return '';
+            
+            try {
+                // If it's a JSON string, try to parse it
+                if (typeof response === 'string' && 
+                    (response.trim().startsWith('{') || response.trim().startsWith('['))) {
+                    
+                    const parsed = JSON.parse(response);
+                    
+                    // If it contains basic_info and contact_info, focus on those
+                    if (parsed.basic_info || parsed.contact_info) {
+                        // Create a clean object with just the extracted data
+                        const cleanData = {};
+                        if (parsed.basic_info) cleanData.basic_info = parsed.basic_info;
+                        if (parsed.contact_info) cleanData.contact_info = parsed.contact_info;
+                        
+                        return JSON.stringify(cleanData, null, 2);
+                    }
+                    
+                    // Remove metadata fields if present
+                    if (typeof parsed === 'object') {
+                        const cleanData = {...parsed};
+                        delete cleanData._template_info;
+                        delete cleanData.prompt;
+                        delete cleanData.processed_content;
+                        delete cleanData.processed_system_prompt;
+                        
+                        return JSON.stringify(cleanData, null, 2);
+                    }
+                    
+                    // Otherwise, just return the formatted JSON
+                    return JSON.stringify(parsed, null, 2);
+                }
+            } catch (e) {
+                console.log('Error cleaning extraction response:', e);
+            }
+            
+            // Return the original response if not JSON or if parsing fails
+            return response;
+        }
     </script>
 </body>
 </html>
 
+
+================================================================================
+File: message_handling_render.html
+Path: .\message_handling_render.html
+Size: 16643
+Modified: 2025-04-19T23:07:13.549632
+Created: 2025-04-19T23:07:10.699286
+Hash: 6946870684b2966a975ace7e701f652d34029370b4245f5951d62ae3cabca400
+Lines: 491
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICMP Message Processing Debugger (Render)</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #ddd;
+            --bg-light: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6; 
+            padding: 0;
+            margin: 0;
+            display: flex;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            padding: 20px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input[type="text"], 
+        input[type="password"], 
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        textarea { 
+            height: 120px; 
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+        }
+
+        button:hover { 
+            background-color: var(--primary-hover);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        #responseArea {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .error { 
+            color: var(--error-color);
+            border-color: var(--error-color);
+            background-color: #fff5f5;
+        }
+
+        .success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: var(--text-color);
+            margin-top: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-divider {
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .process-step {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+        }
+        
+        .step-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .step-content {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .prompt-box, .response-box {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .prompt-box {
+            background-color: #f0f8ff;
+            border: 1px solid #b8daff;
+        }
+        
+        .response-box {
+            background-color: #f0fff4;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .system-prompt {
+            font-style: italic;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .logged-in {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .logged-out {
+            color: var(--error-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .process-log {
+            margin-top: 20px;
+        }
+        
+        .no-logs {
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        /* Responsive styling */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>ICMP Message Processing Debugger (Render Deployment)</h1>
+        
+        <!-- Login Section -->
+        <h2>Login</h2>
+        <div class="login-section">
+            <div class="form-group">
+                <label for="businessId">Business ID</label>
+                <input id="businessId" type="text" placeholder="Enter Business ID">
+            </div>
+            
+            <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input id="apiKey" type="password" placeholder="Enter API Key">
+            </div>
+            
+            <div class="button-group">
+                <button id="loginButton" onclick="login()">Login</button>
+                <span id="loginStatus" class="logged-out">Not logged in</span>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Message Sending Section -->
+        <h2>Send Message</h2>
+        <div class="message-section">
+            <div class="form-group">
+                <label for="userId">Message Sender ID (User)</label>
+                <input id="userId" type="text" placeholder="Enter User ID or generate new">
+                <button onclick="document.getElementById('userId').value = generateUUID()">Generate New</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="conversationId">Conversation ID (Optional)</label>
+                <input id="conversationId" type="text" placeholder="Enter Conversation ID or leave empty for new conversation">
+            </div>
+            
+            <div class="form-group">
+                <label for="messageContent">Message Content</label>
+                <textarea id="messageContent" placeholder="Enter your message"></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="sendButton" onclick="sendMessage()">Send Message</button>
+            </div>
+            
+            <div id="responseArea">
+                <div class="text-muted">Send a message to see the response</div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Status Section -->
+        <h2>Status</h2>
+        <div id="statusArea">
+            <div id="networkStatus" class="text-muted">No network activity yet</div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration for Render deployment
+        const API_BASE_URL = 'https://icmp-events-api.onrender.com';
+        
+        // State management
+        let isLoggedIn = false;
+        
+        // Initialize the app
+        function init() {
+            // Check if we're already logged in
+            const savedApiKey = localStorage.getItem('businessApiKey');
+            if (savedApiKey) {
+                document.getElementById('apiKey').value = savedApiKey;
+                
+                const savedBusinessId = localStorage.getItem('businessId');
+                
+                if (savedBusinessId) {
+                    document.getElementById('businessId').value = savedBusinessId;
+                    isLoggedIn = true;
+                    document.getElementById('loginStatus').textContent = 'Logged in';
+                    document.getElementById('loginStatus').className = 'logged-in';
+                }
+            }
+            
+            // Generate a UUID for user_id if not already set
+            if (!document.getElementById('userId').value) {
+                document.getElementById('userId').value = generateUUID();
+            }
+        }
+        
+        // Call init when the page loads
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Utility function to generate a UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.textContent = message;
+            responseArea.classList.remove('error');
+            responseArea.classList.add('success');
+            
+            // Also update status
+            updateStatus(message);
+        }
+        
+        // Show error message
+        function showError(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.textContent = message;
+            responseArea.classList.remove('success');
+            responseArea.classList.add('error');
+            
+            // Also update status
+            updateStatus('ERROR: ' + message);
+        }
+        
+        // Update status display
+        function updateStatus(message) {
+            const statusElem = document.getElementById('networkStatus');
+            statusElem.textContent = message;
+        }
+        
+        // Login function
+        async function login() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to login');
+                return;
+            }
+            
+            updateStatus('Logging in...');
+            
+            try {
+                // Instead of verifying ownership, we'll just store the credentials
+                // and assume they'll work for messaging
+                localStorage.setItem('businessApiKey', apiKey);
+                localStorage.setItem('businessId', businessId);
+                
+                isLoggedIn = true;
+                showSuccess('Login credentials stored successfully!');
+                document.getElementById('loginStatus').textContent = 'Logged in';
+                document.getElementById('loginStatus').className = 'logged-in';
+            } catch (error) {
+                console.error('Login error:', error);
+                isLoggedIn = false;
+                showError(`Login failed: ${error.message}`);
+                document.getElementById('loginStatus').textContent = 'Not logged in';
+                document.getElementById('loginStatus').className = 'logged-out';
+            }
+        }
+        
+        // Send message function
+        async function sendMessage() {
+            if (!isLoggedIn) {
+                showError('You must login first before sending messages');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const userId = document.getElementById('userId').value.trim();
+            const conversationId = document.getElementById('conversationId').value.trim() || null;
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const message = document.getElementById('messageContent').value.trim();
+            
+            if (!businessId || !userId || !apiKey || !message) {
+                showError('Business ID, User ID, API Key, and message content are required');
+                return;
+            }
+            
+            // Prepare message data
+            const messageData = {
+                message: message,
+                business_id: businessId,
+                user_id: userId
+            };
+            
+            // Add conversation_id if provided
+            if (conversationId) {
+                messageData.conversation_id = conversationId;
+            }
+            
+            updateStatus('Sending message...');
+            document.getElementById('sendButton').disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey
+                    },
+                    body: JSON.stringify(messageData),
+                    credentials: 'include' // Include cookies
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update response area with formatted JSON
+                const responseArea = document.getElementById('responseArea');
+                responseArea.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                responseArea.classList.remove('error');
+                
+                // Save the conversationId if one was returned and none was provided
+                if (data.conversation_id && !conversationId) {
+                    document.getElementById('conversationId').value = data.conversation_id;
+                }
+                
+                updateStatus('Message sent successfully!');
+            } catch (error) {
+                console.error('Send message error:', error);
+                showError(`Failed to send message: ${error.message}`);
+            } finally {
+                document.getElementById('sendButton').disabled = false;
+            }
+        }
+    </script>
+</body>
+</html> 
 
 ================================================================================
 File: stages.html
@@ -8891,64 +8520,21 @@ If the customer seems urgent or upset, express understanding and promise quick a
 
 ================================================================================
 File: index.html
-Path: .\front-end\public\index.html
-Size: 1732
-Modified: 2025-03-28T20:53:49.300789
-Created: 2025-03-28T18:53:29.978142
-Hash: 307f07b92069c7c77fa7c51a0a2d5103619a48f010cfb4bb678ac94cbbf22c3f
-Lines: 44
+Path: .\front-end\build\index.html
+Size: 644
+Modified: 2025-04-19T15:46:53.331010
+Created: 2025-04-19T15:46:53.330013
+Hash: ccf28357dcab781c80c1602991683c90f65ee50d9cb9d019e24591c22d6fe11a
+Lines: 1
 ================================================================================
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start`.
-      To create a production bundle, use `npm run build`.
-    -->
-  </body>
-</html>
-
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><link rel="icon" href="/favicon.ico"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="theme-color" content="#000000"/><meta name="description" content="Web site created using create-react-app"/><link rel="apple-touch-icon" href="/logo192.png"/><link rel="manifest" href="/manifest.json"/><title>React App</title><script defer="defer" src="/static/js/main.b08dd1c0.js"></script><link href="/static/css/main.5f21f8ef.css" rel="stylesheet"></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>
 
 ================================================================================
 File: llm_calls.html
-Path: .\front-end\public\llm_calls.html
+Path: .\front-end\build\llm_calls.html
 Size: 49622
 Modified: 2025-04-12T20:05:10.204258
-Created: 2025-04-12T17:42:55.728971
+Created: 2025-04-19T15:27:02.813012
 Hash: 759827deca2b9392fef5969bd448331c12765f296cf07d4465ce08f1371af230
 Lines: 1231
 ================================================================================
@@ -10179,6 +9765,930 @@ Lines: 1231
         function showInfo(message) {
             const statusArea = document.getElementById('statusArea');
             statusArea.innerHTML = `<div class="alert alert-info">${message}</div>`;
+        }
+    </script>
+</body>
+</html> 
+
+================================================================================
+File: index.html
+Path: .\front-end\public\index.html
+Size: 1732
+Modified: 2025-03-28T20:53:49.300789
+Created: 2025-03-28T18:53:29.978142
+Hash: 307f07b92069c7c77fa7c51a0a2d5103619a48f010cfb4bb678ac94cbbf22c3f
+Lines: 44
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!--
+      manifest.json provides metadata used when your web app is installed on a
+      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
+    -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!--
+      Notice the use of %PUBLIC_URL% in the tags above.
+      It will be replaced with the URL of the `public` folder during the build.
+      Only files inside the `public` folder can be referenced from the HTML.
+
+      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
+      work correctly both with client-side routing and a non-root public URL.
+      Learn how to configure a non-root public URL by running `npm run build`.
+    -->
+    <title>React App</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <!--
+      This HTML file is a template.
+      If you open it directly in the browser, you will see an empty page.
+
+      You can add webfonts, meta tags, or analytics to this file.
+      The build step will place the bundled scripts into the <body> tag.
+
+      To begin the development, run `npm start`.
+      To create a production bundle, use `npm run build`.
+    -->
+  </body>
+</html>
+
+
+================================================================================
+File: debugger.html
+Path: .\frontend\public\debugger.html
+Size: 36501
+Modified: 2025-04-25T12:58:31.554542
+Created: 2025-04-25T12:58:31.553543
+Hash: 0ff73ee22731f67db09b3de3abaa3a40d3c88d3678ce450120e737902ec81a56
+Lines: 860
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICMP Message Processing Debugger</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #ddd;
+            --bg-light: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6; 
+            padding: 0;
+            margin: 0;
+            display: flex;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            padding: 20px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input[type="text"], 
+        input[type="password"], 
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        textarea { 
+            height: 120px; 
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+        }
+
+        button:hover { 
+            background-color: var(--primary-hover);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        #responseArea {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .error { 
+            color: var(--error-color);
+            border-color: var(--error-color);
+            background-color: #fff5f5;
+        }
+
+        .success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+
+        h1, h2, h3 {
+            color: var(--text-color);
+            margin-bottom: 20px;
+        }
+
+        .section-divider {
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .process-step {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+        }
+
+        .step-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .step-content {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .prompt-box, .response-box {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .prompt-box {
+            background-color: #f0f8ff;
+            border: 1px solid #b8daff;
+        }
+
+        .response-box {
+            background-color: #f0fff4;
+            border: 1px solid #c3e6cb;
+        }
+
+        .system-prompt {
+            font-style: italic;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+
+        .text-muted {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .logged-in {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        .logged-out {
+            color: var(--error-color);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>ICMP Message Processing Debugger</h1>
+        
+        <!-- Login Section -->
+        <h2>Login</h2>
+        <div class="login-section">
+            <div class="form-group">
+                <label for="businessId">Business ID</label>
+                <input id="businessId" type="text" placeholder="Enter Business ID">
+            </div>
+            
+            <div class="form-group">
+                <label for="ownerId">Owner ID</label>
+                <input id="ownerId" type="text" placeholder="Enter Owner ID">
+                <button onclick="lookupOwner()">Look Up Owner</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input id="apiKey" type="password" placeholder="Enter API Key">
+            </div>
+            
+            <div class="button-group">
+                <button id="loginButton" onclick="login()">Login</button>
+                <span id="loginStatus" class="logged-out">Not logged in</span>
+            </div>
+            <div id="networkStatus" class="text-muted">Ready</div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Message Sending Section -->
+        <h2>Send Message</h2>
+        <div class="message-section">
+            <div class="form-group">
+                <label for="userId">Message Sender ID</label>
+                <input id="userId" type="text" placeholder="Enter User ID or generate new">
+                <button onclick="document.getElementById('userId').value = generateUUID()">Generate New</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="messageContent">Message Content</label>
+                <textarea id="messageContent" placeholder="Enter your message"></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="sendButton" onclick="sendMessageAndDebug()">Send & Debug</button>
+            </div>
+            
+            <div id="responseArea">
+                <div class="text-muted">Send a message to see the response</div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Process Steps Section -->
+        <div class="process-steps">
+            <div class="process-step">
+                <div class="step-header">Stage 1: Intent Detection</div>
+                <div class="step-content">
+                    <div class="prompt-box" id="intentPrompt"></div>
+                    <div class="response-box" id="intentResponse"></div>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-header">Stage 2: Data Extraction</div>
+                <div class="step-content">
+                    <div class="prompt-box" id="extractionPrompt"></div>
+                    <div class="response-box" id="extractionResponse"></div>
+                </div>
+            </div>
+            
+            <div class="process-step">
+                <div class="step-header">Stage 3: Response Generation</div>
+                <div class="step-content">
+                    <div class="prompt-box" id="responsePrompt"></div>
+                    <div class="response-box" id="responseResponse"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Constants
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+        const DEFAULT_BUSINESS_ID = '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
+        const DEFAULT_API_KEY = 'da828cae6a3e46228aa09d65ba9066e3';
+        
+        // State management
+        let isLoggedIn = false;
+        let currentLogId = null;
+        let lastRequestData = null;
+        let lastResponseData = null;
+        
+        // Initialize the app
+        function init() {
+            // Check if we're already logged in
+            const savedApiKey = localStorage.getItem('businessApiKey');
+            if (savedApiKey) {
+                document.getElementById('apiKey').value = savedApiKey;
+                
+                const savedBusinessId = localStorage.getItem('businessId');
+                const savedOwnerId = localStorage.getItem('ownerId');
+                
+                if (savedBusinessId) {
+                    document.getElementById('businessId').value = savedBusinessId;
+                }
+                
+                if (savedOwnerId) {
+                    document.getElementById('ownerId').value = savedOwnerId;
+                }
+                
+                if (savedApiKey && savedBusinessId && savedOwnerId) {
+                    isLoggedIn = true;
+                    document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                    document.getElementById('loginStatus').className = 'logged-in';
+                    document.getElementById('loginButton').textContent = 'Logged In';
+                    document.getElementById('loginButton').disabled = true;
+                }
+            }
+            
+            if (!document.getElementById('businessId').value) {
+                document.getElementById('businessId').value = DEFAULT_BUSINESS_ID;
+            }
+            
+            if (!document.getElementById('userId').value) {
+                document.getElementById('userId').value = generateUUID();
+            }
+        }
+        
+        // Call init when the page loads
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Utility function to generate a UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // Login function
+        async function login() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const ownerId = document.getElementById('ownerId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !ownerId || !apiKey) {
+                showError('Business ID, Owner ID, and API Key are required to login');
+                return;
+            }
+            
+            const loginData = {
+                userId: ownerId,
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
+            
+            updateStatus('Logging in...');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/verify-owner`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(loginData),
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        throw new Error(`Login failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+                    } else {
+                        const text = await response.text();
+                        throw new Error(`Login failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
+                    }
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    isLoggedIn = true;
+                    showSuccess('Login successful! Owner verification confirmed.');
+                    document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                    document.getElementById('loginStatus').className = 'logged-in';
+                    document.getElementById('loginButton').textContent = 'Logged In';
+                    document.getElementById('loginButton').disabled = true;
+                    
+                    localStorage.setItem('businessApiKey', apiKey);
+                    localStorage.setItem('businessId', businessId);
+                    localStorage.setItem('ownerId', ownerId);
+                    
+                    fetchRecentLogs();
+                } else {
+                    throw new Error(data.error || 'Login failed: Not a business owner');
+                }
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                isLoggedIn = false;
+                showError(`Login failed: ${error.message}`);
+                document.getElementById('loginStatus').textContent = 'Not logged in';
+                document.getElementById('loginStatus').className = 'logged-out';
+            }
+        }
+        
+        // Send message and debug function
+        async function sendMessageAndDebug() {
+            if (!isLoggedIn) {
+                showError('You must login first before sending messages');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const userId = document.getElementById('userId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const message = document.getElementById('messageContent').value.trim();
+            
+            if (!businessId || !userId || !apiKey || !message) {
+                showError('Business ID, User ID, API Key, and message content are required');
+                return;
+            }
+            
+            const messageData = {
+                business_id: businessId,
+                user_id: userId,
+                message: message
+            };
+            
+            lastRequestData = messageData;
+            
+            updateStatus('Sending message...');
+            
+            try {
+                const startTime = performance.now();
+                
+                const response = await fetch(`${API_BASE_URL}/api/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey
+                    },
+                    body: JSON.stringify(messageData),
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    let errorText = '';
+                    try {
+                        const errorData = await response.json();
+                        errorText = errorData.error || 'Unknown error';
+                    } catch (jsonError) {
+                        errorText = await response.text();
+                    }
+                    
+                    throw new Error(`Message failed! status: ${response.status}, message: ${errorText}`);
+                }
+                
+                const data = await response.json();
+                
+                lastResponseData = data;
+                
+                const endTime = performance.now();
+                const totalTime = Math.round(endTime - startTime);
+                
+                if (data.success) {
+                    showSuccess('Message sent successfully!');
+                    
+                    const responseArea = document.getElementById('responseArea');
+                    if (data.chat_window) {
+                        const { user_message, ai_response } = data.chat_window;
+                        responseArea.innerHTML = `
+                            <div class="process-step">
+                                <div class="step-header">User Message:</div>
+                                <div class="prompt-box">${user_message.content}</div>
+                            </div>
+                            <div class="process-step">
+                                <div class="step-header">AI Response:</div>
+                                <div class="response-box">${data.response}</div>
+                            </div>
+                        `;
+                    } else {
+                        responseArea.innerHTML = `
+                            <div class="response-box">${data.response}</div>
+                        `;
+                    }
+                    
+                    if (data.process_log_id) {
+                        currentLogId = data.process_log_id;
+                        setTimeout(() => fetchProcessLog(data.process_log_id), 500);
+                    } else {
+                        showError('No process log ID returned. Detailed debugging not available.');
+                    }
+                    
+                    setTimeout(fetchRecentLogs, 1000);
+                } else {
+                    showError(data.error || 'Unknown error sending message');
+                }
+                
+            } catch (error) {
+                console.error('Message error:', error);
+                showError(`Failed to send message: ${error.message}`);
+            }
+        }
+        
+        // Helper functions
+        function showError(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.innerHTML = `<div class="error">${message}</div>`;
+            updateStatus(`Error: ${message}`, true);
+        }
+        
+        function showSuccess(message) {
+            updateStatus(message, false);
+        }
+        
+        function updateStatus(message, isError = false) {
+            const statusElement = document.getElementById('networkStatus');
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'error' : 'success';
+        }
+        
+        // Fetch process log with details
+        async function fetchProcessLog(logId) {
+            if (!logId) {
+                showError('No process log ID provided');
+                return;
+            }
+            
+            if (!isLoggedIn) {
+                showError('You must be logged in to fetch logs');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/message/logs/${logId}?business_id=${businessId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey
+                    },
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Failed to fetch log: ${errorData.error || response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Process log data received:', data);
+                
+                // The API might return the log directly or nested in a property
+                const log = data.log || data;
+                
+                if (log && log.processing_steps) {
+                    console.log('Processing steps found:', log.processing_steps);
+                    // Process steps into the different stages
+                    let intentStep = null;
+                    let extractionStep = null;
+                    let responseStep = null;
+                    
+                    if (log.processing_steps && log.processing_steps.length > 0) {
+                        for (const step of log.processing_steps) {
+                            console.log('Processing step:', step.step, step);
+                            if (step.step === 'intent_detection' || step.step === 'stage_selection') {
+                                intentStep = step;
+                            } else if (step.step === 'data_extraction') {
+                                extractionStep = step;
+                                console.log('Data extraction step found:', extractionStep);
+                            } else if (step.step === 'response_generation') {
+                                responseStep = step;
+                            }
+                        }
+                    }
+                    
+                    // Update intent detection section
+                    if (intentStep) {
+                        document.getElementById('intentPrompt').textContent = intentStep.prompt || 'No prompt available';
+                        document.getElementById('intentResponse').textContent = intentStep.response || 'No response available';
+                    } else {
+                        document.getElementById('intentPrompt').textContent = 'Intent detection step not found in logs';
+                        document.getElementById('intentResponse').textContent = 'No response available';
+                    }
+                    
+                    // Update data extraction section
+                    if (extractionStep) {
+                        console.log('Setting data extraction content:', extractionStep);
+                        
+                        // First, see if we have prompt and response fields directly in the step
+                        let promptContent = extractionStep.prompt || 'No prompt available';
+                        let responseContent = extractionStep.response || 'No response available';
+                        
+                        // If missing direct prompt/response but we have extracted_data, check there
+                        if ((promptContent === 'No prompt available' || promptContent === 'N/A') && 
+                            (responseContent === 'No response available' || responseContent === 'N/A') && 
+                            extractionStep.extracted_data) {
+                            
+                            const extractedData = extractionStep.extracted_data;
+                            
+                            // Check for prompt/response fields in the extracted data
+                            if (typeof extractedData === 'object') {
+                                // If prompt/response fields exist in extracted_data, use them
+                                if (extractedData.prompt) {
+                                    promptContent = extractedData.prompt;
+                                }
+                                
+                                if (extractedData.response) {
+                                    responseContent = extractedData.response;
+                                } else if (extractedData._template_info && extractedData._template_info.template_content) {
+                                    // If no response but we have template info, use that for prompt
+                                    promptContent = extractedData._template_info.template_content;
+                                    
+                                    // Format the extracted data itself as response
+                                    const displayData = {...extractedData};
+                                    // Remove metadata fields for cleaner display
+                                    delete displayData._template_info;
+                                    delete displayData.prompt;
+                                    delete displayData.response;
+                                    responseContent = JSON.stringify(displayData, null, 2);
+                                } else {
+                                    // No special fields, display the whole extracted data
+                                    responseContent = JSON.stringify(extractedData, null, 2);
+                                }
+                            } else {
+                                // Not an object, use as-is
+                                responseContent = String(extractedData);
+                            }
+                        }
+                        
+                        document.getElementById('extractionPrompt').textContent = promptContent;
+                        document.getElementById('extractionResponse').textContent = responseContent;
+                        
+                        // Only show warning if we still don't have proper content
+                        if ((promptContent === 'No prompt available' || promptContent === 'N/A') && 
+                            (responseContent === 'No response available' || responseContent === 'N/A')) {
+                            // Add warning about missing data extraction template
+                            const extractionContent = document.querySelector('.process-step:nth-child(2) .step-content');
+                            if (extractionContent) {
+                                // Check if a warning already exists
+                                if (!extractionContent.querySelector('.extraction-warning')) {
+                                    const warningMsg = document.createElement('div');
+                                    warningMsg.className = 'extraction-warning';
+                                    warningMsg.style.color = '#dc3545';
+                                    warningMsg.style.fontWeight = 'bold';
+                                    warningMsg.style.marginBottom = '10px';
+                                    warningMsg.textContent = 'WARNING: Data extraction template appears to be empty or not configured properly. Check backend configuration.';
+                                    
+                                    extractionContent.prepend(warningMsg);
+                                }
+                            }
+                        } else {
+                            // Remove warning if it exists but we have valid data now
+                            const extractionContent = document.querySelector('.process-step:nth-child(2) .step-content');
+                            const existingWarning = extractionContent?.querySelector('.extraction-warning');
+                            if (existingWarning) {
+                                existingWarning.remove();
+                            }
+                        }
+                    } else {
+                        document.getElementById('extractionPrompt').textContent = 'Data extraction step not found in logs';
+                        document.getElementById('extractionResponse').textContent = 'No response available';
+                    }
+                    
+                    // Update response generation section
+                    if (responseStep) {
+                        document.getElementById('responsePrompt').textContent = responseStep.prompt || 'No prompt available';
+                        document.getElementById('responseResponse').textContent = responseStep.response || 'No response available';
+                    } else {
+                        document.getElementById('responsePrompt').textContent = 'Response generation step not found in logs';
+                        document.getElementById('responseResponse').textContent = 'No response available';
+                    }
+                } else {
+                    showError(log.error || 'Log data not found');
+                }
+                
+            } catch (error) {
+                console.error('Error fetching process log:', error);
+                showError(`Failed to fetch process log: ${error.message}`);
+            }
+        }
+        
+        // Look up owner ID function
+        async function lookupOwner() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to look up owner');
+                return;
+            }
+            
+            const lookupData = {
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
+            
+            updateStatus('Looking up owner...');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/lookup-owner`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(lookupData),
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+                    } else {
+                        const text = await response.text();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
+                    }
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('ownerId').value = data.owner_id;
+                    showSuccess(`Owner ID found: ${data.owner_id}`);
+                } else {
+                    throw new Error(data.error || 'Failed to find owner ID');
+                }
+                
+            } catch (error) {
+                console.error('Lookup error:', error);
+                showError(`Failed to look up owner ID: ${error.message}`);
+            }
+        }
+        
+        // Fetch recent process logs
+        async function fetchRecentLogs() {
+            if (!isLoggedIn) {
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/message/logs/recent?business_id=${businessId}&limit=5`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey
+                    },
+                    credentials: 'include',
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    console.error('Error fetching recent logs:', response.statusText);
+                    return;
+                }
+                
+                const data = await response.json();
+                const logs = Array.isArray(data) ? data : data.logs || [];
+                
+                if (logs.length > 0) {
+                    displayRecentLogs(logs);
+                }
+            } catch (error) {
+                console.error('Failed to fetch recent logs:', error);
+            }
+        }
+        
+        // Display recent logs in the UI
+        function displayRecentLogs(logs) {
+            if (!logs || logs.length === 0) {
+                return;
+            }
+            
+            // Create or update the recent logs area if it doesn't exist
+            let recentLogsArea = document.getElementById('recentLogsArea');
+            if (!recentLogsArea) {
+                // Create the recent logs section if it doesn't exist
+                const processSteps = document.querySelector('.process-steps');
+                
+                const recentLogsSection = document.createElement('div');
+                recentLogsSection.className = 'recent-logs-section';
+                recentLogsSection.innerHTML = `
+                    <hr class="section-divider">
+                    <h2>Recent Message Logs</h2>
+                    <div id="recentLogsArea" class="recent-logs"></div>
+                `;
+                
+                // Insert after process steps
+                processSteps.parentNode.insertBefore(recentLogsSection, processSteps.nextSibling);
+                recentLogsArea = document.getElementById('recentLogsArea');
+            }
+            
+            // Generate HTML for recent logs
+            let html = '<ul class="log-list" style="list-style: none; padding: 0;">';
+            
+            logs.forEach(log => {
+                const truncatedMessage = log.original_message?.length > 50 
+                    ? log.original_message.substring(0, 50) + '...'
+                    : log.original_message || 'No message';
+                    
+                const timestamp = log.start_time 
+                    ? new Date(log.start_time).toLocaleString()
+                    : 'Unknown time';
+                    
+                html += `
+                    <li style="padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;"
+                        onclick="fetchProcessLog('${log.log_id}')">
+                        <strong>Message:</strong> ${truncatedMessage}<br>
+                        <strong>Time:</strong> ${timestamp}<br>
+                        <span class="text-muted">Log ID: ${log.log_id}</span>
+                    </li>
+                `;
+            });
+            
+            html += '</ul>';
+            recentLogsArea.innerHTML = html;
         }
     </script>
 </body>

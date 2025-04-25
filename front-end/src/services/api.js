@@ -38,11 +38,19 @@ export const handleApiResponse = async (response) => {
 const apiRequest = async (endpoint, options = {}) => {
   const url = `${API_CONFIG.BASE_URL}${endpoint}`;
   const defaultOptions = {
-    headers: getAuthHeaders(),
     credentials: 'include',
   };
 
-  const response = await fetch(url, { ...defaultOptions, ...options });
+  const requestOptions = {
+    ...defaultOptions,
+    ...options,
+    headers: {
+      ...getAuthHeaders(),
+      ...(options.headers || {}),
+    },
+  };
+
+  const response = await fetch(url, requestOptions);
   return handleApiResponse(response);
 };
 
@@ -74,14 +82,48 @@ export const apiService = {
   
   // Templates
   createTemplate: async (templateData) => {
+    const { businessId } = getStoredCredentials();
+    if (!businessId) {
+      throw new Error("Business ID not found. Please log in.");
+    }
+    const dataToSend = { ...templateData, business_id: businessId };
     return apiRequest(API_CONFIG.ENDPOINTS.TEMPLATES, {
       method: 'POST',
-      body: JSON.stringify(templateData),
+      body: JSON.stringify(dataToSend),
     });
   },
   
   fetchTemplateDetails: async (templateId) => {
-    return apiRequest(`${API_CONFIG.ENDPOINTS.TEMPLATES}/${templateId}`);
+    const { businessId } = getStoredCredentials();
+    if (!businessId) {
+      throw new Error("Business ID not found. Please log in.");
+    }
+    const endpoint = `${API_CONFIG.ENDPOINTS.TEMPLATES}/${templateId}?business_id=${businessId}`;
+    return apiRequest(endpoint);
+  },
+  
+  updateTemplate: async (templateId, templateData) => {
+    const { businessId } = getStoredCredentials();
+    if (!businessId) {
+      throw new Error("Business ID not found. Please log in.");
+    }
+    const dataToSend = { ...templateData, business_id: businessId };
+    const endpoint = `${API_CONFIG.ENDPOINTS.TEMPLATES}/${templateId}`;
+    return apiRequest(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(dataToSend),
+    });
+  },
+  
+  deleteTemplate: async (templateId) => {
+    const { businessId } = getStoredCredentials();
+    if (!businessId) {
+      throw new Error("Business ID not found. Please log in.");
+    }
+    const endpoint = `${API_CONFIG.ENDPOINTS.TEMPLATES}/${templateId}?business_id=${businessId}`;
+    return apiRequest(endpoint, {
+      method: 'DELETE',
+    });
   },
   
   // Messages
@@ -100,7 +142,38 @@ export const apiService = {
   // Debug
   getDebugInfo: async (conversationId) => {
     return apiRequest(`${API_CONFIG.ENDPOINTS.DEBUG}/conversation/${conversationId}`);
-  }
+  },
+
+  // Add fetchTemplates method
+  fetchTemplates: async (businessId, agentId) => {
+    if (!businessId) {
+      throw new Error("Business ID is required to fetch templates.");
+    }
+    if (!agentId) {
+        throw new Error("Agent ID is required to fetch templates.");
+    }
+    // Assuming the endpoint requires both business_id and agent_id as query params
+    const endpoint = `${API_CONFIG.ENDPOINTS.TEMPLATES}?business_id=${businessId}&agent_id=${agentId}`;
+    return apiRequest(endpoint);
+  },
+
+  // Add duplicateTemplate method
+  duplicateTemplate: async (templateIdToDuplicate) => {
+    // 1. Fetch the original template details
+    const originalTemplate = await apiService.fetchTemplateDetails(templateIdToDuplicate); // fetchTemplateDetails already includes businessId
+
+    // 2. Prepare data for the new template
+    const newTemplateData = {
+      ...originalTemplate,
+      template_name: `${originalTemplate.template_name} (Copy)`, // Modify name
+      // Remove original ID, the backend will assign a new one
+      template_id: undefined,
+    };
+     // business_id will be added by createTemplate
+
+    // 3. Create the new template
+    return apiService.createTemplate(newTemplateData);
+  },
 };
 
 export default apiService;

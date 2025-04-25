@@ -8,6 +8,7 @@ from auth import require_api_key, require_business_api_key
 from .utils import is_valid_uuid
 import os
 import re
+from psycopg2.extras import RealDictCursor
 
 log = logging.getLogger(__name__)
 
@@ -554,7 +555,8 @@ def get_stage(stage_id):
         if not conn:
             return jsonify({"error": "Database connection failed"}), 500
             
-        cursor = conn.cursor()
+        # Use RealDictCursor for consistent dictionary access
+        cursor = conn.cursor(cursor_factory=RealDictCursor) 
         
         # Get stage details
         cursor.execute(
@@ -582,14 +584,21 @@ def get_stage(stage_id):
         if not stage:
             return jsonify({"error": "Stage not found"}), 404
             
-        # Format response
+        # --- DEBUG LOGGING START ---
+        log.info(f"Fetched stage data from DB (type: {type(stage)}): {stage}")
+        # --- DEBUG LOGGING END ---
+            
+        # Format response using direct dictionary access (assuming RealDictCursor)
         response = {
             "stage_id": stage['stage_id'],
             "business_id": stage['business_id'],
-            "agent_id": stage['agent_id'],
+            "agent_id": stage.get('agent_id'), # agent_id might be null
             "stage_name": stage['stage_name'],
             "stage_description": stage['stage_description'],
             "stage_type": stage['stage_type'],
+            "stage_selection_template_id": stage['stage_selection_template_id'],
+            "data_extraction_template_id": stage['data_extraction_template_id'],
+            "response_generation_template_id": stage['response_generation_template_id'],
             "stage_selection_template": {
                 "template_id": stage['stage_selection_template_id'],
                 "template_name": stage['stage_selection_template_name'],
@@ -608,9 +617,22 @@ def get_stage(stage_id):
                 "content": stage['response_generation_content'],
                 "system_prompt": stage['response_generation_system_prompt']
             },
-            "created_at": stage['created_at'].isoformat() if stage['created_at'] else None,
-            "updated_at": stage['updated_at'].isoformat() if stage['updated_at'] else None
+            "created_at": None,
+            "updated_at": None
         }
+
+        # Safely format timestamps, checking if they exist and are datetime objects
+        if 'created_at' in stage and stage['created_at'] and hasattr(stage['created_at'], 'isoformat'):
+            response['created_at'] = stage['created_at'].isoformat()
+        
+        if 'updated_at' in stage and stage['updated_at'] and hasattr(stage['updated_at'], 'isoformat'):
+            response['updated_at'] = stage['updated_at'].isoformat()
+        elif 'created_at' in response: # Fallback updated_at to created_at if missing
+             response['updated_at'] = response['created_at']
+
+        # --- DEBUG LOGGING START ---
+        log.info(f"Constructed API response: {response}")
+        # --- DEBUG LOGGING END ---
         
         return jsonify(response), 200
         

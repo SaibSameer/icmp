@@ -95,6 +95,96 @@ All notable changes to the ICMP Events API - LLM Integration Platform will be do
 - Deployment guide 
 
 ================================================================================
+File: DEPLOYMENT.md
+Path: .\DEPLOYMENT.md
+Size: 2716
+Modified: 2025-04-18T17:35:53.064472
+Created: 2025-04-18T17:28:43.515513
+Hash: d10b55287889179fc7cb362ef5cbeab45d016f79095129cb15e2ba0a85be7d9b
+Lines: 80
+================================================================================
+# Deploying to Render
+
+This document provides instructions for deploying the ICMP Events API to Render.
+
+## Prerequisites
+
+- A Render account (sign up at [render.com](https://render.com))
+- A PostgreSQL database (you can use Render's PostgreSQL service)
+- Your API keys and environment variables
+
+## Deployment Steps
+
+### 1. Set up a PostgreSQL Database on Render
+
+1. Log in to your Render account
+2. Click "New" and select "PostgreSQL"
+3. Configure your database:
+   - Name: `icmp_db` (or your preferred name)
+   - PostgreSQL Version: 14 (or latest)
+   - Database: `icmp_db`
+   - Username: `icmp_user` (or your preferred username)
+   - Password: Generate a secure password
+4. Click "Create Database"
+5. Note down the connection details (especially the `DATABASE_URL`)
+
+### 2. Deploy the Web Service
+
+1. Log in to your Render account
+2. Click "New" and select "Web Service"
+3. Connect your GitHub repository
+4. Configure the service:
+   - Name: `icmp-events-api` (or your preferred name)
+   - Environment: `Python`
+   - Build Command: `chmod +x build.sh && ./build.sh`
+   - Start Command: `gunicorn application:application`
+   - Plan: Choose based on your needs (Free tier is good for testing)
+
+### 3. Configure Environment Variables
+
+Add the following environment variables in the Render dashboard:
+
+- `DB_NAME`: Your database name (e.g., `icmp_db`)
+- `DB_USER`: Your database username (e.g., `icmp_user`)
+- `DB_PASSWORD`: Your database password
+- `DB_HOST`: Your database host (from Render)
+- `DB_PORT`: Your database port (usually `5432`)
+- `DATABASE_URL`: The full connection URL from Render
+- `OPENAI_API_KEY`: Your OpenAI API key
+- `ICMP_API_KEY`: Your ICMP API key
+- `REACT_APP_API_KEY`: Your React app API key
+
+### 4. Deploy
+
+1. Click "Create Web Service"
+2. Render will automatically deploy your application
+3. Once deployed, you can access your API at the URL provided by Render
+
+## Troubleshooting
+
+If you encounter issues during deployment:
+
+1. Check the build logs in the Render dashboard
+2. Verify that all environment variables are set correctly
+3. Ensure your database is accessible from the web service
+4. Check that your application is listening on the port specified by Render (usually port 10000)
+
+## Updating Your Deployment
+
+To update your deployment:
+
+1. Push changes to your GitHub repository
+2. Render will automatically detect the changes and redeploy your application
+
+## Monitoring
+
+You can monitor your application's performance and logs in the Render dashboard:
+
+1. Go to your web service in the Render dashboard
+2. Click on "Logs" to view application logs
+3. Click on "Metrics" to view performance metrics 
+
+================================================================================
 File: file_list.txt
 Path: .\file_list.txt
 Size: 3962
@@ -247,230 +337,120 @@ Directory: .\schemas
 
 
 ================================================================================
-File: password.txt
-Path: .\password.txt
-Size: 1165
-Modified: 2025-04-15T10:42:10.602882
-Created: 2025-03-26T19:34:11.735521
-Hash: 79fb05868954a847ec5873bf362a5aae37de453954997a3f31667dfa6c7b016d
-Lines: 51
-================================================================================
-
-password 852456
-
-852456istheKEY
-
-
-cd C:\icmp_events_api
-venv\Scripts\activate
-python archiver.py
-python restore.py -i archive_output/javascript_archive.txt -o restored_files
-python restore.py -i archive_output/archive_python.txt -o restored_files
-
-
-
-
-
-
-
-
-
-
-
-psql -h localhost -p 5432 -U icmp_user -d icmp_db
-your_password
-
-\! cls
-SELECT * FROM llm_calls ORDER BY timestamp DESC LIMIT 6;
-SELECT * FROM agents;
-SELECT * FROM prompt_templates;
-SELECT * FROM businesses;
-SELECT * FROM stages;
-\d agents
-
-
-cd C:\icmp_events_api\front-end
-npm start
-
-
-cd C:\icmp_events_api
-venv\Scripts\activate
-cd backend
-python app.py
-
-python llm_debugger.py --test
-
-python test_variable.py test available_stages --business-id 46cd481d-44ba-485f-868e-3292885c9976 --api-key cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6 --owner-id 26c6e238-42b9-4cfe-ae20-0a8d6e2744e4
-
-
-
-
-cd C:\icmp_events_api && python test_variable.py test available_stages --business-id 46cd481d-44ba-485f-868e-3292885c9976 --api-key cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6 --owner-id 26c6e238-42b9-4cfe-ae20-0a8d6e2744e4
-
-================================================================================
 File: README.md
 Path: .\README.md
-Size: 3257
-Modified: 2025-04-14T17:41:44.483086
+Size: 2174
+Modified: 2025-04-18T18:08:39.624731
 Created: 2025-04-12T19:18:59.091809
-Hash: 9192727ceaab5138aaaa75bccdfabc0c12cef4138f58c5aeb864b7008f677349
-Lines: 142
+Hash: f6ee74d8742b1f884565fa28d0b4ccae0be95ed23e544c8bfe7432034c77f1fe
+Lines: 82
 ================================================================================
-# ICMP LLM API Debugger
+# ICMP Events API
 
-A command-line tool for debugging and interacting with the ICMP LLM API system. This tool allows you to make LLM calls, view recent calls, and examine call details directly from the command line.
+## Installation Guide
 
-## Features
+### Prerequisites
+- Python 3.9 or higher
+- pip (Python package installer)
+- PostgreSQL database (provided by Render)
 
-- Login to the ICMP LLM API
-- Make LLM calls with custom input text and system prompts
-- View recent LLM calls
-- Examine detailed information about specific LLM calls
-- Check API health
-- Template system with modular variable providers
+### Quick Installation
 
-## Installation
+1. Clone or download this repository to your local machine
 
-1. Clone this repository or download the files
-2. Install the required dependencies:
+2. Make sure your `.env` file is properly configured with your Render database credentials:
+   ```
+   DB_NAME=icmp_db
+   DB_USER=saik_taimeh
+   DB_HOST=dpg-d0169m2l19vc739rdtv0-a
+   DB_PORT=5432
+   DB_PASSWORD=your_password
+   DATABASE_URL=your_database_url
+   ```
 
-```bash
-pip install -r requirements.txt
-```
+3. Run the installation script:
+   ```bash
+   python install.py
+   ```
 
-## Template Variables
+   This script will:
+   - Check Python version compatibility
+   - Install required dependencies
+   - Set up necessary directories
+   - Verify environment configuration
+   - Set up the database tables
+   - Prepare files for Render deployment
 
-The system includes a modular template variable system that allows dynamic content in templates. Variables are defined in `backend/message_processing/variables/` and include:
+4. After successful installation, you'll find `render_upload.zip` in your current directory
 
-- User variables (e.g., `{{user_name}}`)
-- Business variables (e.g., `{{business_name}}`)
-- Conversation variables (e.g., `{{last_10_messages}}`)
-- Stage variables (e.g., `{{available_stages}}`)
-- Utility variables (e.g., `{{current_time}}`)
+### Deploying to Render
 
-For detailed documentation on the template system, see `backend/documentation/TEMPLATE_SYSTEM.md`.
+1. Go to [render.com](https://render.com) and sign in
+2. Create a new Web Service
+3. Choose "Upload Files" option
+4. Upload the `render_upload.zip` file
+5. Configure your service:
+   - Name: `icmp-events-api` (or your preferred name)
+   - Environment: `Python`
+   - Build Command: `chmod +x build.sh && ./build.sh`
+   - Start Command: `gunicorn application:application`
 
-## Usage
+6. Add your environment variables in the Render dashboard (they should match your `.env` file)
 
-### Basic Commands
+7. Deploy your application
 
-#### Check API Health
+### Verifying the Installation
 
-```bash
-python llm_debugger.py health
-```
+To verify that everything is working:
 
-#### Login to the API
+1. Check the deployment logs in Render dashboard
+2. Test the API endpoints:
+   - Health check: `https://your-app-url/health`
+   - API base: `https://your-app-url/api`
 
-```bash
-python llm_debugger.py login
-```
+### Troubleshooting
 
-#### Make an LLM Call
+If you encounter any issues:
 
-```bash
-python llm_debugger.py call --input "Your input text here"
-```
+1. Check the logs in the Render dashboard
+2. Verify your environment variables are correctly set
+3. Ensure the database is accessible
+4. Check the application logs in the `/logs` directory
 
-With a system prompt:
+### Support
 
-```bash
-python llm_debugger.py call --input "Your input text here" --system-prompt "Your system prompt here"
-```
-
-With a specific call type:
-
-```bash
-python llm_debugger.py call --input "Your input text here" --type "stage_selection"
-```
-
-#### View Recent LLM Calls
-
-```bash
-python llm_debugger.py recent
-```
-
-With a custom limit:
-
-```bash
-python llm_debugger.py recent --limit 20
-```
-
-#### View Call Details
-
-```bash
-python llm_debugger.py details --call-id "your-call-id-here"
-```
-
-### Advanced Usage
-
-#### Custom API URL
-
-```bash
-python llm_debugger.py --api-url "http://your-api-url:5000" health
-```
-
-#### Custom Business ID and API Key
-
-```bash
-python llm_debugger.py --business-id "your-business-id" --api-key "your-api-key" login
-```
-
-#### Specify Owner ID
-
-```bash
-python llm_debugger.py --owner-id "your-owner-id" login
-```
-
-## Examples
-
-### Making a General LLM Call
-
-```bash
-python llm_debugger.py call --input "What is the capital of France?"
-```
-
-### Making a Stage Selection Call
-
-```bash
-python llm_debugger.py call --input "I need help with my order" --type "stage_selection"
-```
-
-### Viewing Recent Calls and Then Details
-
-```bash
-# First, view recent calls to get a call ID
-python llm_debugger.py recent
-
-# Then, view details for a specific call
-python llm_debugger.py details --call-id "call-id-from-previous-command"
-```
-
-## Troubleshooting
-
-If you encounter issues:
-
-1. Make sure the API server is running and accessible
-2. Verify your business ID and API key are correct
-3. Check that you have the required dependencies installed
-4. Ensure you have network connectivity to the API server
+If you need help, please:
+1. Check the error messages and logs
+2. Review the documentation
+3. Contact the development team
 
 ## License
 
-This tool is provided as-is for debugging purposes. 
+[Your License Information] 
 
 ================================================================================
 File: requirements.txt
 Path: .\requirements.txt
-Size: 51
-Modified: 2025-04-12T22:27:33.095481
+Size: 265
+Modified: 2025-04-19T13:03:22.038777
 Created: 2025-04-12T22:27:25.863284
-Hash: 83169863e2850075770829ce5ff29f17d52508678c080ae49507c246b1d796d1
-Lines: 3
+Hash: d3664b7fbe0a4c03a81783f5c8faccd0d645484f8da2bbf3dbdfa5803850dc32
+Lines: 14
 ================================================================================
+flask>=2.0.0
+flask-limiter>=2.0.0
+python-dotenv>=0.19.0
+openai>=0.27.0
+psycopg2-binary>=2.9.0
+python-json-logger>=2.0.0
+Flask-Cors>=4.0.1
+gunicorn>=20.1.0
 requests>=2.28.0
 tabulate>=0.9.0
-colorama>=0.4.5 
+colorama>=0.4.5
+PyYAML>=6.0.1
+jsonschema>=4.17.3
+icmplib>=3.0.0 
 
 ================================================================================
 File: README.md
@@ -623,11 +603,11 @@ pytest
 ================================================================================
 File: requirements.txt
 Path: .\backend\requirements.txt
-Size: 143
-Modified: 2025-04-08T15:59:04.762366
+Size: 248
+Modified: 2025-04-19T02:08:56.648326
 Created: 2025-03-27T13:05:44.110792
-Hash: ee4bcdc917a93f2a0ab83c20ffe69036ebe9c1117f9bf7e97e9c54c591fae194
-Lines: 7
+Hash: ec4a5623c47a1cde2d798e4a58ee0f0f19c2037c9ef4d605d419b80e66c278a1
+Lines: 13
 ================================================================================
 flask>=2.0.0
 flask-limiter>=2.0.0
@@ -636,6 +616,12 @@ openai>=0.27.0
 psycopg2-binary>=2.9.0
 python-json-logger>=2.0.0
 Flask-Cors>=4.0.1
+gunicorn>=20.1.0
+requests>=2.28.0
+tabulate>=0.9.0
+colorama>=0.4.5
+jsonschema>=4.17.3
+PyYAML>=6.0.2
 
 ================================================================================
 File: 100%.txt
@@ -3453,10 +3439,10 @@ Respond with ONLY the stage name, nothing else.
 
 ================================================================================
 File: README.md
-Path: .\front-end\public\README.md
+Path: .\front-end\build\README.md
 Size: 767
 Modified: 2025-04-01T23:46:02.963441
-Created: 2025-04-01T23:46:00.490151
+Created: 2025-04-19T15:27:02.839215
 Hash: 736a7535ad08cbfa7cf65f2f63c3bb577987eafdbe142e47d4172bd7257a2dc1
 Lines: 26
 ================================================================================
@@ -3486,6 +3472,118 @@ This directory contains the static files for the ICMP Events API frontend.
 - `logo512.png`: Should be 512x512 pixels
 
 All files should be optimized for web use to ensure fast loading times. 
+
+================================================================================
+File: main.b08dd1c0.js.LICENSE.txt
+Path: .\front-end\build\static\js\main.b08dd1c0.js.LICENSE.txt
+Size: 2379
+Modified: 2025-04-19T15:46:53.356833
+Created: 2025-04-19T15:46:53.334045
+Hash: 247f1f7640071baccdae8060793f1bff7a85dbbb654838f4d990ccfe15cd3ad3
+Lines: 102
+================================================================================
+/**
+ * @license React
+ * react-dom.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react-is.production.js
+ *
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react-is.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react-jsx-runtime.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * react.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @license React
+ * scheduler.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+/**
+ * @remix-run/router v1.23.0
+ *
+ * Copyright (c) Remix Software Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ *
+ * @license MIT
+ */
+
+/**
+ * React Router DOM v6.30.0
+ *
+ * Copyright (c) Remix Software Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ *
+ * @license MIT
+ */
+
+/**
+ * React Router v6.30.0
+ *
+ * Copyright (c) Remix Software Inc.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ *
+ * @license MIT
+ */
+
+/** @license React v16.13.1
+ * react-is.production.min.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
 
 ================================================================================
 File: files.app.txt

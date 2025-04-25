@@ -268,7 +268,7 @@ def get_agent(agent_id):
         
         cursor.execute(
             """
-            SELECT agent_id, agent_name, business_id, agent_config, 
+            SELECT agent_id, agent_name, business_id, 
                    created_at, updated_at
             FROM agents
             WHERE agent_id = %s AND business_id = %s
@@ -285,9 +285,8 @@ def get_agent(agent_id):
             "agent_id": str(row[0]) if isinstance(row[0], uuid.UUID) else row[0],
             "agent_name": row[1],
             "business_id": str(row[2]) if isinstance(row[2], uuid.UUID) else row[2],
-            "agent_config": row[3] if row[3] else {},
-            "created_at": row[4].isoformat() if row[4] else None,
-            "updated_at": row[5].isoformat() if row[5] else None
+            "created_at": row[3].isoformat() if row[3] else None,
+            "updated_at": row[4].isoformat() if row[4] else None
         }
         
         return jsonify(agent), 200

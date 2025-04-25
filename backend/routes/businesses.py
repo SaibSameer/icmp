@@ -31,17 +31,9 @@ business_schema = {
     "required": ["owner_id", "business_name"]
 }
 
-@bp.route('/<business_id>', methods=['GET', 'OPTIONS'])
+@bp.route('/<business_id>', methods=['GET'])
 @require_business_api_key
 def get_business(business_id):
-    if request.method == 'OPTIONS':
-        response = jsonify({'success': True})
-        response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,businessapikey')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
-
     conn = get_db_connection()
     try:
         c = conn.cursor()
@@ -70,10 +62,8 @@ def get_business(business_id):
             "first_stage_id": str(business[8]) if business[8] else None  # Convert UUID to string if not None
         }
         
-        # Add CORS headers to the response
+        # Removed direct CORS header setting
         response = jsonify(business_data)
-        response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response, 200
 
     except Exception as e:
@@ -82,18 +72,9 @@ def get_business(business_id):
     finally:
         release_db_connection(conn)
 
-@bp.route('/<business_id>', methods=['PUT', 'OPTIONS'])
+@bp.route('/<business_id>', methods=['PUT'])
 @require_business_api_key
 def update_business(business_id):
-    # Handle OPTIONS preflight request
-    if request.method == 'OPTIONS':
-        response = jsonify({'success': True})
-        response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,businessapikey')
-        response.headers.add('Access-Control-Allow-Methods', 'PUT,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
-    
     # Validate business_id format from path
     if not is_valid_uuid(business_id):
         return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid business_id format in URL"}), 400
@@ -160,10 +141,8 @@ def update_business(business_id):
         conn.commit()
         log.info(f"Business {business_id} updated successfully.")
         
-        # Return success with CORS headers
+        # Return success without direct CORS headers
         response = jsonify({"message": "Business updated successfully"})
-        response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response, 200
 
     except Exception as e:

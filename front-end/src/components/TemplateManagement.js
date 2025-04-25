@@ -15,7 +15,7 @@ import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import StarIcon from '@mui/icons-material/Star';
 import { normalizeUUID } from '../hooks/useConfig';
-import { createTemplate, updateTemplate, deleteTemplate, fetchTemplates as fetchTemplatesService, duplicateTemplate } from '../services/templateService';
+import apiService from '../services/api';
 
 function TemplateManagement({ templateID, setTemplateID, availableVariable = [], setAvailableVariable, selectedVariable, setSelectedVariable, handleTemplateSelection, handleVariableSelection, addVariableToTemplate, templateName, setTemplateName, templateContent, setTemplateContent, templateSystemPrompt, setTemplateSystemPrompt, templateOutput, createTemplate, fetchTemplates, handleSnackbarOpen, handleSaveDefaultTemplate, apiKey, setTemplateOutput }) {
     const navigate = useNavigate();
@@ -134,8 +134,8 @@ function TemplateManagement({ templateID, setTemplateID, availableVariable = [],
         
         setIsLoading(true);
         try {
-            // Use the template service instead of direct fetch
-            const data = await fetchTemplatesService(businessId, agentId);
+            // Use apiService.fetchTemplates
+            const data = await apiService.fetchTemplates(businessId, agentId);
             console.log('Fetched templates (raw):', data);
             
             // Normalize the templates data to ensure all needed fields exist
@@ -178,17 +178,17 @@ function TemplateManagement({ templateID, setTemplateID, availableVariable = [],
                 return;
             }
             
-            // Use the template service instead of direct fetch
             const templateData = {
                 template_name: templateName,
                 content: templateContent,
                 system_prompt: templateSystemPrompt || '',
                 template_type: templateType,
-                business_id: businessId,
-                agent_id: agentId
+                // business_id and agent_id will be added by apiService.createTemplate
+                // agent_id: agentId // Ensure agent_id is included if required by backend but not automatically added by apiService
             };
             
-            await createTemplate(templateData);
+            // Use apiService.createTemplate
+            await apiService.createTemplate(templateData);
             
             // Reset form
             setTemplateName('');
@@ -213,19 +213,18 @@ function TemplateManagement({ templateID, setTemplateID, availableVariable = [],
         try {
             if (!editingTemplate) return;
             
-            // Use the template service instead of direct fetch
             const templateData = {
                 template_name: editingTemplate.template_name,
                 content: editingTemplate.content,
                 system_prompt: editingTemplate.system_prompt || '',
                 template_type: editingTemplate.template_type,
-                business_id: businessId,
-                agent_id: agentId
+                // agent_id: editingTemplate.agent_id // Ensure agent_id is included if required and present
+                // business_id will be added by apiService.updateTemplate
             };
             
-            await updateTemplate(editingTemplate.template_id, templateData);
+            // Use apiService.updateTemplate
+            await apiService.updateTemplate(editingTemplate.template_id, templateData);
             
-            // Close dialog and refresh
             setEditDialogOpen(false);
             fetchTemplates();
             
@@ -241,19 +240,18 @@ function TemplateManagement({ templateID, setTemplateID, availableVariable = [],
         if (!window.confirm('Are you sure you want to delete this template?')) {
             return;
         }
-        
+        setIsLoading(true);
         try {
-            // Use the template service instead of direct fetch
-            await deleteTemplate(templateId, businessId);
-            
-            // Refresh templates
+            // Use apiService.deleteTemplate - no need to pass businessId explicitly anymore
+            await apiService.deleteTemplate(templateId);
+            // Refresh templates list after successful deletion
             fetchTemplates();
-            
-            // Show success message
             showSnackbar('Template deleted successfully', 'success');
         } catch (error) {
-            console.error('Error deleting template:', error);
+            console.error('Failed to delete template:', error);
             showSnackbar(`Failed to delete template: ${error.message}`, 'error');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -261,23 +259,14 @@ function TemplateManagement({ templateID, setTemplateID, availableVariable = [],
         try {
             setIsLoading(true);
             
-            // Use the template service instead of direct fetch
-            const templateData = {
-                template_name: template.template_name,
-                content: template.content,
-                system_prompt: template.system_prompt || '',
-                template_type: template.template_type,
-                business_id: businessId,
-                agent_id: agentId
-            };
+            // Use apiService.duplicateTemplate - pass the ID of the template to duplicate
+            await apiService.duplicateTemplate(template.template_id);
             
-            await duplicateTemplate(templateData);
+            showSnackbar('Template duplicated successfully', 'success');
             
-            // Refresh templates
-            fetchTemplates();
+            // Refresh templates list after duplication
+            fetchTemplatesInternal();
             
-            // Show success message
-            showSnackbar(`Template "${template.template_name} (Copy)" created successfully`, 'success');
         } catch (error) {
             console.error('Error duplicating template:', error);
             showSnackbar(`Failed to duplicate template: ${error.message}`, 'error');

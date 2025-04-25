@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICMP Message Processing Debugger (Render)</title>
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --border-color: #ddd;
+            --bg-light: #f5f5f5;
+            --text-color: #333;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6; 
+            padding: 0;
+            margin: 0;
+            display: flex;
+            background-color: var(--bg-light);
+            color: var(--text-color);
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 1200px;
+            padding: 20px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            min-height: 100vh;
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input[type="text"], 
+        input[type="password"], 
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        textarea { 
+            height: 120px; 
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin-right: 10px;
+        }
+
+        button:hover { 
+            background-color: var(--primary-hover);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        #responseArea {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            background-color: white;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .error { 
+            color: var(--error-color);
+            border-color: var(--error-color);
+            background-color: #fff5f5;
+        }
+
+        .success {
+            color: var(--success-color);
+            border-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+
+        h1 {
+            color: var(--text-color);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-top: 30px;
+            font-size: 1.5em;
+        }
+        
+        h3 {
+            color: var(--text-color);
+            margin-top: 25px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-divider {
+            margin: 30px 0;
+            border: none;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+        
+        .process-step {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: white;
+        }
+        
+        .step-header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .step-content {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        
+        .prompt-box, .response-box {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .prompt-box {
+            background-color: #f0f8ff;
+            border: 1px solid #b8daff;
+        }
+        
+        .response-box {
+            background-color: #f0fff4;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .system-prompt {
+            font-style: italic;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        
+        .text-muted {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .logged-in {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        
+        .logged-out {
+            color: var(--error-color);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .process-log {
+            margin-top: 20px;
+        }
+        
+        .no-logs {
+            color: #6c757d;
+            font-style: italic;
+            padding: 20px;
+            text-align: center;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        /* Responsive styling */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <h1>ICMP Message Processing Debugger (Render Deployment)</h1>
+        
+        <!-- Login Section -->
+        <h2>Login</h2>
+        <div class="login-section">
+            <div class="form-group">
+                <label for="businessId">Business ID</label>
+                <input id="businessId" type="text" placeholder="Enter Business ID">
+            </div>
+            
+            <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input id="apiKey" type="password" placeholder="Enter API Key">
+            </div>
+            
+            <div class="button-group">
+                <button id="loginButton" onclick="login()">Login</button>
+                <span id="loginStatus" class="logged-out">Not logged in</span>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Message Sending Section -->
+        <h2>Send Message</h2>
+        <div class="message-section">
+            <div class="form-group">
+                <label for="userId">Message Sender ID (User)</label>
+                <input id="userId" type="text" placeholder="Enter User ID or generate new">
+                <button onclick="document.getElementById('userId').value = generateUUID()">Generate New</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="conversationId">Conversation ID (Optional)</label>
+                <input id="conversationId" type="text" placeholder="Enter Conversation ID or leave empty for new conversation">
+            </div>
+            
+            <div class="form-group">
+                <label for="messageContent">Message Content</label>
+                <textarea id="messageContent" placeholder="Enter your message"></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="sendButton" onclick="sendMessage()">Send Message</button>
+            </div>
+            
+            <div id="responseArea">
+                <div class="text-muted">Send a message to see the response</div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
+        <!-- Status Section -->
+        <h2>Status</h2>
+        <div id="statusArea">
+            <div id="networkStatus" class="text-muted">No network activity yet</div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration for Render deployment
+        const API_BASE_URL = 'https://icmp-events-api.onrender.com';
+        
+        // State management
+        let isLoggedIn = false;
+        
+        // Initialize the app
+        function init() {
+            // Check if we're already logged in
+            const savedApiKey = localStorage.getItem('businessApiKey');
+            if (savedApiKey) {
+                document.getElementById('apiKey').value = savedApiKey;
+                
+                const savedBusinessId = localStorage.getItem('businessId');
+                
+                if (savedBusinessId) {
+                    document.getElementById('businessId').value = savedBusinessId;
+                    isLoggedIn = true;
+                    document.getElementById('loginStatus').textContent = 'Logged in';
+                    document.getElementById('loginStatus').className = 'logged-in';
+                }
+            }
+            
+            // Generate a UUID for user_id if not already set
+            if (!document.getElementById('userId').value) {
+                document.getElementById('userId').value = generateUUID();
+            }
+        }
+        
+        // Call init when the page loads
+        window.addEventListener('DOMContentLoaded', init);
+        
+        // Utility function to generate a UUID
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.textContent = message;
+            responseArea.classList.remove('error');
+            responseArea.classList.add('success');
+            
+            // Also update status
+            updateStatus(message);
+        }
+        
+        // Show error message
+        function showError(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.textContent = message;
+            responseArea.classList.remove('success');
+            responseArea.classList.add('error');
+            
+            // Also update status
+            updateStatus('ERROR: ' + message);
+        }
+        
+        // Update status display
+        function updateStatus(message) {
+            const statusElem = document.getElementById('networkStatus');
+            statusElem.textContent = message;
+        }
+        
+        // Login function
+        async function login() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to login');
+                return;
+            }
+            
+            updateStatus('Logging in...');
+            
+            try {
+                // Instead of verifying ownership, we'll just store the credentials
+                // and assume they'll work for messaging
+                localStorage.setItem('businessApiKey', apiKey);
+                localStorage.setItem('businessId', businessId);
+                
+                isLoggedIn = true;
+                showSuccess('Login credentials stored successfully!');
+                document.getElementById('loginStatus').textContent = 'Logged in';
+                document.getElementById('loginStatus').className = 'logged-in';
+            } catch (error) {
+                console.error('Login error:', error);
+                isLoggedIn = false;
+                showError(`Login failed: ${error.message}`);
+                document.getElementById('loginStatus').textContent = 'Not logged in';
+                document.getElementById('loginStatus').className = 'logged-out';
+            }
+        }
+        
+        // Send message function
+        async function sendMessage() {
+            if (!isLoggedIn) {
+                showError('You must login first before sending messages');
+                return;
+            }
+            
+            const businessId = document.getElementById('businessId').value.trim();
+            const userId = document.getElementById('userId').value.trim();
+            const conversationId = document.getElementById('conversationId').value.trim() || null;
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const message = document.getElementById('messageContent').value.trim();
+            
+            if (!businessId || !userId || !apiKey || !message) {
+                showError('Business ID, User ID, API Key, and message content are required');
+                return;
+            }
+            
+            // Prepare message data
+            const messageData = {
+                message: message,
+                business_id: businessId,
+                user_id: userId
+            };
+            
+            // Add conversation_id if provided
+            if (conversationId) {
+                messageData.conversation_id = conversationId;
+            }
+            
+            updateStatus('Sending message...');
+            document.getElementById('sendButton').disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey
+                    },
+                    body: JSON.stringify(messageData),
+                    credentials: 'include' // Include cookies
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update response area with formatted JSON
+                const responseArea = document.getElementById('responseArea');
+                responseArea.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                responseArea.classList.remove('error');
+                
+                // Save the conversationId if one was returned and none was provided
+                if (data.conversation_id && !conversationId) {
+                    document.getElementById('conversationId').value = data.conversation_id;
+                }
+                
+                updateStatus('Message sent successfully!');
+            } catch (error) {
+                console.error('Send message error:', error);
+                showError(`Failed to send message: ${error.message}`);
+            } finally {
+                document.getElementById('sendButton').disabled = false;
+            }
+        }
+    </script>
+</body>
+</html> 

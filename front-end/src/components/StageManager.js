@@ -43,6 +43,7 @@ import StarIcon from '@mui/icons-material/Star';
 import { fetchStages, createStage, updateStage, deleteStage } from '../services/stageService';
 import { getAuthHeaders } from '../services/authService';
 import useAgents from '../hooks/useAgents';
+import { API_CONFIG } from '../config';
 
 const StageManager = () => {
   // Get parameters from URL and location
@@ -130,8 +131,8 @@ const StageManager = () => {
     try {
       const headers = getAuthHeaders();
       
-      // Add business_id to the URL as a query parameter
-      const response = await fetch(`/api/templates/?business_id=${businessId}`, { 
+      // Corrected URL: removed /api prefix
+      const response = await fetch(`${API_CONFIG.BASE_URL}/templates?business_id=${businessId}`, { 
         headers,
         credentials: 'include'
       });
@@ -257,8 +258,13 @@ const StageManager = () => {
     }
 
     try {
-      const response = await fetch(`/agents/${agentId}?business_id=${businessId}`, {
-        credentials: 'include'
+      // Construct the correct URL using API_CONFIG
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AGENTS}/${agentId}?business_id=${businessId}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('businessApiKey')}`
+        },
+        credentials: 'include' // Keep credentials if needed by backend
       });
       
       if (!response.ok) {

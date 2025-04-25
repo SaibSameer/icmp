@@ -56,6 +56,7 @@ const StageView = () => {
                     return;
                 }
 
+                // Corrected fetch URL using API_CONFIG
                 const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AGENTS}?business_id=${businessId}`, {
                     headers: {
                         'Accept': 'application/json',

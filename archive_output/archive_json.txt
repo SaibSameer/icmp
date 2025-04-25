@@ -1224,17 +1224,16 @@ Lines: 141
 ================================================================================
 File: package.json
 Path: .\front-end\package.json
-Size: 1448
-Modified: 2025-04-06T17:21:35.578464
+Size: 1539
+Modified: 2025-04-19T15:57:50.146394
 Created: 2025-03-28T18:55:58.457887
-Hash: 486d14c7ec2a089d8270eaba811764babda86c1a8e52504748c437bbb7cdc3f0
-Lines: 57
+Hash: beb1aa70eefae422c4e324d9a7727355b7563a6f8fce765d378bb02d0f6cd22f
+Lines: 60
 ================================================================================
 {
   "name": "icmp-ui",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5000",
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
@@ -1247,13 +1246,17 @@ Lines: 57
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.30.0",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.4"
+    "serve": "^14.2.1",
+    "web-vitals": "^2.1.4",
+    "ajv": "^8.12.0",
+    "ajv-keywords": "^5.1.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "serve": "serve -s build -l ${PORT:-3000}"
   },
   "eslintConfig": {
     "extends": [
@@ -1289,11 +1292,36 @@ Lines: 57
 
 
 ================================================================================
+File: asset-manifest.json
+Path: .\front-end\build\asset-manifest.json
+Size: 517
+Modified: 2025-04-19T15:46:53.331010
+Created: 2025-04-19T15:46:53.331010
+Hash: 06a80bf0af8d1a26f5ae086680bd56439a2a5d45e9a6ce2028d7334b4fc51b14
+Lines: 15
+================================================================================
+{
+  "files": {
+    "main.css": "/static/css/main.5f21f8ef.css",
+    "main.js": "/static/js/main.b08dd1c0.js",
+    "static/js/453.d6cecd2f.chunk.js": "/static/js/453.d6cecd2f.chunk.js",
+    "index.html": "/index.html",
+    "main.5f21f8ef.css.map": "/static/css/main.5f21f8ef.css.map",
+    "main.b08dd1c0.js.map": "/static/js/main.b08dd1c0.js.map",
+    "453.d6cecd2f.chunk.js.map": "/static/js/453.d6cecd2f.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.5f21f8ef.css",
+    "static/js/main.b08dd1c0.js"
+  ]
+}
+
+================================================================================
 File: manifest.json
-Path: .\front-end\public\manifest.json
+Path: .\front-end\build\manifest.json
 Size: 520
 Modified: 2025-04-01T23:46:25.727637
-Created: 2025-04-01T18:33:25.723178
+Created: 2025-04-19T15:27:02.834761
 Hash: 12971dbeb25273ec3c0d777fabd9329aa32a0d40625f2c2fed6901d9c1388013
 Lines: 25
 ================================================================================

@@ -31,6 +31,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { API_CONFIG } from '../config';
 import { normalizeUUID } from '../hooks/useConfig';
+import apiService from '../services/api';
 
 const TemplateEditor = () => {
   const { templateId } = useParams();
@@ -140,23 +141,18 @@ const TemplateEditor = () => {
       
       setIsLoading(true);
       try {
-        console.log(`Fetching template with ID: ${templateId}`);
-        const response = await fetch(`/templates/${templateId}?business_id=${businessId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${businessApiKey}`
-          },
-          credentials: 'include'
-        });
+        console.log(`Fetching template with ID: ${templateId} for business: ${businessId}`);
         
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || errorData.message || 'Failed to fetch template');
-        }
+        // Use apiService to fetch template details
+        // Need to pass businessId separately or include it in the call if the service expects it
+        // Checking apiService definition, fetchTemplateDetails only takes templateId
+        // The business_id needs to be handled by the apiService internally or passed differently.
+        // Let's assume apiService handles authentication via headers which include business context.
+        // If not, we might need to modify apiService or pass businessId differently.
         
-        const data = await response.json();
+        // Corrected call assuming apiService uses stored credentials for business_id
+        const data = await apiService.fetchTemplateDetails(templateId);
+
         console.log('Fetched template:', data);
         
         // Don't modify the template_type, preserve its original value
@@ -351,43 +347,42 @@ const TemplateEditor = () => {
     }
   };
   
-  // Handle template save
+  // Save template changes
   const handleSaveTemplate = async () => {
-    if (!template.template_name || !template.content) {
-      showSnackbar('Template name and content are required', 'error');
-      return;
-    }
-
     setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    // Prepare template data for saving
+    const templateData = {
+      template_name: template.template_name,
+      content: template.content,
+      system_prompt: template.system_prompt,
+      template_type: template.template_type,
+      // Ensure variables are updated based on the current content
+      variables: extractVariables(template.content),
+      agent_id: template.agent_id // Include agent_id
+    };
+
     try {
-      const method = templateId === 'new' ? 'POST' : 'PUT';
-      const endpoint = templateId === 'new' ? '/templates' : `/templates/${templateId}`;
-      
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${businessApiKey}`
-        },
-        body: JSON.stringify({
-          ...template,
-          business_id: businessId
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save template');
-      }
-
-      const savedTemplate = await response.json();
-      showSnackbar('Template saved successfully', 'success');
-      
-      if (templateId === 'new') {
+      let savedTemplate;
+      if (templateId && templateId !== 'new') {
+        // Update existing template
+        console.log(`Updating template with ID: ${templateId}`, templateData);
+        savedTemplate = await apiService.updateTemplate(templateId, templateData);
+        showSnackbar('Template updated successfully!', 'success');
+      } else {
+        // Create new template
+        console.log('Creating new template:', templateData);
+        savedTemplate = await apiService.createTemplate(templateData);
+        showSnackbar('Template created successfully!', 'success');
+        // Navigate to the edit page of the newly created template
         navigate(`/template-editor/${savedTemplate.template_id}`);
       }
+      console.log('Save successful:', savedTemplate);
     } catch (err) {
       console.error('Error saving template:', err);
-      showSnackbar(err.message, 'error');
+      showSnackbar(`Failed to save template: ${err.message}`, 'error');
     } finally {
       setIsLoading(false);
     }

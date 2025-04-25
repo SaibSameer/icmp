@@ -202,9 +202,9 @@ def get_template(template_id):
                 """
                 SELECT template_id, template_name, template_type, content, system_prompt
                 FROM templates
-                WHERE template_id = %s
+                WHERE template_id = %s AND business_id = %s
                 """,
-                (template_id,)
+                (template_id, business_id)
             )
             
             row = cursor.fetchone()
