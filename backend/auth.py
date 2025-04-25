@@ -12,6 +12,15 @@ log = logging.getLogger(__name__)
 def require_api_key(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Skip authentication for OPTIONS requests (preflight)
+        if request.method == 'OPTIONS':
+            # Let Flask-CORS handle the response by calling the original function
+            # or returning a simple response. Since the route might not be set
+            # up to handle OPTIONS intrinsically, calling f might error.
+            # Let's just let Flask-CORS try its best.
+            # If issues persist, we might need `return make_response(), 200` here.
+            return f(*args, **kwargs)
+
         config_api_key = current_app.config.get("ICMP_API_KEY")
         if not config_api_key:
             log.error("ICMP_API_KEY not configured in the application.")

@@ -89,6 +89,9 @@ class MessageHandler:
             conn = self.db_pool.getconn()
             
             try:
+                # --- Start Transaction ---
+                # conn.autocommit is set to False by get_db_connection
+
                 # Check if the conversation exists
                 cursor = conn.cursor()
                 if conversation_id:
@@ -117,7 +120,7 @@ class MessageHandler:
                             """,
                             (conversation_id, business_id, user_id, session_id, llm_call_id)
                         )
-                        conn.commit()
+                        # REMOVED: conn.commit() # Commit intermediate change
                         log.info(f"Created conversation: {conversation_id}")
                     else:
                         log.info(f"Using existing conversation: {conversation_id}")
@@ -144,7 +147,7 @@ class MessageHandler:
                     """,
                     (llm_call_id, conversation_id)
                 )
-                conn.commit()
+                # REMOVED: conn.commit() # Commit intermediate change
                 
                 log.info(f"Using llm_call_id {llm_call_id} for conversation {conversation_id}")
                 
@@ -271,47 +274,25 @@ class MessageHandler:
                                 # Log raw stage response for debugging
                                 log.info(f"Raw stage detection response: {stage_response}")
                                 
-                                # Update the conversation's stage if a match was found
-                                if detected_stage_id and detected_stage_id != current_stage:
-                                    log.info(f"Updating conversation {conversation_id} stage from {current_stage} to {detected_stage_id}")
+                                # If a stage was detected, update the conversation
+                                if detected_stage_id:
+                                    log.info(f"Updating conversation {conversation_id} stage to {detected_stage_id}")
+                                    cursor = conn.cursor()
                                     cursor.execute(
                                         """
                                         UPDATE conversations 
-                                        SET stage_id = %s 
+                                        SET stage_id = %s, last_updated = NOW() 
                                         WHERE conversation_id = %s
                                         """,
                                         (detected_stage_id, conversation_id)
                                     )
-                                    # Ensure the changes are committed
-                                    conn.commit()
-                                    # Update current_stage for the rest of this method
-                                    current_stage = detected_stage_id
-                                    
-                                    # Log successful stage transition
-                                    log.info(f"Successfully updated conversation stage: {current_stage} -> {detected_stage_id}")
-                                    
-                                    # Refresh the templates based on the new stage
-                                    cursor.execute(
-                                        """
-                                        SELECT
-                                            stage_selection_template_id,
-                                            data_extraction_template_id,
-                                            response_generation_template_id
-                                        FROM stages
-                                        WHERE stage_id = %s
-                                        """,
-                                        (detected_stage_id,)
-                                    )
-                                    
-                                    new_templates = cursor.fetchone()
-                                    if new_templates:
-                                        # Update the template IDs to use the ones from the new stage
-                                        selection_template_id = new_templates[0]
-                                        extraction_template_id = new_templates[1]
-                                        response_template_id = new_templates[2]
-                                        log.info(f"Updated templates for new stage: selection={selection_template_id}, extraction={extraction_template_id}, response={response_template_id}")
-                        except Exception as e:
-                            log.error(f"Error updating stage from detection response: {str(e)}")
+                                    current_stage = detected_stage_id  # Update local variable
+                                    log.info(f"Conversation {conversation_id} stage updated successfully.")
+                                else:
+                                    log.warning(f"No matching stage found for response: {stage_response}")
+                        except Exception as stage_update_error:
+                            log.error(f"Error updating stage based on LLM response: {stage_update_error}", exc_info=True)
+                            # Do not commit here, let the main transaction handle it
                 
                 # Step 2: Data Extraction using new stage's template
                 extracted_data = ""
@@ -419,7 +400,7 @@ class MessageHandler:
                 )
                 
                 # Save AI response - using the actual LLM response (final_response), not the processed template
-                response_id = self._save_message(
+                response_message_id = self._save_message(
                     conn, 
                     conversation_id=conversation_id,
                     content=final_response,
@@ -430,30 +411,20 @@ class MessageHandler:
                 # Get current timestamp for response
                 current_time = datetime.now()
                 
-                # Commit transaction
+                # --- Commit Transaction ---
                 conn.commit()
-                
-                # Generate a single process log ID to use for both storage and return
-                process_log_id = str(uuid.uuid4())
-                
-                self._store_process_log(process_log_id, {
-                    'log_id': process_log_id,
-                    'original_message': content,
-                    'business_id': business_id,
-                    'user_id': user_id,
+                log.info(f"Transaction committed successfully for conversation {conversation_id}")
+
+                # Store final success log after commit
+                self._store_process_log(log_id, {
+                    'status': 'completed',
+                    'response': final_response,
                     'conversation_id': conversation_id,
-                    'start_time': current_time.isoformat(),
-                    'processing_steps': processing_steps,
-                    'final_response': final_response,  # Store actual LLM response in the log
+                    'message_id': message_id,
+                    'response_id': response_message_id,
                     'stage_id': current_stage,
-                    'agent_id': api_key,
-                    'current_stage_name': self._get_stage_name(conn, current_stage) if current_stage else 'Default',
-                    'stage_transition': {
-                        'detected': True if 'detected_stage_id' in locals() and detected_stage_id else False,
-                        'from_stage': stage_result[0] if stage_result else None,
-                        'to_stage': detected_stage_id if 'detected_stage_id' in locals() and detected_stage_id else stage_result[0] if stage_result else None,
-                        'successful': True if 'detected_stage_id' in locals() and detected_stage_id and detected_stage_id != (stage_result[0] if stage_result else None) else False
-                    }
+                    'processing_steps': processing_steps,
+                    'timestamp': current_time.isoformat()
                 })
                 
                 # Return the response
@@ -461,53 +432,55 @@ class MessageHandler:
                     "response": final_response,  # Return the actual LLM response not the processed template
                     "conversation_id": conversation_id,
                     "message_id": message_id,
-                    "response_id": response_id,
+                    "response_id": response_message_id,
                     "created_at": current_time.isoformat(),
-                    "process_log_id": process_log_id,
+                    "process_log_id": log_id,
                     "success": True,
                     "processing_steps": processing_steps
                 }
                 
             except Exception as e:
-                # Rollback the transaction if we have a connection
+                # --- Rollback Transaction ---
+                log.error(f"Error during message processing for conversation {conversation_id}. Rolling back transaction. Error: {str(e)}", exc_info=True)
                 if conn:
                     try:
                         conn.rollback()
-                        
-                        # If this was a new conversation and it failed, clean it up
-                        if not conversation_id:
-                            try:
-                                cursor = conn.cursor()
-                                cursor.execute(
-                                    "DELETE FROM conversations WHERE conversation_id = %s",
-                                    (conversation_id,)
-                                )
-                                conn.commit()
-                            except Exception as cleanup_error:
-                                log.error(f"Error cleaning up failed conversation: {str(cleanup_error)}")
-                    except Exception as rollback_error:
-                        log.error(f"Error rolling back transaction: {str(rollback_error)}")
+                        log.info("Transaction rolled back successfully.")
+                    except Exception as rb_err:
+                        log.error(f"Error during rollback: {rb_err}", exc_info=True)
                 
-                log.error(f"Error processing message: {str(e)}")
+                # Store error log
+                self._store_process_log(log_id, {
+                    'status': 'error',
+                    'error': str(e),
+                    'processing_steps': processing_steps, # Log steps up to the error
+                    'timestamp': datetime.now().isoformat()
+                })
+                
+                # Return error response
                 return {
                     'success': False,
                     'error': f"Error processing message: {str(e)}",
-                    'process_log_id': str(uuid.uuid4())
+                    'process_log_id': log_id # Include log ID for debugging
                 }
-            finally:
-                # Return connection to pool if we have one
-                if conn:
-                    try:
-                        self.db_pool.putconn(conn)
-                    except Exception as e:
-                        log.error(f"Error returning connection to pool: {str(e)}")
             
-        except Exception as e:
-            log.error(f"Error processing message: {str(e)}")
+            finally:
+                # Return the connection to the pool
+                if conn:
+                    self.db_pool.putconn(conn)
+                    log.debug("Database connection returned to pool.")
+
+        except Exception as outer_e: # Catch errors before getting connection
+            log.error(f"Outer error in process_message: {str(outer_e)}", exc_info=True)
+            self._store_process_log(log_id, {
+                'status': 'error',
+                'error': f"Outer error: {str(outer_e)}",
+                'timestamp': datetime.now().isoformat()
+            })
             return {
                 'success': False,
-                'error': f"Error processing message: {str(e)}",
-                'process_log_id': str(uuid.uuid4())
+                'error': f"Outer error: {str(outer_e)}",
+                'process_log_id': log_id
             }
     
     def _create_conversation(self, conn, business_id: str, user_id: str) -> str:
@@ -573,8 +546,8 @@ class MessageHandler:
                 """,
                 (conversation_id, business_id, user_id, session_id, llm_call_id)
             )
-            
-            log.info(f"Created new conversation: {conversation_id}")
+            # REMOVED: conn.commit()
+            log.info(f"New conversation created in DB: {conversation_id}")
             return conversation_id
             
         except Exception as e:
@@ -631,18 +604,8 @@ class MessageHandler:
                 """,
                 (message_id, conversation_id, user_id, content, sender_type)
             )
-            
-            # Update conversation's updated timestamp and status
-            cursor.execute(
-                """
-                UPDATE conversations
-                SET last_updated = NOW(),
-                    status = 'active'
-                WHERE conversation_id = %s
-                """,
-                (conversation_id,)
-            )
-            
+            # REMOVED: conn.commit()
+            log.info(f"Message saved: ID={message_id}, Conversation={conversation_id}, Sender={sender_type}")
             return message_id
         except Exception as e:
             log.error(f"Error saving message: {str(e)}")

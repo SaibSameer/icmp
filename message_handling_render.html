@@ -266,6 +266,12 @@
             </div>
             
             <div class="form-group">
+                <label for="ownerId">Owner ID</label>
+                <input id="ownerId" type="text" placeholder="Enter Owner ID">
+                <button onclick="lookupOwner()">Look Up Owner</button>
+            </div>
+            
+            <div class="form-group">
                 <label for="apiKey">API Key</label>
                 <input id="apiKey" type="password" placeholder="Enter API Key">
             </div>
@@ -388,31 +394,70 @@
         // Login function
         async function login() {
             const businessId = document.getElementById('businessId').value.trim();
+            const ownerId = document.getElementById('ownerId').value.trim();
             const apiKey = document.getElementById('apiKey').value.trim();
             
-            if (!businessId || !apiKey) {
-                showError('Business ID and API Key are required to login');
+            if (!businessId || !ownerId || !apiKey) {
+                showError('Business ID, Owner ID, and API Key are required to login');
                 return;
             }
             
-            updateStatus('Logging in...');
+            updateStatus('Verifying owner...');
+            
+            // Prepare login data for POST body
+            const loginData = {
+                userId: ownerId,
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
             
             try {
-                // Instead of verifying ownership, we'll just store the credentials
-                // and assume they'll work for messaging
+                // Change URL to /api/verify-owner and method to POST
+                const response = await fetch(`${API_BASE_URL}/api/verify-owner`, {
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        // 'businessapikey': apiKey // Usually not needed for verify-owner if key is in body
+                    },
+                    body: JSON.stringify(loginData), // Send data in body
+                    mode: 'cors',
+                    credentials: 'include' // Include cookies if needed by backend
+                });
+                
+                const data = await response.json();
+                
+                // Check response based on /api/verify-owner structure
+                if (!response.ok || !data.success) { 
+                    throw new Error(data.error || 'Owner verification failed');
+                }
+                
+                // Store credentials if verification succeeds
                 localStorage.setItem('businessApiKey', apiKey);
                 localStorage.setItem('businessId', businessId);
+                localStorage.setItem('ownerId', ownerId); // Store owner ID
                 
                 isLoggedIn = true;
-                showSuccess('Login credentials stored successfully!');
-                document.getElementById('loginStatus').textContent = 'Logged in';
+                showSuccess('Login successful! Owner verification confirmed.'); // Update message
+                document.getElementById('loginStatus').textContent = 'Logged in as Owner'; // Update status text
                 document.getElementById('loginStatus').className = 'logged-in';
+                 // Optionally disable login button after success
+                document.getElementById('loginButton').textContent = 'Logged In';
+                document.getElementById('loginButton').disabled = true;
+
             } catch (error) {
                 console.error('Login error:', error);
                 isLoggedIn = false;
                 showError(`Login failed: ${error.message}`);
                 document.getElementById('loginStatus').textContent = 'Not logged in';
                 document.getElementById('loginStatus').className = 'logged-out';
+                // Clear stored credentials on failure
+                localStorage.removeItem('businessApiKey');
+                localStorage.removeItem('businessId');
+                localStorage.removeItem('ownerId'); // Clear owner ID on failure
+                 // Re-enable login button on failure
+                document.getElementById('loginButton').textContent = 'Login';
+                document.getElementById('loginButton').disabled = false;
             }
         }
         
@@ -484,6 +529,65 @@
                 showError(`Failed to send message: ${error.message}`);
             } finally {
                 document.getElementById('sendButton').disabled = false;
+            }
+        }
+        
+        // Look up owner ID function (Copied from message_handling.html)
+        async function lookupOwner() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to look up owner');
+                return;
+            }
+            
+            // Prepare lookup data
+            const lookupData = {
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
+            
+            updateStatus('Looking up owner...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/lookup-owner`;
+                console.log('Looking up owner with URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(lookupData),
+                    credentials: 'include', // Include cookies
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+                    } else {
+                        const text = await response.text();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
+                    }
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('ownerId').value = data.owner_id;
+                    showSuccess(`Owner ID found: ${data.owner_id}`);
+                } else {
+                    throw new Error(data.error || 'Failed to find owner ID');
+                }
+                
+            } catch (error) {
+                console.error('Lookup error:', error);
+                showError(`Failed to look up owner ID: ${error.message}`);
             }
         }
     </script>
