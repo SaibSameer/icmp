@@ -31,6 +31,8 @@ load_dotenv(env_path)
 from backend.auth import require_api_key
 from backend.db import get_db_connection, release_db_connection, execute_query, CONNECTION_POOL
 from backend.config import Config
+from backend.messenger import setup_messenger_routes
+from backend.whatsapp import setup_whatsapp_routes
 
 # Routes imports
 from backend.routes.message_handling import bp as message_bp
@@ -527,6 +529,12 @@ def create_app(test_config=None):
     # Register the data extraction blueprint
     log.info("Registering data_extraction_bp at /api/extraction")
     app.register_blueprint(data_extraction_bp, url_prefix='/api/extraction')
+    
+    # Setup Facebook Messenger routes
+    setup_messenger_routes(app)
+    
+    # Setup WhatsApp routes
+    setup_whatsapp_routes(app)
     
     # Initialize the default stage
     with app.app_context():
