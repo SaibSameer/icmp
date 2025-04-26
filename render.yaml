@@ -35,4 +35,16 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: ICMP_API_KEY
-        sync: false 
+        sync: false
+
+  - type: web
+    name: asksameer-website
+    env: static
+    buildCommand: echo "Static site, no build needed"
+    staticPublishPath: ./website
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    domains:
+      - asksameer.com 
