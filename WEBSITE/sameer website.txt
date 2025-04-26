@@ -1,0 +1,64 @@
+import React from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Mail, Facebook, Twitter, Instagram } from "lucide-react";
+
+const AIWebsite = () => {
+  return (
+    <div className="min-h-screen bg-white text-blue-900 flex flex-col">
+      {/* Header Section */}
+      <header className="text-center py-8 bg-blue-50">
+        <h1 className="text-4xl font-bold">Welcome to Sameer – Your Smart Virtual Assistant!</h1>
+        <p className="text-lg mt-2">Let AI streamline your work and boost your productivity.</p>
+      </header>
+
+      {/* Image Section */}
+      <section className="flex flex-col items-center py-12">
+        <img
+          src="https://via.placeholder.com/600x400"
+          alt="AI Assistant Illustration"
+          className="rounded-lg shadow-lg"
+        />
+        <p className="mt-4 text-gray-600">Empowering your business with AI-driven solutions.</p>
+      </section>
+
+      {/* Chat Section */}
+      <section className="flex flex-col items-center py-12">
+        <Card className="w-full max-w-md shadow-lg">
+          <CardContent className="flex flex-col gap-4 p-6">
+            <div className="text-center font-bold text-xl">Hi! I'm Sameer. How can I help you today?</div>
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder="Type your message here..."
+                className="flex-grow"
+              />
+              <Button>Send</Button>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Footer Section */}
+      <footer className="bg-blue-50 py-6">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex gap-4">
+            <a href="#" aria-label="Facebook">
+              <Facebook className="w-6 h-6" />
+            </a>
+            <a href="#" aria-label="Twitter">
+              <Twitter className="w-6 h-6" />
+            </a>
+            <a href="#" aria-label="Instagram">
+              <Instagram className="w-6 h-6" />
+            </a>
+          </div>
+          <p className="text-sm text-gray-600">Contact us at <a href="mailto:info@sameerai.com" className="text-blue-700 underline">info@sameerai.com</a></p>
+          <a href="#" className="text-blue-700 underline">Learn More</a>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default AIWebsite;
