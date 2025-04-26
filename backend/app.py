@@ -497,38 +497,20 @@ def create_app(test_config=None):
                 release_db_connection(conn)
 
     # Register blueprints
-    app.register_blueprint(message_bp, url_prefix='/api')
+    app.register_blueprint(message_bp)
     app.register_blueprint(routing_bp)
-    
-    # Log registration of templates blueprints to help debug route conflicts
-    log.info("Registering templates_bp at /templates")
-    app.register_blueprint(templates_bp, url_prefix='/templates')
-    
-    log.info("Registering template_management_bp at /api/templates")
-    # POTENTIAL CONFLICT: Both templates_bp and template_management_bp handle templates
-    # templates_bp uses /templates, while template_management_bp uses /api/templates
-    # Make sure frontend calls the correct endpoint for default templates (/api/templates/default-templates)
-    app.register_blueprint(template_management_bp, url_prefix='/api/templates')
-    
-    app.register_blueprint(stages_bp, url_prefix='/api/stages')
-    app.register_blueprint(conversation_bp, url_prefix='/conversations')
+    app.register_blueprint(templates_bp)
+    app.register_blueprint(stages_bp)
+    app.register_blueprint(template_management_bp)
+    app.register_blueprint(conversation_bp, url_prefix='/api/v1/conversations')
     app.register_blueprint(businesses_bp)
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(config_bp, url_prefix='/config')
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(config_bp)
     app.register_blueprint(agents_bp)
     app.register_blueprint(users_bp)
-    
-    # Register the template variables blueprint
-    log.info("Registering template_variables_bp at /api/variables")
-    app.register_blueprint(template_variables_bp, url_prefix='/api/variables')
-    
-    # Register the LLM blueprint
-    log.info("Registering llm_bp at /api/llm")
-    app.register_blueprint(llm_bp, url_prefix='/api/llm')
-    
-    # Register the data extraction blueprint
-    log.info("Registering data_extraction_bp at /api/extraction")
-    app.register_blueprint(data_extraction_bp, url_prefix='/api/extraction')
+    app.register_blueprint(template_variables_bp)
+    app.register_blueprint(llm_bp)
+    app.register_blueprint(data_extraction_bp)
     
     # Setup Facebook Messenger routes
     setup_messenger_routes(app)

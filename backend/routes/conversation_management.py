@@ -18,15 +18,17 @@ log = logging.getLogger(__name__)
 # Create blueprint for conversation endpoints
 conversation_bp = Blueprint('conversations', __name__)
 
-@conversation_bp.route('/<user_id>', methods=['GET'])
+# Remove the test route
+# @conversation_bp.route('/test', methods=['GET'])
+# def test_route():
+#     return jsonify({"message": "Conversation blueprint test route OK"}), 200
+
+@conversation_bp.route('/', methods=['GET', 'OPTIONS'])
 @require_business_api_key
-def get_conversations(user_id):
+def get_conversations():
     """
-    Get all conversations for a specific user.
+    Get all conversations for the authenticated business.
     
-    Args:
-        user_id: The ID of the user whose conversations to retrieve
-        
     Query Parameters:
         business_id: (Required) The business ID to filter conversations by
     """
@@ -38,20 +40,23 @@ def get_conversations(user_id):
     try:
         conn = get_db_connection()
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Get all conversations for the user and business
+            # Query based only on business_id, join with users table
             cursor.execute("""
                 SELECT 
-                    conversation_id, 
-                    business_id, 
-                    user_id, 
-                    session_id, 
-                    start_time, 
-                    last_updated, 
-                    stage_id
-                FROM conversations 
-                WHERE user_id = %s AND business_id = %s
-                ORDER BY last_updated DESC;
-            """, (user_id, business_id))
+                    c.conversation_id, 
+                    c.business_id, 
+                    c.user_id, 
+                    c.session_id, 
+                    c.start_time, 
+                    c.last_updated, 
+                    c.stage_id,
+                    u.first_name, -- Get user's first name
+                    u.last_name   -- Get user's last name
+                FROM conversations c
+                LEFT JOIN users u ON c.user_id = u.user_id
+                WHERE c.business_id = %s
+                ORDER BY c.last_updated DESC;
+            """, (business_id,))
             
             conversations = cursor.fetchall()
             
@@ -82,6 +87,8 @@ def get_conversations(user_id):
                 conv['conversation_id'] = str(conv['conversation_id'])
                 conv['business_id'] = str(conv['business_id'])
                 conv['user_id'] = str(conv['user_id'])
+                # Handle potentially null first/last names (though join should handle this)
+                conv['user_name'] = f"{conv.get('first_name', '')} {conv.get('last_name', '')}".strip() 
                 if conv['session_id']:
                     conv['session_id'] = str(conv['session_id'])
                 if conv['stage_id']:
@@ -106,7 +113,7 @@ def get_conversations(user_id):
         if conn:
             release_db_connection(conn)
 
-@conversation_bp.route('/<conversation_id>', methods=['DELETE'])
+@conversation_bp.route('/<uuid:conversation_id>', methods=['DELETE', 'OPTIONS'])
 @require_business_api_key
 def delete_conversation(conversation_id):
     """
@@ -156,7 +163,7 @@ def delete_conversation(conversation_id):
         if conn:
             release_db_connection(conn)
 
-@conversation_bp.route('/reassign', methods=['POST'])
+@conversation_bp.route('/reassign', methods=['POST', 'OPTIONS'])
 @require_business_api_key
 def reassign_conversations():
     """

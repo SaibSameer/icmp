@@ -3665,11 +3665,11 @@ Lines: 1616
 ================================================================================
 File: message_handling_render.html
 Path: .\message_handling_render.html
-Size: 16643
-Modified: 2025-04-19T23:07:13.549632
+Size: 17674
+Modified: 2025-04-26T01:09:54.535033
 Created: 2025-04-19T23:07:10.699286
-Hash: 6946870684b2966a975ace7e701f652d34029370b4245f5951d62ae3cabca400
-Lines: 491
+Hash: 8e2cd2ea97e27880c48bee10cac7fa235137aa84ec80d1a4dfdcc17dde77f7f5
+Lines: 512
 ================================================================================
 <!DOCTYPE html>
 <html lang="en">
@@ -4068,16 +4068,34 @@ Lines: 491
                 return;
             }
             
-            updateStatus('Logging in...');
+            updateStatus('Verifying credentials...');
             
             try {
-                // Instead of verifying ownership, we'll just store the credentials
-                // and assume they'll work for messaging
+                // Make the actual request with proper CORS headers
+                const response = await fetch(`${API_BASE_URL}/api/validate-credentials?business_id=${encodeURIComponent(businessId)}&api_key=${encodeURIComponent(apiKey)}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'businessapikey': apiKey,
+                        'Origin': window.location.origin || 'http://localhost:8000'
+                    },
+                    mode: 'cors',
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok || !data.valid) {
+                    throw new Error(data.message || 'Invalid credentials');
+                }
+                
+                // Only store credentials if verification succeeds
                 localStorage.setItem('businessApiKey', apiKey);
                 localStorage.setItem('businessId', businessId);
                 
                 isLoggedIn = true;
-                showSuccess('Login credentials stored successfully!');
+                showSuccess('Login successful!');
                 document.getElementById('loginStatus').textContent = 'Logged in';
                 document.getElementById('loginStatus').className = 'logged-in';
             } catch (error) {
@@ -4086,6 +4104,9 @@ Lines: 491
                 showError(`Login failed: ${error.message}`);
                 document.getElementById('loginStatus').textContent = 'Not logged in';
                 document.getElementById('loginStatus').className = 'logged-out';
+                // Clear stored credentials on failure
+                localStorage.removeItem('businessApiKey');
+                localStorage.removeItem('businessId');
             }
         }
         

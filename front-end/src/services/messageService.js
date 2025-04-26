@@ -80,7 +80,7 @@ export const fetchConversationHistory = async () => {
     const { userId, businessId } = getStoredCredentials();
     
     const response = await fetch(
-      `${API_CONFIG.ENDPOINTS.CONVERSATIONS}/${userId}?business_id=${businessId}`,
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CONVERSATIONS}/?business_id=${businessId}`,
       {
         method: 'GET',
         headers: getAuthHeaders(),

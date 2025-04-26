@@ -7,6 +7,7 @@ import BusinessDetailsView from './components/BusinessDetailsView/BusinessDetail
 import StageManager from './components/StageManager';
 import TemplateEditor from './components/TemplateEditor';
 import TemplateManagement from './components/TemplateManagement';
+import MessagePortal from './components/MessagePortal';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Header from './components/Header';
@@ -55,6 +56,12 @@ function AppContent() {
               ) : (
                 <Navigate to="/login" replace />
               )
+            } 
+          />
+          <Route 
+            path="/messages" 
+            element={
+              isAuthenticated ? <MessagePortal /> : <Navigate to="/login" replace />
             } 
           />
           <Route 

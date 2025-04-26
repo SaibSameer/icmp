@@ -4389,11 +4389,11 @@ export default StageManagement;
 ================================================================================
 File: StageManager.js
 Path: .\front-end\src\components\StageManager.js
-Size: 30264
-Modified: 2025-04-25T14:19:03.334436
+Size: 29786
+Modified: 2025-04-25T20:18:47.381660
 Created: 2025-04-01T23:31:12.449774
-Hash: 5d43f63d2134f13ebf3baa36678e7478eec087b4ec96ff466b3300a87ecdd79b
-Lines: 867
+Hash: 17d86d7fa6695bf0d74b6bfd1fc1a91ebf302a0589c143108c2000a1257e57d6
+Lines: 851
 ================================================================================
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
@@ -4769,24 +4769,8 @@ const StageManager = () => {
       
       console.log('Creating stage with data:', stageData);
 
-      // Create the stage
-      const response = await fetch('/stages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('businessApiKey')}`
-        },
-        credentials: 'include',
-        body: JSON.stringify(stageData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to create stage');
-      }
-
-      const result = await response.json();
+      // Use the createStage function from stageService
+      const result = await createStage(stageData);
       console.log('Stage created successfully:', result);
       
       showSnackbar('Stage created successfully', 'success');
@@ -4809,7 +4793,7 @@ const StageManager = () => {
 
   const navigateToStageView = (stageId) => {
     // Construct the URL with query parameters
-    let url = `/stages/${stageId}?business_id=${businessId}`;
+    let url = `/api/stages/${stageId}?business_id=${businessId}`;
     if (agentId) {
       url += `&agent_id=${agentId}`;
     }
@@ -11691,11 +11675,11 @@ export default apiService;
 ================================================================================
 File: authService.js
 Path: .\front-end\src\services\authService.js
-Size: 6044
-Modified: 2025-04-19T23:27:48.753060
+Size: 6094
+Modified: 2025-04-25T23:10:25.425367
 Created: 2025-04-09T12:42:39.783767
-Hash: c5815ca271ce97ae38edb70180296258a27a0362f7a8554b34321f3b5740f74a
-Lines: 170
+Hash: a2cc58076eca8c79ab074c57a366713eb7f568fb29c92dfadb01289d2916fdb6
+Lines: 171
 ================================================================================
 // Authentication service for handling login, logout, and session management
 import { API_CONFIG, AUTH_CONFIG } from '../config';
@@ -11853,7 +11837,8 @@ export const getAuthHeaders = () => {
   return {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'businessapikey': businessApiKey
+    'businessapikey': businessApiKey,
+    'Authorization': `Bearer ${businessApiKey}`
   };
 };
 
@@ -12175,11 +12160,11 @@ export default {
 ================================================================================
 File: stageService.js
 Path: .\front-end\src\services\stageService.js
-Size: 5622
-Modified: 2025-04-19T20:04:44.671850
+Size: 6035
+Modified: 2025-04-26T00:05:26.532115
 Created: 2025-04-01T16:29:34.419987
-Hash: 8d3270ad8bd55f65aee6c27d8011d1527c6288d704acec0c70226112bbf2bc1e
-Lines: 162
+Hash: 8becaea81280d1520f95a1e6369fab8c912a85a8f27c568e21b21091b1b6b594
+Lines: 174
 ================================================================================
 // src/services/stageService.js
 
@@ -12233,21 +12218,33 @@ export const createStage = async (stageData) => {
   console.log(`[Service] Creating stage for business: ${stageData.business_id}`);
   console.log(`[Service] Stage data:`, stageData);
   
-  // Log the headers for debugging
   const headers = getAuthHeaders();
   console.log("[Service] Using headers:", headers);
   
-  const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: headers,
-    body: JSON.stringify(stageData)
-  });
-  
-  // Log the response status for debugging
-  console.log(`[Service] Response status: ${response.status}`);
-  
-  return handleApiResponse(response);
+  try {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/stages`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        ...headers,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(stageData)
+    });
+    
+    console.log(`[Service] Response status: ${response.status}`);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("[Service Error] createStage failed:", errorData);
+      throw new Error(errorData.error || errorData.message || `Failed to create stage (HTTP ${response.status})`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("[Service Error] createStage failed:", error);
+    throw error;
+  }
 };
 
 // Fetch details for a specific stage
@@ -16439,6 +16436,186 @@ export const apiService = {
 };
 
 export default apiService;
+
+================================================================================
+File: authService.js
+Path: .\old-_archive_files\front-end\src\services\authService.js
+Size: 6044
+Modified: 2025-04-25T13:07:18.142771
+Created: 2025-04-25T13:07:18.142771
+Hash: c5815ca271ce97ae38edb70180296258a27a0362f7a8554b34321f3b5740f74a
+Lines: 170
+================================================================================
+// Authentication service for handling login, logout, and session management
+import { API_CONFIG, AUTH_CONFIG } from '../config';
+
+/**
+ * Handles API responses and throws errors for non-OK responses
+ * @param {Response} response - The fetch Response object
+ * @returns {Promise<any>} - The parsed response data
+ * @throws {Error} - Throws an error with details from the response if not ok
+ */
+const handleApiResponse = async (response) => {
+  console.log('API Response Status:', response.status, response.statusText);
+  console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
+  
+  // Clone the response so we can try both JSON and text parsing if needed
+  const responseClone = response.clone();
+  
+  // Handle non-OK responses
+  if (!response.ok) {
+    // Try to get detailed error from response
+    try {
+      const errorData = await response.json();
+      console.error('Error response data:', errorData);
+      throw new Error(errorData.message || errorData.error || `API error: ${response.status}`);
+    } catch (jsonError) {
+      // If response isn't valid JSON, use status text
+      console.error('Error parsing response:', jsonError);
+      try {
+        const errorText = await responseClone.text();
+        console.error('Response text:', errorText);
+        throw new Error(`API error: ${response.status} ${response.statusText} - ${errorText}`);
+      } catch (textError) {
+        // If both JSON and text parsing fail, just use the status
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+    }
+  }
+  
+  // For successful responses, parse JSON or return empty object
+  try {
+    const data = await response.json();
+    console.log('API Response Data:', data);
+    return data;
+  } catch (error) {
+    // Some successful responses may not have a body (e.g., 204 No Content)
+    console.log('No JSON in successful response');
+    return {};
+  }
+};
+
+/**
+ * Login with business and user credentials
+ * @param {string} userId - User ID
+ * @param {string} businessId - Business ID
+ * @param {string} businessApiKey - Business API Key
+ * @returns {Promise<Object>} - Login response data
+ */
+export const login = async (userId, businessId, businessApiKey) => {
+  try {
+    // Trim whitespace from all inputs
+    const trimmedUserId = userId.trim();
+    const trimmedBusinessId = businessId.trim();
+    const trimmedBusinessApiKey = businessApiKey.trim();
+    
+    console.log('Login attempt with:', { 
+      userId: trimmedUserId, 
+      businessId: trimmedBusinessId, 
+      businessApiKey: '***' 
+    });
+    console.log('Login URL:', `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`);
+    
+    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        userId: trimmedUserId,
+        businessId: trimmedBusinessId,
+        businessApiKey: trimmedBusinessApiKey
+      })
+    });
+
+    const data = await handleApiResponse(response);
+    
+    // Check if the response indicates success
+    if (data.success || data.message === 'Configuration saved successfully') {
+      console.log('Login successful, storing credentials');
+      // Store credentials in localStorage for persistent login
+      localStorage.setItem(AUTH_CONFIG.STORAGE_KEYS.USER_ID, trimmedUserId);
+      localStorage.setItem(AUTH_CONFIG.STORAGE_KEYS.BUSINESS_ID, trimmedBusinessId);
+      localStorage.setItem(AUTH_CONFIG.STORAGE_KEYS.BUSINESS_API_KEY, trimmedBusinessApiKey);
+      
+      // Return a standardized success response
+      return { success: true, message: 'Login successful' };
+    } else {
+      console.error('Login response indicates failure:', data);
+      return { success: false, message: data.error || 'Login failed' };
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, message: error.message || 'Login failed' };
+  }
+};
+
+/**
+ * Logout and clear stored credentials
+ */
+export const logout = () => {
+  // Clear stored credentials
+  localStorage.removeItem(AUTH_CONFIG.STORAGE_KEYS.USER_ID);
+  localStorage.removeItem(AUTH_CONFIG.STORAGE_KEYS.BUSINESS_ID);
+  localStorage.removeItem(AUTH_CONFIG.STORAGE_KEYS.BUSINESS_API_KEY);
+  
+  return { success: true, message: 'Logged out successfully' };
+};
+
+/**
+ * Check if user is logged in
+ * @returns {boolean} - True if user is logged in
+ */
+export const isLoggedIn = () => {
+  const userId = localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.USER_ID);
+  const businessId = localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.BUSINESS_ID);
+  const businessApiKey = localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.BUSINESS_API_KEY);
+  
+  return !!(userId && businessId && businessApiKey);
+};
+
+/**
+ * Get stored credentials
+ * @returns {Object} - Stored credentials
+ */
+export const getStoredCredentials = () => {
+  return {
+    userId: localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.USER_ID) || '',
+    businessId: localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.BUSINESS_ID) || '',
+    businessApiKey: localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.BUSINESS_API_KEY) || ''
+  };
+};
+
+/**
+ * Get authentication headers for API requests
+ * @returns {Object} - Headers object with authentication
+ */
+export const getAuthHeaders = () => {
+  const businessApiKey = localStorage.getItem(AUTH_CONFIG.STORAGE_KEYS.BUSINESS_API_KEY);
+  
+  if (!businessApiKey) {
+    throw new Error('No API key found. Please log in first.');
+  }
+  
+  return {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'businessapikey': businessApiKey
+  };
+};
+
+// Create a named export object
+const authService = {
+  login,
+  logout,
+  isLoggedIn,
+  getStoredCredentials,
+  getAuthHeaders
+};
+
+export default authService;
 
 ================================================================================
 File: stageService.js

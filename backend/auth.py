@@ -1,6 +1,6 @@
 import logging
 import functools
-from flask import jsonify, request, current_app
+from flask import jsonify, request, current_app, make_response
 from werkzeug.security import check_password_hash
 from backend.db import get_db_connection, release_db_connection
 from backend.utils import is_valid_uuid
@@ -65,7 +65,10 @@ def require_business_api_key(f):
     def decorated_function(*args, **kwargs):
         # Skip authentication for OPTIONS requests (preflight)
         if request.method == 'OPTIONS':
-            return f(*args, **kwargs)
+            # Return an empty successful response directly for CORS preflight
+            response = make_response()
+            # Let Flask-CORS add the necessary headers later
+            return response, 204 # 204 No Content is common for OPTIONS
             
         business_id_from_request = None
         

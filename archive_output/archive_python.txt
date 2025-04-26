@@ -1312,6 +1312,87 @@ except Exception as e:
     sys.exit(1) 
 
 ================================================================================
+File: run_production_migration.py
+Path: .\run_production_migration.py
+Size: 2171
+Modified: 2025-04-25T23:56:20.146911
+Created: 2025-04-25T23:56:18.087887
+Hash: 5b52ffc4111f67c662afe84ce31528822b49049e7cff3ac72f6a6e3aff045024
+Lines: 71
+================================================================================
+#!/usr/bin/env python3
+"""
+Script to run database migrations on the production database.
+"""
+
+import os
+import sys
+import psycopg2
+import logging
+from dotenv import load_dotenv
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+log = logging.getLogger(__name__)
+
+def run_migration():
+    """Run the migration to add updated_at column to stages table."""
+    
+    # Load environment variables
+    load_dotenv()
+    
+    # Get database configuration from environment variables
+    db_config = {
+        "dbname": os.environ.get("DB_NAME"),
+        "user": os.environ.get("DB_USER"),
+        "password": os.environ.get("DB_PASSWORD"),
+        "host": os.environ.get("DB_HOST"),
+        "port": os.environ.get("DB_PORT", "5432")
+    }
+    
+    # Ensure all required environment variables are set
+    required_vars = ["DB_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST"]
+    missing_vars = [var for var in required_vars if not os.environ.get(var)]
+    if missing_vars:
+        log.error(f"Missing required environment variables: {', '.join(missing_vars)}")
+        sys.exit(1)
+    
+    try:
+        # Connect to the database
+        log.info("Connecting to database...")
+        conn = psycopg2.connect(**db_config)
+        conn.autocommit = True
+        cursor = conn.cursor()
+        
+        # Read and execute the migration script
+        log.info("Reading migration script...")
+        with open('backend/migrations/04_add_updated_at_to_stages.sql', 'r') as sql_file:
+            sql_script = sql_file.read()
+            
+        log.info("Executing migration script...")
+        cursor.execute(sql_script)
+        
+        log.info("Migration completed successfully!")
+        
+    except Exception as e:
+        log.error(f"An error occurred during migration: {str(e)}")
+        sys.exit(1)
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
+
+if __name__ == '__main__':
+    run_migration() 
+
+================================================================================
 File: serve_html.py
 Path: .\serve_html.py
 Size: 1795
@@ -1968,11 +2049,11 @@ if __name__ == "__main__":
 ================================================================================
 File: app.py
 Path: .\backend\app.py
-Size: 22274
-Modified: 2025-04-25T12:58:31.461668
+Size: 22525
+Modified: 2025-04-25T19:16:52.204065
 Created: 2025-03-30T15:12:25.167734
-Hash: 484fb7e9760d19197dd6030a23a1341439b07094e58d41609d4a66f30d1d1879
-Lines: 542
+Hash: 3b8374d3791b7535aed6bd3e473c68efc70da0c1e7f265ec2f3f5fba6090e88a
+Lines: 550
 ================================================================================
 #!/usr/bin/env python
 # app.py - Main Flask application entry point
@@ -2007,6 +2088,8 @@ load_dotenv(env_path)
 from backend.auth import require_api_key
 from backend.db import get_db_connection, release_db_connection, execute_query, CONNECTION_POOL
 from backend.config import Config
+from backend.messenger import setup_messenger_routes
+from backend.whatsapp import setup_whatsapp_routes
 
 # Routes imports
 from backend.routes.message_handling import bp as message_bp
@@ -2503,6 +2586,12 @@ def create_app(test_config=None):
     # Register the data extraction blueprint
     log.info("Registering data_extraction_bp at /api/extraction")
     app.register_blueprint(data_extraction_bp, url_prefix='/api/extraction')
+    
+    # Setup Facebook Messenger routes
+    setup_messenger_routes(app)
+    
+    # Setup WhatsApp routes
+    setup_whatsapp_routes(app)
     
     # Initialize the default stage
     with app.app_context():
@@ -4742,6 +4831,84 @@ if __name__ == "__main__":
     init_database() 
 
 ================================================================================
+File: messenger.py
+Path: .\backend\messenger.py
+Size: 2290
+Modified: 2025-04-25T18:24:35.069443
+Created: 2025-04-25T18:24:32.538134
+Hash: 3ad46c872422f09007c58952d96b5b1a261e7647cd77b70c21d21739b933ff95
+Lines: 68
+================================================================================
+from flask import Flask, request, jsonify
+import os
+import hmac
+import hashlib
+import json
+from functools import wraps
+
+# Facebook Messenger verification token
+VERIFY_TOKEN = os.getenv('FB_VERIFY_TOKEN')
+PAGE_ACCESS_TOKEN = os.getenv('FB_PAGE_ACCESS_TOKEN')
+
+def verify_fb_token(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if request.method == 'GET':
+            token_sent = request.args.get('hub.verify_token')
+            if token_sent == VERIFY_TOKEN:
+                return request.args.get('hub.challenge')
+            return 'Invalid verification token'
+        return f(*args, **kwargs)
+    return decorated_function
+
+def handle_message(sender_id, message):
+    """Handle incoming messages from Facebook Messenger"""
+    # Your message processing logic here
+    response = {
+        'recipient': {'id': sender_id},
+        'message': {'text': f"Received: {message}"}
+    }
+    return response
+
+def send_message(recipient_id, response):
+    """Send message to Facebook Messenger"""
+    import requests
+    
+    params = {
+        "access_token": PAGE_ACCESS_TOKEN
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+    data = json.dumps(response)
+    
+    url = "https://graph.facebook.com/v18.0/me/messages"
+    
+    try:
+        result = requests.post(url, params=params, headers=headers, data=data)
+        return result.json()
+    except Exception as e:
+        print(f"Error sending message: {e}")
+        return None
+
+def setup_messenger_routes(app):
+    @app.route('/webhook', methods=['GET', 'POST'])
+    @verify_fb_token
+    def webhook():
+        if request.method == 'POST':
+            output = request.get_json()
+            for event in output['entry']:
+                messaging = event['messaging']
+                for message in messaging:
+                    if message.get('message'):
+                        sender_id = message['sender']['id']
+                        if message['message'].get('text'):
+                            message_text = message['message']['text']
+                            response = handle_message(sender_id, message_text)
+                            send_message(sender_id, response)
+        return "Message Processed" 
+
+================================================================================
 File: openai_helper.py
 Path: .\backend\openai_helper.py
 Size: 2336
@@ -5830,6 +5997,91 @@ def log_request_info(request):
         log.info(f"Request cookies: {request.cookies}")
         
     return True
+
+================================================================================
+File: whatsapp.py
+Path: .\backend\whatsapp.py
+Size: 2782
+Modified: 2025-04-25T18:48:02.896398
+Created: 2025-04-25T18:48:00.925225
+Hash: 4c7b6375da4f7c1cecaa6b2900f9dc55c0bbbe4f3514ce035286da30db5a4947
+Lines: 75
+================================================================================
+from flask import Flask, request, jsonify
+import os
+import hmac
+import hashlib
+import json
+import requests
+from functools import wraps
+
+# WhatsApp API credentials
+WHATSAPP_TOKEN = os.getenv('WHATSAPP_TOKEN')
+WHATSAPP_PHONE_NUMBER_ID = os.getenv('WHATSAPP_PHONE_NUMBER_ID')
+WHATSAPP_VERIFY_TOKEN = os.getenv('WHATSAPP_VERIFY_TOKEN')
+
+def verify_whatsapp_token(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if request.method == 'GET':
+            token_sent = request.args.get('hub.verify_token')
+            if token_sent == WHATSAPP_VERIFY_TOKEN:
+                return request.args.get('hub.challenge')
+            return 'Invalid verification token'
+        return f(*args, **kwargs)
+    return decorated_function
+
+def handle_whatsapp_message(sender_id, message):
+    """Handle incoming messages from WhatsApp"""
+    # Your message processing logic here
+    response = {
+        'messaging_product': 'whatsapp',
+        'to': sender_id,
+        'type': 'text',
+        'text': {'body': f"Received: {message}"}
+    }
+    return response
+
+def send_whatsapp_message(recipient_id, response):
+    """Send message to WhatsApp"""
+    url = f"https://graph.facebook.com/v18.0/{WHATSAPP_PHONE_NUMBER_ID}/messages"
+    
+    headers = {
+        'Authorization': f'Bearer {WHATSAPP_TOKEN}',
+        'Content-Type': 'application/json'
+    }
+    
+    try:
+        result = requests.post(url, headers=headers, json=response)
+        return result.json()
+    except Exception as e:
+        print(f"Error sending WhatsApp message: {e}")
+        return None
+
+def setup_whatsapp_routes(app):
+    @app.route('/whatsapp-webhook', methods=['GET', 'POST'])
+    @verify_whatsapp_token
+    def whatsapp_webhook():
+        if request.method == 'POST':
+            output = request.get_json()
+            
+            # Handle WhatsApp message
+            if 'entry' in output:
+                for entry in output['entry']:
+                    for change in entry.get('changes', []):
+                        if 'value' in change:
+                            value = change['value']
+                            if 'messages' in value:
+                                for message in value['messages']:
+                                    if message['type'] == 'text':
+                                        sender_id = message['from']
+                                        message_text = message['text']['body']
+                                        response = handle_whatsapp_message(sender_id, message_text)
+                                        send_whatsapp_message(sender_id, response)
+            
+            return jsonify({'status': 'success'})
+        
+        return "WhatsApp Webhook Setup" 
 
 ================================================================================
 File: __init__.py
@@ -12518,14 +12770,14 @@ def get_available_handlers():
 ================================================================================
 File: stages.py
 Path: .\backend\routes\stages.py
-Size: 30654
-Modified: 2025-04-25T15:40:42.290665
+Size: 31425
+Modified: 2025-04-26T00:18:44.888366
 Created: 2025-03-31T17:53:17.411223
-Hash: 90c5e5b040335f841647e4ea743e95938eb041c8180773a5b3119cabb40fde12
-Lines: 691
+Hash: ba1b0e3bc56aee52ebc349ee08ea2cdce0c0de911b1f97278c04053489c5d536
+Lines: 709
 ================================================================================
 # routes/stages.py
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, redirect, url_for
 from db import get_db_connection, release_db_connection
 import uuid
 import logging
@@ -12539,6 +12791,17 @@ from psycopg2.extras import RealDictCursor
 log = logging.getLogger(__name__)
 
 stages_bp = Blueprint('stages', __name__, url_prefix='/api/stages')
+
+@stages_bp.route('/', methods=['GET'])
+@require_business_api_key
+def redirect_stages():
+    return redirect(url_for('stages.get_stages'))
+
+@stages_bp.route('/', methods=['POST', 'OPTIONS'])
+@require_business_api_key
+def post_stages_with_slash():
+    # Forward the request to the main post_stages function
+    return post_stages()
 
 @stages_bp.route('', methods=['GET'])
 @require_business_api_key
@@ -12610,9 +12873,19 @@ def get_stages():
         log.error(f"Error handling request: {str(e)}", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
-@stages_bp.route('', methods=['POST'])
-@require_api_key
+@stages_bp.route('', methods=['POST', 'OPTIONS'])
+@require_business_api_key
 def post_stages():
+    # Handle CORS preflight requests
+    if request.method == 'OPTIONS':
+        response = jsonify({'success': True})
+        response.headers.add('Access-Control-Allow-Origin', request.headers.get('Origin', '*'))
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,businessapikey,Accept')
+        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Max-Age', '3600')
+        return response
+
     # Log authentication values for debugging
     log.info(f"POST stages request received.")
     log.info(f"Request headers: {dict(request.headers)}")
@@ -12786,8 +13059,8 @@ def post_stages():
                     """
                     INSERT INTO templates (
                         template_id, template_name, template_type, content, 
-                        system_prompt, business_id, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
+                        system_prompt, business_id, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW())
                     """,
                     (
                         new_template_id,
@@ -12808,8 +13081,8 @@ def post_stages():
                 INSERT INTO stages (
                     stage_id, business_id, agent_id, stage_name, stage_description,
                     stage_type, stage_selection_template_id, data_extraction_template_id,
-                    response_generation_template_id, created_at, updated_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    response_generation_template_id, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 """,
                 (
                     stage_id,
@@ -12854,8 +13127,8 @@ def post_stages():
                     """
                     INSERT INTO templates (
                         template_id, template_name, template_type, content, 
-                        system_prompt, business_id, created_at, updated_at
-                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW(), NOW())
+                        system_prompt, business_id, created_at
+                    ) VALUES (%s, %s, %s, %s, %s, %s, NOW())
                     """,
                     (
                         new_template_id,
@@ -12876,8 +13149,8 @@ def post_stages():
                 INSERT INTO stages (
                     stage_id, business_id, agent_id, stage_name, stage_description,
                     stage_type, stage_selection_template_id, data_extraction_template_id,
-                    response_generation_template_id, created_at, updated_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+                    response_generation_template_id, created_at
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
                 """,
                 (
                     stage_id,
@@ -12956,9 +13229,6 @@ def update_stage(stage_id):
             if not update_fields:
                 return jsonify({"error": "No fields to update"}), 400
                 
-            # Add updated_at timestamp
-            update_fields.append("updated_at = NOW()")
-            
             # Construct and execute update query
             query = f"""
                 UPDATE stages 

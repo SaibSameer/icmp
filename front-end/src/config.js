@@ -9,7 +9,7 @@ const API_CONFIG = {
   ENDPOINTS: {
     LOGIN: '/api/save-config',
     MESSAGE: '/api/message',
-    CONVERSATIONS: '/conversations',
+    CONVERSATIONS: '/api/v1/conversations',
     BUSINESSES: '/businesses',
     STAGES: '/api/stages',
     TEMPLATES: '/templates',
