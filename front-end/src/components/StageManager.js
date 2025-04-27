@@ -395,12 +395,11 @@ const StageManager = () => {
   };
 
   const navigateToStageView = (stageId) => {
-    // Construct the URL with query parameters
-    let url = `/api/stages/${stageId}?business_id=${businessId}`;
-    if (agentId) {
-      url += `&agent_id=${agentId}`;
-    }
-    navigate(url);
+    // Navigate to the defined frontend route for viewing a stage
+    const frontendRoute = `/stages/${stageId}`;
+    // Optional: If the StageViewPage needs business/agent context, pass it via state
+    // navigate(frontendRoute, { state: { businessId, agentId } });
+    navigate(frontendRoute);
   };
 
   const handleDeleteStage = async () => {
