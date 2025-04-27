@@ -3,176 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ask Sameer - Welcome</title>
-    <!-- Add Font Awesome -->
+    <title>AskSameer - Your Smart Virtual Assistant</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Add Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* General Styles */
         body {
             font-family: 'Poppins', sans-serif;
-            line-height: 1.6;
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
+            background-color: #f9f9f9;
             color: #333;
+            overflow-x: hidden;
         }
-        .header {
+        h1, h2, h3 {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        p {
+            line-height: 1.8;
+            font-size: 18px;
+        }
+        a {
+            text-decoration: none;
+            color: #3498db;
+        }
+        a:hover {
+            color: #2980b9;
+        }
+
+        /* Header Section */
+        header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 150px 0;
             text-align: center;
-            padding: 60px 20px;
-            background-color: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
         }
-        h1 {
-            color: #333;
+        header h1 {
+            font-size: 4rem;
             margin: 0;
-            font-size: 2.5em;
-            font-weight: 600;
+            animation: fadeInDown 2s ease-in-out;
         }
-        .subtitle {
-            color: #666;
-            font-size: 1.2em;
-            margin-top: 10px;
-            font-weight: 300;
+        header p {
+            font-size: 1.5rem;
+            animation: fadeInUp 2s ease-in-out;
         }
-        .main-content {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+
+        /* Features Section */
         .features {
+            padding: 100px 20px;
+            background: white;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .feature-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
-            margin: 40px 0;
+            margin-top: 40px;
         }
         .feature-card {
-            background: #fff;
+            background: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
         }
         .feature-card i {
-            font-size: 2.5em;
+            font-size: 3em;
             color: #3498db;
             margin-bottom: 20px;
         }
         .feature-card h3 {
             margin: 0 0 15px 0;
-            color: #333;
+            font-size: 1.5rem;
         }
         .feature-card p {
             color: #666;
             margin: 0;
+            font-size: 1rem;
         }
+
+        /* CTA Section */
         .cta-section {
             text-align: center;
-            padding: 60px 20px;
-            background: #fff;
-            margin: 40px 0;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 100px 20px;
+            background: #f4f4f4;
         }
-        .footer {
-            text-align: center;
-            padding: 40px 20px;
-            background: #fff;
+        .cta-section h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: fadeIn 2s ease-in-out;
+        }
+        .cta-section p {
+            max-width: 600px;
+            margin: 0 auto;
             color: #666;
-            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
         }
-        .footer a {
-            color: #333;
-            text-decoration: none;
+
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
+        }
+        footer p {
+            margin: 10px 0;
+            font-size: 1rem;
+        }
+        footer a {
+            color: #3498db;
             margin: 0 10px;
         }
-        .footer a:hover {
-            text-decoration: underline;
+        footer a:hover {
+            color: #2980b9;
         }
-        /* Floating Chat Window */
+
+        /* Chat Window */
         .chat-window {
-          position: fixed;
-          bottom: 20px;
-          right: 20px;
-          background: white;
-          padding: 20px;
-          border-radius: 10px;
-          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-          width: 300px;
-          z-index: 1000;
-          display: flex;
-          flex-direction: column;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
         }
         .chat-messages {
-          max-height: 300px;
-          overflow-y: auto;
-          margin-bottom: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
         }
         .message {
-          margin: 10px 0;
-          padding: 10px;
-          border-radius: 5px;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            animation: fadeIn 0.3s ease-in-out;
         }
         .user-message {
-          background: #3498db;
-          color: white;
-          margin-left: 20px;
+            background: #3498db;
+            color: white;
+            margin-left: 20px;
         }
         .bot-message {
-          background: #f1f1f1;
-          margin-right: 20px;
+            background: #f1f1f1;
+            margin-right: 20px;
         }
         .chat-input {
-          display: flex;
-          gap: 10px;
+            display: flex;
+            gap: 10px;
         }
         .chat-input input {
-          flex: 1;
-          padding: 8px;
-          border: 1px solid #ddd;
-          border-radius: 5px;
-          font-size: 14px;
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
         }
         .chat-input button {
-          padding: 8px 15px;
-          background: #3498db;
-          color: white;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          transition: background 0.3s;
+            padding: 8px 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
         }
         .chat-input button:hover {
-          background: #2980b9;
+            background: #2980b9;
         }
         .chat-toggle {
-          position: fixed;
-          bottom: 20px;
-          right: 20px;
-          background: #3498db;
-          color: white;
-          width: 50px;
-          height: 50px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          z-index: 1001;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        .chat-toggle:hover {
+            transform: scale(1.1);
         }
         .chat-window.hidden {
-          display: none;
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <header>
         <h1>Welcome to Ask Sameer</h1>
-        <p class="subtitle">Your trusted source for information and assistance</p>
-    </div>
+        <p>Your trusted source for information and assistance</p>
+    </header>
 
-    <div class="main-content">
-        <div class="features">
+    <div class="features">
+        <div class="feature-cards">
             <div class="feature-card">
                 <i class="fas fa-brain"></i>
                 <h3>AI-Powered Assistance</h3>
@@ -189,20 +247,20 @@
                 <p>Your conversations are protected with enterprise-grade security.</p>
             </div>
         </div>
-
-        <div class="cta-section">
-            <h2>Start a Conversation</h2>
-            <p>Click the chat icon in the bottom right corner to begin chatting with Sameer.</p>
-        </div>
     </div>
 
-    <div class="footer">
+    <div class="cta-section">
+        <h2>Start a Conversation</h2>
+        <p>Click the chat icon in the bottom right corner to begin chatting with Sameer.</p>
+    </div>
+
+    <footer>
         <p>&copy; 2024 Ask Sameer. All rights reserved.</p>
         <p>
             <a href="/privacy_policy.html">Privacy Policy</a> | 
             <a href="/terms_of_service.html">Terms of Service</a>
         </p>
-    </div>
+    </footer>
 
     <!-- Floating Chat Window -->
     <div class="chat-toggle">
@@ -261,6 +319,10 @@
               businessId: '1c8cde77-0306-42dd-a0b6-c366a07651ad'
             })
           });
+
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
 
           const data = await response.json();
           
