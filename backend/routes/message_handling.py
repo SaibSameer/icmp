@@ -126,14 +126,10 @@ def handle_message_route(request, schemas, get_db_connection, call_openai):
 @require_business_api_key
 #@limiter.limit("30 per minute")
 def handle_message():
-    # If it's an OPTIONS request, Flask-CORS should handle it automatically
-    # The decorator @require_business_api_key already handles OPTIONS checks.
-    if request.method == 'OPTIONS':
-        # Return an empty response; decorator/Flask-CORS adds headers.
-        return {}, 204
-
-    # Handle the POST request as before
-    # Access SCHEMAS via current_app
+    # The OPTIONS method is handled by the @require_business_api_key decorator.
+    # We only need to handle the POST request here.
+    
+    # Handle the POST request
     schemas = current_app.config['SCHEMAS']
     return handle_message_route(request, schemas, get_db_connection, call_openai)
 
