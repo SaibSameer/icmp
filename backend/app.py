@@ -500,7 +500,7 @@ def create_app(test_config=None):
 
     # Register blueprints
     log.info("--- Registering blueprints ---")
-    app.register_blueprint(message_bp)
+    app.register_blueprint(message_bp, url_prefix='/api')
     app.register_blueprint(routing_bp)
     app.register_blueprint(templates_bp)
     app.register_blueprint(stages_bp)

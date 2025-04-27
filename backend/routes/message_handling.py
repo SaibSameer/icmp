@@ -17,7 +17,7 @@ message_schema = {
     "type": "object",
     "properties": {
         "business_id": {"type": "string", "format": "uuid"},
-        "user_id": {"type": "string", "format": "uuid"},
+        "user_id": {"type": "string"},
         "message": {"type": "string"},
         "conversation_id": {"type": "string", "format": "uuid"},
         "agent_id": {"type": "string", "format": "uuid"},
@@ -122,11 +122,18 @@ def handle_message_route(request, schemas, get_db_connection, call_openai):
             'error': f"Unexpected error: {str(e)}"
         }), 500
 
-@bp.route('/message', methods=['POST'])
+@bp.route('/message', methods=['POST', 'OPTIONS'])
 @require_business_api_key
 #@limiter.limit("30 per minute")
 def handle_message():
-    #  Access SCHEMAS via current_app
+    # If it's an OPTIONS request, Flask-CORS should handle it automatically
+    # The decorator @require_business_api_key already handles OPTIONS checks.
+    if request.method == 'OPTIONS':
+        # Return an empty response; decorator/Flask-CORS adds headers.
+        return {}, 204
+
+    # Handle the POST request as before
+    # Access SCHEMAS via current_app
     schemas = current_app.config['SCHEMAS']
     return handle_message_route(request, schemas, get_db_connection, call_openai)
 
