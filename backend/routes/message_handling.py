@@ -128,107 +128,23 @@ def handle_message():
     # Handle OPTIONS request directly
     if request.method == 'OPTIONS':
         response = make_response()
-        response.headers.add('Access-Control-Allow-Origin', 'https://asksameer-website-z0ym.onrender.com')
+        # Allow both local and production origins
+        allowed_origins = [
+            'https://asksameer-website-z0ym.onrender.com',
+            'http://localhost:5000',
+            'http://127.0.0.1:5000'
+        ]
+        origin = request.headers.get('Origin')
+        if origin in allowed_origins:
+            response.headers.add('Access-Control-Allow-Origin', origin)
         response.headers.add('Access-Control-Allow-Methods', 'POST, OPTIONS')
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type, businessapikey')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response, 204
 
-    # Handle POST request
-    if not request.is_json:
-        return jsonify({"error": "Request must be JSON"}), 400
-
-    data = request.get_json()
-    try:
-        validate(instance=data, schema=message_schema)
-        user_id = data['user_id']
-        business_id = data['business_id']
-        message_text = data['message']
-        session_id = data.get('session_id') # Optional
-        conversation_id = data.get('conversation_id') # Get conversation_id if provided
-        agent_id = data.get('agent_id') # Get agent_id if provided
-
-        log.info(f"Handling message for user {user_id}, business {business_id}")
-
-        # Create message data dictionary for the MessageHandler
-        message_data = {
-            'business_id': business_id,
-            'user_id': user_id,
-            'content': message_text
-        }
-        
-        # Add optional fields if they exist
-        if conversation_id:
-            message_data['conversation_id'] = conversation_id
-        if agent_id:
-            message_data['agent_id'] = agent_id
-
-        # Get a connection from the pool
-        conn = get_db_connection()
-        try:
-            # Import the MessageHandler here to avoid circular imports
-            from backend.message_processing.message_handler import MessageHandler
-            
-            # Create a MessageHandler instance with a connection pool
-            message_handler = MessageHandler(get_db_pool())
-            
-            # Process the message
-            result = message_handler.process_message(message_data)
-            
-            if result.get('success'):
-                # Return the actual response from the MessageHandler
-                return jsonify({
-                    'success': True,
-                    'response': result.get('response', ''),
-                    'conversation_id': result.get('conversation_id', ''),
-                    'message_id': result.get('message_id', ''),
-                    'response_id': result.get('response_id', ''),
-                    'process_log_id': result.get('process_log_id', ''),
-                    'processing_steps': result.get('processing_steps', []),
-                    # Add a chat_window field for the frontend
-                    'chat_window': {
-                        'user_message': {
-                            'id': result.get('message_id', ''),
-                            'content': message_text,
-                            'timestamp': result.get('created_at', ''),
-                            'status': 'delivered'
-                        },
-                        'ai_response': {
-                            'id': result.get('response_id', ''),
-                            'content': result.get('response', ''),
-                            'timestamp': result.get('created_at', ''),
-                            'status': 'delivered'
-                        }
-                    }
-                })
-            else:
-                return jsonify({
-                    'success': False,
-                    'error': result.get('error', 'Unknown error')
-                }), 500
-
-        except Exception as e:
-            log.error(f"Error processing message: {str(e)}")
-            return jsonify({
-                'success': False,
-                'error': f"Error processing message: {str(e)}"
-            }), 500
-        finally:
-            if conn:
-                release_db_connection(conn)
-
-    except ValidationError as e:
-        log.error(f"Validation error: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': f"Validation error: {str(e)}"
-        }), 400
-    except Exception as e:
-        log.error(f"Unexpected error: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': f"Unexpected error: {str(e)}"
-        }), 500
+    # Handle POST request using the existing route handler
+    schemas = current_app.config['SCHEMAS']
+    return handle_message_route(request, schemas, get_db_connection, call_openai)
 
 @bp.route('/message/logs/<log_id>', methods=['GET'])
 @require_business_api_key
