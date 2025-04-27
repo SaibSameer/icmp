@@ -49,6 +49,7 @@ from backend.routes.users import users_bp
 from backend.routes.template_variables import template_variables_bp
 from backend.routes.llm import llm_bp
 from backend.routes.data_extraction import data_extraction_bp
+from backend.routes.privacy import privacy_bp
 
 # Import here to avoid circular imports
 from create_default_stage import create_default_stage
@@ -498,6 +499,7 @@ def create_app(test_config=None):
                 release_db_connection(conn)
 
     # Register blueprints
+    log.info("--- Registering blueprints ---")
     app.register_blueprint(message_bp)
     app.register_blueprint(routing_bp)
     app.register_blueprint(templates_bp)
@@ -512,6 +514,7 @@ def create_app(test_config=None):
     app.register_blueprint(template_variables_bp)
     app.register_blueprint(llm_bp)
     app.register_blueprint(data_extraction_bp)
+    app.register_blueprint(privacy_bp)
     
     # Setup Facebook Messenger routes
     setup_messenger_routes(app)
