@@ -308,7 +308,7 @@
 
         try {
           // Send message to backend
-          const response = await fetch('https://icmp-events-api.onrender.com/api/message', {
+          const response = await fetch('/api/message', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
