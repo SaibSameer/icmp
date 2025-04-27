@@ -313,13 +313,14 @@
             headers: {
               'Content-Type': 'application/json',
               'Accept': 'application/json',
-              'businessapikey': '1c8cde77-0306-42dd-a0b6-c366a07651ad' // Using business ID as API key for now
+              'businessapikey': '1c89b999d0e4e0793e88daec19b40cf43fb37e305d5f03307defd18462b66af6'
             },
             body: JSON.stringify({
               message: message,
-              business_id: '1c8cde77-0306-42dd-a0b6-c366a07651ad',
+              business_id: '274d3059-062d-46be-96c0-ceb6c11e9cab',
               user_id: 'website-user'
             }),
+            mode: 'cors',
             credentials: 'include' // Include cookies
           });
 
