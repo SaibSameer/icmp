@@ -818,11 +818,11 @@ Lines: 103
 ================================================================================
 File: App.js
 Path: .\front-end\src\App.js
-Size: 5422
-Modified: 2025-04-25T12:58:31.494731
+Size: 5668
+Modified: 2025-04-26T10:42:00.132158
 Created: 2025-03-28T18:55:14.288411
-Hash: 02254cafa96150b73a03f9a1994de8815253b42c6004db52d56cc0d965ef788b
-Lines: 173
+Hash: d8853cb16512adf3f6a0c42adaba420bba5e7572201f0b6732d12d067fb0775d
+Lines: 180
 ================================================================================
 // src/App.js
 import React from 'react';
@@ -833,6 +833,7 @@ import BusinessDetailsView from './components/BusinessDetailsView/BusinessDetail
 import StageManager from './components/StageManager';
 import TemplateEditor from './components/TemplateEditor';
 import TemplateManagement from './components/TemplateManagement';
+import MessagePortal from './components/MessagePortal';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Header from './components/Header';
@@ -881,6 +882,12 @@ function AppContent() {
               ) : (
                 <Navigate to="/login" replace />
               )
+            } 
+          />
+          <Route 
+            path="/messages" 
+            element={
+              isAuthenticated ? <MessagePortal /> : <Navigate to="/login" replace />
             } 
           />
           <Route 
@@ -1001,10 +1008,10 @@ export default App;
 ================================================================================
 File: config.js
 Path: .\front-end\src\config.js
-Size: 1706
-Modified: 2025-04-25T14:18:52.842959
+Size: 1721
+Modified: 2025-04-26T14:57:13.641613
 Created: 2025-04-08T13:30:30.684730
-Hash: 706a4f29a3c5335534bbdf25dc0d83baab44f3d7f8543d7a08599a5ef8b22bfc
+Hash: fe6fb984606a8fd6a835e596c5050151d8770a619fc4483f81cbd94ecc439ad3
 Lines: 67
 ================================================================================
 // Configuration settings for the application
@@ -1012,13 +1019,13 @@ Lines: 67
 // API Configuration
 const API_CONFIG = {
   // Base URL for API requests
-  BASE_URL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000',
+  BASE_URL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || 'https://icmp-api.onrender.com',
   
   // API endpoints
   ENDPOINTS: {
     LOGIN: '/api/save-config',
     MESSAGE: '/api/message',
-    CONVERSATIONS: '/conversations',
+    CONVERSATIONS: '/api/v1/conversations',
     BUSINESSES: '/businesses',
     STAGES: '/api/stages',
     TEMPLATES: '/templates',
@@ -2844,11 +2851,11 @@ export default Footer;
 ================================================================================
 File: Header.js
 Path: .\front-end\src\components\Header.js
-Size: 864
-Modified: 2025-04-17T01:19:07.910165
+Size: 910
+Modified: 2025-04-26T10:42:09.141029
 Created: 2025-04-06T12:17:40.740059
-Hash: bc161fab6c48a29fd85707c83e4578f194a49d5de0be6f310c1c2c087d8bc6b3
-Lines: 31
+Hash: 016eadfaa918f0e902b573f0c9e5678cdd88afc7a94593623de1c04a20347163
+Lines: 32
 ================================================================================
 import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
@@ -2858,6 +2865,7 @@ const Header = () => {
   const menuItems = [
     { text: 'Home', path: '/' },
     { text: 'Business', path: '/business' },
+    { text: 'Messages', path: '/messages' },
     { text: 'Templates', path: '/templates' },
     { text: 'Stages', path: '/stages' }
   ];
@@ -3198,6 +3206,224 @@ function Login({
 }
 
 export default Login;
+
+================================================================================
+File: MessagePortal.js
+Path: .\front-end\src\components\MessagePortal.js
+Size: 7011
+Modified: 2025-04-26T12:56:46.514230
+Created: 2025-04-26T10:41:48.061535
+Hash: 3c9666c365b53d9311097c530a66ba30dd298564a2e329cbe59989a8550f4b7a
+Lines: 208
+================================================================================
+import React, { useState, useEffect } from 'react';
+import {
+  Box,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  CircularProgress,
+  Alert,
+  IconButton,
+  Tooltip,
+  Collapse,
+  TableSortLabel
+} from '@mui/material';
+import { fetchConversationHistory } from '../services/messageService';
+import { format, parseISO } from 'date-fns';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+
+const ConversationRow = ({ conversation, onFetchError }) => {
+  const [open, setOpen] = useState(false);
+
+  const formatNullableDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      return format(parseISO(dateString), 'PPpp');
+    } catch (error) {
+      console.error('Date formatting error:', error, 'Input:', dateString);
+      onFetchError(`Error formatting date: ${dateString}`);
+      return 'Invalid Date';
+    }
+  };
+
+  return (
+    <React.Fragment>
+      <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+        <TableCell>
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+          </IconButton>
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {conversation.user_name || 'Unknown User'} ({conversation.user_id || 'N/A'})
+        </TableCell>
+        <TableCell>{formatNullableDate(conversation.last_updated)}</TableCell>
+        <TableCell>{conversation.session_id || 'N/A'}</TableCell>
+        <TableCell>{conversation.stage_id || 'N/A'}</TableCell>
+        <TableCell align="right">{conversation.messages?.length ?? 0}</TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ margin: 1 }}>
+              <Typography variant="h6" gutterBottom component="div">
+                Messages
+              </Typography>
+              <Table size="small" aria-label="messages">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Timestamp</TableCell>
+                    <TableCell>Sender</TableCell>
+                    <TableCell>Content</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {conversation.messages && conversation.messages.length > 0 ? (
+                    conversation.messages.map((message) => (
+                      <TableRow key={message.message_id}>
+                        <TableCell component="th" scope="row">
+                          {formatNullableDate(message.timestamp)}
+                        </TableCell>
+                        <TableCell>{message.sender ?? 'N/A'}</TableCell>
+                        <TableCell>{message.content ?? 'N/A'}</TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                     <TableRow>
+                       <TableCell colSpan={3} align="center">No messages in this conversation.</TableCell>
+                     </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </React.Fragment>
+  );
+};
+
+const MessagePortal = () => {
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchConversations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await fetchConversationHistory();
+      data.sort((a, b) => {
+          const dateA = a.last_updated ? parseISO(a.last_updated) : null;
+          const dateB = b.last_updated ? parseISO(b.last_updated) : null;
+          if (!dateA && !dateB) return 0;
+          if (!dateA) return 1;
+          if (!dateB) return -1;
+          return dateB - dateA;
+      });
+      setConversations(data);
+    } catch (err) {
+      const errorMessage = err.message || 'Failed to fetch conversations. Please try again later.';
+      setError(errorMessage);
+      console.error('Error fetching conversations:', err);
+      setConversations([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChildError = (errorMessage) => {
+    if (!error) {
+      setError(errorMessage);
+    }
+  };
+
+  useEffect(() => {
+    fetchConversations();
+  }, []);
+
+  return (
+    <Box sx={{ width: '100%', mt: 3 }}>
+      <Typography variant="h4" gutterBottom>
+        Business Conversations
+      </Typography>
+
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+        <TextField
+          label="Search conversations (coming soon)"
+          variant="outlined"
+          size="small"
+          sx={{ width: 300 }}
+          disabled
+        />
+        <span>
+          <Tooltip title="Refresh conversations">
+            <IconButton onClick={fetchConversations} disabled={loading}>
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </span>
+      </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
+      <Paper sx={{ width: '100%', mb: 2 }}>
+        <TableContainer>
+          <Table aria-label="collapsible table">
+            <TableHead>
+              <TableRow>
+                <TableCell />
+                <TableCell>User (ID)</TableCell>
+                <TableCell>Last Updated</TableCell>
+                <TableCell>Session ID</TableCell>
+                <TableCell>Stage ID</TableCell>
+                <TableCell align="right">Messages</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} align="center">
+                    <CircularProgress />
+                  </TableCell>
+                </TableRow>
+              ) : conversations.length === 0 && !error ? (
+                 <TableRow>
+                   <TableCell colSpan={6} align="center">
+                     No conversations found for this business.
+                   </TableCell>
+                 </TableRow>
+              ) : (
+                 conversations.map((conversation) => (
+                  <ConversationRow key={conversation.conversation_id} conversation={conversation} onFetchError={handleChildError} />
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </Box>
+  );
+};
+
+export default MessagePortal; 
 
 ================================================================================
 File: MyInterface.js
@@ -12029,10 +12255,10 @@ export default debugService;
 ================================================================================
 File: messageService.js
 Path: .\front-end\src\services\messageService.js
-Size: 3548
-Modified: 2025-04-17T01:19:10.721102
+Size: 3561
+Modified: 2025-04-26T12:44:33.588336
 Created: 2025-04-09T12:43:00.851293
-Hash: 76575dce24fa6a1e86ca7ef6a6db5a4febfd2cc7d076976ffdd533562141aa32
+Hash: 39c78c51a985f58552bc6cc85616cdd8a054ec702cc4233be5d1fa3dc755c21e
 Lines: 121
 ================================================================================
 // Message service for handling message sending and conversation history
@@ -12117,7 +12343,7 @@ export const fetchConversationHistory = async () => {
     const { userId, businessId } = getStoredCredentials();
     
     const response = await fetch(
-      `${API_CONFIG.ENDPOINTS.CONVERSATIONS}/${userId}?business_id=${businessId}`,
+      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CONVERSATIONS}/?business_id=${businessId}`,
       {
         method: 'GET',
         headers: getAuthHeaders(),
@@ -13217,6 +13443,189 @@ Lines: 1
 module.exports = 'test-file-stub';
 
 ================================================================================
+File: App.js
+Path: .\old-_archive_files\front-end\src\App.js
+Size: 5422
+Modified: 2025-04-25T13:07:15.296911
+Created: 2025-04-25T13:07:15.296911
+Hash: 02254cafa96150b73a03f9a1994de8815253b42c6004db52d56cc0d965ef788b
+Lines: 173
+================================================================================
+// src/App.js
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Container, CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
+import Login from './components/Login';
+import BusinessDetailsView from './components/BusinessDetailsView/BusinessDetailsView.jsx';
+import StageManager from './components/StageManager';
+import TemplateEditor from './components/TemplateEditor';
+import TemplateManagement from './components/TemplateManagement';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import Home from './components/Home';
+import StageViewPage from './pages/StageViewPage';
+import MessageDebugPage from './pages/MessageDebugPage';
+import { UI_CONFIG } from './config';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import './App.css';
+
+const theme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+});
+
+function AppContent() {
+  const { isAuthenticated, userId, businessId, businessApiKey, setUserId, setBusinessId, setBusinessApiKey, setIsAuthenticated } = useAuth();
+  const [snackbar, setSnackbar] = React.useState({ open: false, message: '', severity: 'success' });
+
+  const handleSnackbarOpen = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <Header />
+      <Container component="main" sx={{ flexGrow: 1, py: 3 }}>
+        <Routes>
+          <Route 
+            path="/" 
+            element={
+              isAuthenticated ? (
+                <Navigate to="/business" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } 
+          />
+          <Route 
+            path="/stages" 
+            element={
+              isAuthenticated ? <StageManager /> : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/stages/:stageId" 
+            element={
+              isAuthenticated ? <StageViewPage /> : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/stage-management/business_id=:businessId/agent_id=:agentId" 
+            element={
+              isAuthenticated ? <StageManager /> : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/debug/conversation/:conversationId" 
+            element={
+              isAuthenticated ? <MessageDebugPage /> : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/login" 
+            element={
+              isAuthenticated ? (
+                <Navigate to="/business" replace />
+              ) : (
+                <Login 
+                  userId={userId}
+                  setUserId={setUserId}
+                  businessId={businessId}
+                  setBusinessId={setBusinessId}
+                  businessApiKey={businessApiKey}
+                  setBusinessApiKey={setBusinessApiKey}
+                  setIsAuthenticated={setIsAuthenticated}
+                  handleSnackbarOpen={handleSnackbarOpen}
+                />
+              )
+            } 
+          />
+          <Route 
+            path="/business" 
+            element={
+              isAuthenticated ? (
+                <BusinessDetailsView />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } 
+          />
+          <Route 
+            path="/templates" 
+            element={
+              isAuthenticated ? (
+                <TemplateManagement />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } 
+          />
+          <Route 
+            path="/template-editor/:templateId" 
+            element={
+              isAuthenticated ? (
+                <TemplateEditor />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } 
+          />
+          <Route 
+            path="/template-editor/new" 
+            element={
+              isAuthenticated ? (
+                <TemplateEditor />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            } 
+          />
+        </Routes>
+      </Container>
+      <Footer />
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={UI_CONFIG.SNACKBAR.AUTO_HIDE_DURATION} 
+        onClose={handleSnackbarClose}
+        anchorOrigin={UI_CONFIG.SNACKBAR.POSITION}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
+    </Router>
+  );
+}
+
+export default App;
+
+================================================================================
 File: config.js
 Path: .\old-_archive_files\front-end\src\config.js
 Size: 1393
@@ -13287,6 +13696,47 @@ const UI_CONFIG = {
 };
 
 export { API_CONFIG, AUTH_CONFIG, UI_CONFIG };
+
+================================================================================
+File: Header.js
+Path: .\old-_archive_files\front-end\src\components\Header.js
+Size: 864
+Modified: 2025-04-25T13:07:15.857317
+Created: 2025-04-25T13:07:15.857317
+Hash: bc161fab6c48a29fd85707c83e4578f194a49d5de0be6f310c1c2c087d8bc6b3
+Lines: 31
+================================================================================
+import React from 'react';
+import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+
+const Header = () => {
+  const menuItems = [
+    { text: 'Home', path: '/' },
+    { text: 'Business', path: '/business' },
+    { text: 'Templates', path: '/templates' },
+    { text: 'Stages', path: '/stages' }
+  ];
+
+  return (
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          ICMP Events API
+        </Typography>
+        <Box>
+          {menuItems.map((item, index) => (
+            <Button key={index} color="inherit" component={RouterLink} to={item.path}>
+              {item.text}
+            </Button>
+          ))}
+        </Box>
+      </Toolbar>
+    </AppBar>
+  );
+};
+
+export default Header;
 
 ================================================================================
 File: StageManager.js
@@ -16616,6 +17066,137 @@ const authService = {
 };
 
 export default authService;
+
+================================================================================
+File: messageService.js
+Path: .\old-_archive_files\front-end\src\services\messageService.js
+Size: 3548
+Modified: 2025-04-25T13:07:18.251592
+Created: 2025-04-25T13:07:18.251592
+Hash: 76575dce24fa6a1e86ca7ef6a6db5a4febfd2cc7d076976ffdd533562141aa32
+Lines: 121
+================================================================================
+// Message service for handling message sending and conversation history
+import { API_CONFIG } from '../config';
+import { getAuthHeaders, getStoredCredentials } from './authService';
+
+/**
+ * Handles API responses and throws errors for non-OK responses
+ * @param {Response} response - The fetch Response object
+ * @returns {Promise<any>} - The parsed response data
+ * @throws {Error} - Throws an error with details from the response if not ok
+ */
+const handleApiResponse = async (response) => {
+  // Handle non-OK responses
+  if (!response.ok) {
+    // Try to get detailed error from response
+    try {
+      const errorData = await response.json();
+      throw new Error(errorData.message || errorData.error || `API error: ${response.status}`);
+    } catch (jsonError) {
+      // If response isn't valid JSON, use status text
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+  }
+  
+  // For successful responses, parse JSON or return empty object
+  try {
+    return await response.json();
+  } catch (error) {
+    // Some successful responses may not have a body (e.g., 204 No Content)
+    return {};
+  }
+};
+
+/**
+ * Send a message to the API
+ * @param {string} message - Message content
+ * @param {Object} options - Additional options
+ * @param {string} options.conversationId - Optional conversation ID
+ * @param {string} options.agentId - Optional agent ID
+ * @returns {Promise<Object>} - Response data
+ */
+export const sendMessage = async (message, options = {}) => {
+  try {
+    const { userId, businessId } = getStoredCredentials();
+    
+    const requestData = {
+      business_id: businessId,
+      user_id: userId,
+      message: message
+    };
+    
+    // Add optional fields if provided
+    if (options.conversationId) {
+      requestData.conversation_id = options.conversationId;
+    }
+    
+    if (options.agentId) {
+      requestData.agent_id = options.agentId;
+    }
+    
+    const response = await fetch(`${API_CONFIG.ENDPOINTS.MESSAGE}`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(requestData)
+    });
+    
+    return await handleApiResponse(response);
+  } catch (error) {
+    console.error('Send message error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch conversation history for a user
+ * @returns {Promise<Array>} - Conversation history
+ */
+export const fetchConversationHistory = async () => {
+  try {
+    const { userId, businessId } = getStoredCredentials();
+    
+    const response = await fetch(
+      `${API_CONFIG.ENDPOINTS.CONVERSATIONS}/${userId}?business_id=${businessId}`,
+      {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      }
+    );
+    
+    return await handleApiResponse(response);
+  } catch (error) {
+    console.error('Fetch conversation history error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Test backend connection
+ * @returns {Promise<Object>} - Connection test result
+ */
+export const testConnection = async () => {
+  try {
+    const response = await fetch(`/`, {
+      method: 'GET',
+      credentials: 'include'
+    });
+    
+    const text = await response.text();
+    return { success: true, message: text };
+  } catch (error) {
+    console.error('Connection test error:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export default {
+  sendMessage,
+  fetchConversationHistory,
+  testConnection
+};
 
 ================================================================================
 File: stageService.js

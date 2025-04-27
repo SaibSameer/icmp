@@ -3665,11 +3665,11 @@ Lines: 1616
 ================================================================================
 File: message_handling_render.html
 Path: .\message_handling_render.html
-Size: 17674
-Modified: 2025-04-26T01:09:54.535033
+Size: 21629
+Modified: 2025-04-26T01:27:29.257472
 Created: 2025-04-19T23:07:10.699286
-Hash: 8e2cd2ea97e27880c48bee10cac7fa235137aa84ec80d1a4dfdcc17dde77f7f5
-Lines: 512
+Hash: d861cfa4abea1bfb6d818a2eb5c375dcb9dd2fc5d4d199cc5559a37c36c09ca0
+Lines: 595
 ================================================================================
 <!DOCTYPE html>
 <html lang="en">
@@ -3939,6 +3939,12 @@ Lines: 512
             </div>
             
             <div class="form-group">
+                <label for="ownerId">Owner ID</label>
+                <input id="ownerId" type="text" placeholder="Enter Owner ID">
+                <button onclick="lookupOwner()">Look Up Owner</button>
+            </div>
+            
+            <div class="form-group">
                 <label for="apiKey">API Key</label>
                 <input id="apiKey" type="password" placeholder="Enter API Key">
             </div>
@@ -4061,43 +4067,57 @@ Lines: 512
         // Login function
         async function login() {
             const businessId = document.getElementById('businessId').value.trim();
+            const ownerId = document.getElementById('ownerId').value.trim();
             const apiKey = document.getElementById('apiKey').value.trim();
             
-            if (!businessId || !apiKey) {
-                showError('Business ID and API Key are required to login');
+            if (!businessId || !ownerId || !apiKey) {
+                showError('Business ID, Owner ID, and API Key are required to login');
                 return;
             }
             
-            updateStatus('Verifying credentials...');
+            updateStatus('Verifying owner...');
+            
+            // Prepare login data for POST body
+            const loginData = {
+                userId: ownerId,
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
             
             try {
-                // Make the actual request with proper CORS headers
-                const response = await fetch(`${API_BASE_URL}/api/validate-credentials?business_id=${encodeURIComponent(businessId)}&api_key=${encodeURIComponent(apiKey)}`, {
-                    method: 'GET',
+                // Change URL to /api/verify-owner and method to POST
+                const response = await fetch(`${API_BASE_URL}/api/verify-owner`, {
+                    method: 'POST', 
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'businessapikey': apiKey,
-                        'Origin': window.location.origin || 'http://localhost:8000'
+                        // 'businessapikey': apiKey // Usually not needed for verify-owner if key is in body
                     },
+                    body: JSON.stringify(loginData), // Send data in body
                     mode: 'cors',
-                    credentials: 'include'
+                    credentials: 'include' // Include cookies if needed by backend
                 });
                 
                 const data = await response.json();
                 
-                if (!response.ok || !data.valid) {
-                    throw new Error(data.message || 'Invalid credentials');
+                // Check response based on /api/verify-owner structure
+                if (!response.ok || !data.success) { 
+                    throw new Error(data.error || 'Owner verification failed');
                 }
                 
-                // Only store credentials if verification succeeds
+                // Store credentials if verification succeeds
                 localStorage.setItem('businessApiKey', apiKey);
                 localStorage.setItem('businessId', businessId);
+                localStorage.setItem('ownerId', ownerId); // Store owner ID
                 
                 isLoggedIn = true;
-                showSuccess('Login successful!');
-                document.getElementById('loginStatus').textContent = 'Logged in';
+                showSuccess('Login successful! Owner verification confirmed.'); // Update message
+                document.getElementById('loginStatus').textContent = 'Logged in as Owner'; // Update status text
                 document.getElementById('loginStatus').className = 'logged-in';
+                 // Optionally disable login button after success
+                document.getElementById('loginButton').textContent = 'Logged In';
+                document.getElementById('loginButton').disabled = true;
+
             } catch (error) {
                 console.error('Login error:', error);
                 isLoggedIn = false;
@@ -4107,6 +4127,10 @@ Lines: 512
                 // Clear stored credentials on failure
                 localStorage.removeItem('businessApiKey');
                 localStorage.removeItem('businessId');
+                localStorage.removeItem('ownerId'); // Clear owner ID on failure
+                 // Re-enable login button on failure
+                document.getElementById('loginButton').textContent = 'Login';
+                document.getElementById('loginButton').disabled = false;
             }
         }
         
@@ -4178,6 +4202,65 @@ Lines: 512
                 showError(`Failed to send message: ${error.message}`);
             } finally {
                 document.getElementById('sendButton').disabled = false;
+            }
+        }
+        
+        // Look up owner ID function (Copied from message_handling.html)
+        async function lookupOwner() {
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!businessId || !apiKey) {
+                showError('Business ID and API Key are required to look up owner');
+                return;
+            }
+            
+            // Prepare lookup data
+            const lookupData = {
+                businessId: businessId,
+                businessApiKey: apiKey
+            };
+            
+            updateStatus('Looking up owner...');
+            
+            try {
+                const url = `${API_BASE_URL}/api/lookup-owner`;
+                console.log('Looking up owner with URL:', url);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(lookupData),
+                    credentials: 'include', // Include cookies
+                    mode: 'cors'
+                });
+                
+                if (!response.ok) {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
+                    } else {
+                        const text = await response.text();
+                        throw new Error(`Lookup failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
+                    }
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('ownerId').value = data.owner_id;
+                    showSuccess(`Owner ID found: ${data.owner_id}`);
+                } else {
+                    throw new Error(data.error || 'Failed to find owner ID');
+                }
+                
+            } catch (error) {
+                console.error('Lookup error:', error);
+                showError(`Failed to look up owner ID: ${error.message}`);
             }
         }
     </script>
@@ -10712,6 +10795,512 @@ Lines: 860
             recentLogsArea.innerHTML = html;
         }
     </script>
+</body>
+</html> 
+
+================================================================================
+File: asksameer.html
+Path: .\WEBSITE\asksameer.html
+Size: 8962
+Modified: 2025-01-31T21:45:19.286835
+Created: 2025-04-26T03:31:57.486895
+Hash: 28dfb4777cc93a0f11d62252fbe6ad10482a1e32788c41a3de37bb0abce0c1d6
+Lines: 346
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AskSameer - Your Smart Virtual Assistant</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9f9f9;
+      color: #333;
+      overflow-x: hidden;
+    }
+    h1, h2, h3 {
+      font-weight: 700;
+      color: #2c3e50;
+    }
+    p {
+      line-height: 1.8;
+      font-size: 18px;
+    }
+    a {
+      text-decoration: none;
+      color: #3498db;
+    }
+    a:hover {
+      color: #2980b9;
+    }
+
+    /* Header Section */
+    header {
+      background: linear-gradient(135deg, #2c3e50, #34495e);
+      color: white;
+      padding: 150px 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    header h1 {
+      font-size: 4rem;
+      margin: 0;
+      animation: fadeInDown 2s ease-in-out;
+    }
+    header p {
+      font-size: 1.5rem;
+      animation: fadeInUp 2s ease-in-out;
+    }
+    .logo {
+      width: 150px;
+      margin-bottom: 20px;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    /* Navigation Bar */
+    nav {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(44, 62, 80, 0.9);
+      z-index: 1000;
+      padding: 15px 0;
+      text-align: center;
+    }
+    nav a {
+      color: white;
+      margin: 0 20px;
+      font-size: 1.1rem;
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: #3498db;
+    }
+
+    /* About Us Section */
+    .about-us {
+      padding: 100px 20px;
+      text-align: center;
+      background: white;
+    }
+    .about-us h2 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      animation: fadeIn 2s ease-in-out;
+    }
+    .profile-card {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      margin-top: 40px;
+    }
+    .profile-card img {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      border: 4px solid #3498db;
+      animation: float 4s ease-in-out infinite;
+    }
+    .profile-card p {
+      max-width: 600px;
+      text-align: left;
+    }
+
+    /* Mission Statement Section */
+    .mission {
+      padding: 100px 20px;
+      background: #f4f4f4;
+      text-align: center;
+    }
+    .mission h2 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      animation: fadeIn 2s ease-in-out;
+    }
+    .mission p {
+      max-width: 800px;
+      margin: 0 auto;
+      animation: fadeIn 2s ease-in-out;
+    }
+
+    /* Case Studies Section */
+    .case-studies {
+      padding: 100px 20px;
+      background: white;
+      text-align: center;
+    }
+    .case-studies h2 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      animation: fadeIn 2s ease-in-out;
+    }
+    .cards {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+    .card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    /* Customer Reviews Section */
+    .reviews {
+      padding: 100px 20px;
+      background: #f4f4f4;
+      text-align: center;
+    }
+    .reviews h2 {
+      font-size: 3rem;
+      margin-bottom: 20px;
+      animation: fadeIn 2s ease-in-out;
+    }
+    .review-slider {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      overflow-x: auto;
+      padding: 20px 0;
+    }
+    .review {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      text-align: left;
+    }
+    .review img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    /* Footer Section */
+    footer {
+      background: #2c3e50;
+      color: white;
+      text-align: center;
+      padding: 50px 20px;
+    }
+    footer a {
+      color: #3498db;
+    }
+    .social-icons {
+      margin-bottom: 20px;
+    }
+    .social-icons a {
+      margin: 0 10px;
+      font-size: 24px;
+      color: white;
+      transition: color 0.3s;
+    }
+    .social-icons a:hover {
+      color: #3498db;
+    }
+
+    /* Floating Chat Window */
+    .chat-window {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      animation: bounce 2s infinite;
+    }
+    .chat-window p {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(50px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <nav>
+    <a href="#about">About Us</a>
+    <a href="#mission">Our Mission</a>
+    <a href="#case-studies">Case Studies</a>
+    <a href="#reviews">Customer Reviews</a>
+    <a href="#contact">Contact Us</a>
+  </nav>
+
+  <!-- Header Section -->
+  <header>
+    <img src="logo.png" alt="AskSameer Logo" class="logo">
+    <h1>AskSameer</h1>
+    <p>Your Smart Virtual Assistant for Business Success</p>
+  </header>
+
+  <!-- About Us Section -->
+  <section id="about" class="about-us">
+    <h2>About Us</h2>
+    <div class="profile-card">
+      <img src="sameer.jpg" alt="Sameer's Photo">
+      <p>
+        Meet Sameer, your AI-powered virtual assistant. Designed to streamline business operations, Sameer helps you automate tasks, improve productivity, and achieve your goals faster.
+      </p>
+    </div>
+  </section>
+
+  <!-- Mission Statement Section -->
+  <section id="mission" class="mission">
+    <h2>Our Mission</h2>
+    <p>
+      Our mission is to empower businesses with AI-driven solutions that simplify workflows, reduce costs, and drive growth. We believe in innovation, efficiency, and excellence.
+    </p>
+  </section>
+
+  <!-- Case Studies Section -->
+  <section id="case-studies" class="case-studies">
+    <h2>Case Studies</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Increased Productivity</h3>
+        <p>Helped a client automate repetitive tasks, saving 20+ hours per week.</p>
+      </div>
+      <div class="card">
+        <h3>Boosted Revenue</h3>
+        <p>Improved customer engagement, leading to a 30% increase in sales.</p>
+      </div>
+      <div class="card">
+        <h3>Streamlined Operations</h3>
+        <p>Reduced operational costs by 25% through AI-driven solutions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Customer Reviews Section -->
+  <section id="reviews" class="reviews">
+    <h2>Customer Reviews</h2>
+    <div class="review-slider">
+      <div class="review">
+        <img src="user1.jpg" alt="User 1">
+        <p>"AskSameer transformed our business! Highly recommended."</p>
+      </div>
+      <div class="review">
+        <img src="user2.jpg" alt="User 2">
+        <p>"The AI assistant is a game-changer. It saved us so much time!"</p>
+      </div>
+      <div class="review">
+        <img src="user3.jpg" alt="User 3">
+        <p>"Incredible results. Our productivity has never been higher."</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Section -->
+  <footer id="contact">
+    <div class="social-icons">
+      <a href="https://www.facebook.com/profile.php?id=61572267485260"><i class="fab fa-facebook"></i></a>
+      <a href="https://www.instagram.com/asksameer.ai/"><i class="fab fa-instagram"></i></a>
+    </div>
+    <p>Email: info@asksameer.com | Phone: +962 7777 753704 </p>
+    <p>&copy; 2025 AskSameer. All rights reserved.</p>
+  </footer>
+
+  <!-- Floating Chat Window -->
+  <div class="chat-window">
+    <p>Hi! I'm Sameer. How can I assist you today?</p>
+  </div>
+
+</body>
+</html>
+
+================================================================================
+File: index.html
+Path: .\WEBSITE\index.html
+Size: 1576
+Modified: 2025-04-26T03:29:06.425453
+Created: 2025-04-26T03:29:04.617794
+Hash: 43d3399e698f609ae27198f14067e76fca6905863d280931ebb365e9ad212502
+Lines: 59
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ask Sameer - Welcome</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            padding: 40px 0;
+            background-color: #fff;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .subtitle {
+            color: #666;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        .footer a {
+            color: #333;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Welcome to Ask Sameer</h1>
+        <p class="subtitle">Your trusted source for information and assistance</p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; 2024 Ask Sameer. All rights reserved.</p>
+        <p><a href="/privacy_policy.html">Privacy Policy</a></p>
+    </div>
+</body>
+</html> 
+
+================================================================================
+File: privacy_policy.html
+Path: .\WEBSITE\privacy_policy.html
+Size: 2685
+Modified: 2025-04-26T03:20:29.838512
+Created: 2025-04-26T03:19:02.294245
+Hash: 05d28f0cb9272969b5c1e397b9cee12d820d044d747d85733f0292dac2f6c8e7
+Lines: 71
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - ICMP Events API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Privacy Policy</h1>
+    <p>Last updated: April 25, 2024</p>
+
+    <h2>1. Introduction</h2>
+    <p>This Privacy Policy describes how ICMP Events API ("we", "us", or "our") collects, uses, and shares your personal information when you use our services through Facebook integration.</p>
+
+    <h2>2. Information We Collect</h2>
+    <p>We collect the following types of information:</p>
+    <ul>
+        <li>Information you provide directly to us (e.g., business information, user messages)</li>
+        <li>Information from Facebook (e.g., user IDs, basic profile information)</li>
+        <li>Conversation data and message content</li>
+        <li>Usage data and analytics</li>
+    </ul>
+
+    <h2>3. How We Use Your Information</h2>
+    <p>We use the collected information to:</p>
+    <ul>
+        <li>Provide and maintain our services</li>
+        <li>Process and respond to user messages</li>
+        <li>Improve our services and user experience</li>
+        <li>Communicate with you about our services</li>
+    </ul>
+
+    <h2>4. Data Storage and Security</h2>
+    <p>We implement appropriate security measures to protect your personal information. Your data is stored securely and accessed only by authorized personnel.</p>
+
+    <h2>5. Data Sharing</h2>
+    <p>We do not sell your personal information. We may share your information with:</p>
+    <ul>
+        <li>Service providers who assist in our operations</li>
+        <li>When required by law or to protect our rights</li>
+    </ul>
+
+    <h2>6. Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul>
+        <li>Access your personal information</li>
+        <li>Request correction of your information</li>
+        <li>Request deletion of your information</li>
+        <li>Opt-out of certain data processing</li>
+    </ul>
+
+    <h2>7. Contact Us</h2>
+    <p>If you have any questions about this Privacy Policy, please contact us at:</p>
+    <p>Email: saibtaimeh@gmail.com</p>
+
+    <h2>8. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.</p>
 </body>
 </html> 
 

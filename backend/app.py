@@ -94,6 +94,7 @@ def create_app(test_config=None):
                      "https://icmp-events-frontend.onrender.com",
                      "https://icmp.onrender.com",
                      "https://icmp-api.onrender.com",
+                     "https://*.onrender.com",  # Allow all Render subdomains
                      "null",
                      "file://"  # Allow requests from file:// protocol
                  ],

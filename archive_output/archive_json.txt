@@ -1224,11 +1224,11 @@ Lines: 141
 ================================================================================
 File: package.json
 Path: .\front-end\package.json
-Size: 1539
-Modified: 2025-04-19T15:57:50.146394
+Size: 1566
+Modified: 2025-04-26T10:48:40.795439
 Created: 2025-03-28T18:55:58.457887
-Hash: beb1aa70eefae422c4e324d9a7727355b7563a6f8fce765d378bb02d0f6cd22f
-Lines: 60
+Hash: 2b3d518ac939c318c686f37307d99f4fa9594e173509e8dc105415acd58224a2
+Lines: 61
 ================================================================================
 {
   "name": "icmp-ui",
@@ -1241,15 +1241,16 @@ Lines: 60
     "@mui/material": "^5.15.11",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "ajv": "^8.12.0",
+    "ajv-keywords": "^5.1.0",
     "axios": "^1.8.4",
+    "date-fns": "^4.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.30.0",
     "react-scripts": "5.0.1",
     "serve": "^14.2.1",
-    "web-vitals": "^2.1.4",
-    "ajv": "^8.12.0",
-    "ajv-keywords": "^5.1.0"
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -99,69 +99,123 @@ if __name__ == '__main__':
 ================================================================================
 File: check_deployment.py
 Path: .\check_deployment.py
-Size: 2049
-Modified: 2025-04-18T17:28:54.997966
+Size: 3886
+Modified: 2025-04-26T14:57:40.720087
 Created: 2025-04-18T17:28:52.170515
-Hash: 6860cf7b43a32d075b2460da1aed0b739753d88ca1ff1c7fd440e9966b9c2824
-Lines: 61
+Hash: d8c620d20fd65f7671f388b7fd0015c5edbd49cfa4066e878dca7928a6027dfd
+Lines: 115
 ================================================================================
 #!/usr/bin/env python
-# check_deployment.py - Script to check if the deployment was successful
+# check_deployment.py - Script to check deployment status
 
-import requests
-import sys
-import time
 import os
+import sys
+import requests
+import json
+import logging
 from dotenv import load_dotenv
 
-def check_health_endpoint():
-    """Check if the health endpoint is responding."""
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+    ]
+)
+log = logging.getLogger(__name__)
+
+# Load environment variables
+load_dotenv()
+
+# Configuration
+API_URL = os.getenv('REACT_APP_API_URL', 'https://icmp-api.onrender.com')
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://icmp.onrender.com')
+FB_VERIFY_TOKEN = os.getenv('FB_VERIFY_TOKEN')
+FB_PAGE_ACCESS_TOKEN = os.getenv('FB_PAGE_ACCESS_TOKEN')
+
+def check_api_health():
+    """Check if the API is healthy"""
     try:
-        response = requests.get("http://localhost:5000/health")
+        response = requests.get(f"{API_URL}/health")
         if response.status_code == 200:
-            print("✅ Health endpoint is responding correctly.")
+            log.info(f"API health check passed: {response.json()}")
             return True
         else:
-            print(f"❌ Health endpoint returned status code {response.status_code}.")
+            log.error(f"API health check failed with status code {response.status_code}: {response.text}")
             return False
-    except requests.exceptions.ConnectionError:
-        print("❌ Could not connect to the application. Is it running?")
+    except Exception as e:
+        log.error(f"Error checking API health: {str(e)}")
         return False
 
+def check_facebook_integration():
+    """Check if Facebook integration is configured"""
+    if not FB_VERIFY_TOKEN:
+        log.error("FB_VERIFY_TOKEN is not set")
+        return False
+    
+    if not FB_PAGE_ACCESS_TOKEN:
+        log.error("FB_PAGE_ACCESS_TOKEN is not set")
+        return False
+    
+    log.info("Facebook integration tokens are set")
+    return True
+
 def check_database_connection():
-    """Check if the database connection is working."""
+    """Check if the database connection is working"""
     try:
-        response = requests.get("http://localhost:5000/ping")
-        if response.status_code == 200:
-            print("✅ Database connection is working.")
+        from backend.db import get_db_connection, release_db_connection
+        
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        result = cursor.fetchone()
+        release_db_connection(conn)
+        
+        if result and result[0] == 1:
+            log.info("Database connection is working")
             return True
         else:
-            print(f"❌ Database connection check returned status code {response.status_code}.")
+            log.error("Database connection test failed")
             return False
-    except requests.exceptions.ConnectionError:
-        print("❌ Could not connect to the application. Is it running?")
+    except Exception as e:
+        log.error(f"Error checking database connection: {str(e)}")
+        return False
+
+def check_frontend_connection():
+    """Check if the frontend can connect to the API"""
+    try:
+        response = requests.get(f"{FRONTEND_URL}")
+        if response.status_code == 200:
+            log.info(f"Frontend is accessible: {FRONTEND_URL}")
+            return True
+        else:
+            log.error(f"Frontend is not accessible with status code {response.status_code}")
+            return False
+    except Exception as e:
+        log.error(f"Error checking frontend: {str(e)}")
         return False
 
 def main():
-    """Main function to check the deployment."""
-    print("Checking deployment status...")
+    """Main function to run all checks"""
+    log.info("Starting deployment checks...")
     
-    # Wait for the application to start
-    print("Waiting for the application to start (30 seconds)...")
-    time.sleep(30)
+    api_health = check_api_health()
+    facebook_integration = check_facebook_integration()
+    database_connection = check_database_connection()
+    frontend_connection = check_frontend_connection()
     
-    # Check health endpoint
-    health_ok = check_health_endpoint()
+    log.info("Deployment check results:")
+    log.info(f"API Health: {'✅' if api_health else '❌'}")
+    log.info(f"Facebook Integration: {'✅' if facebook_integration else '❌'}")
+    log.info(f"Database Connection: {'✅' if database_connection else '❌'}")
+    log.info(f"Frontend Connection: {'✅' if frontend_connection else '❌'}")
     
-    # Check database connection
-    db_ok = check_database_connection()
-    
-    # Print summary
-    if health_ok and db_ok:
-        print("\n✅ Deployment successful! The application is running correctly.")
+    if all([api_health, facebook_integration, database_connection, frontend_connection]):
+        log.info("All checks passed! Deployment is working correctly.")
         return 0
     else:
-        print("\n❌ Deployment check failed. Please check the logs for errors.")
+        log.error("Some checks failed. Please fix the issues above.")
         return 1
 
 if __name__ == "__main__":
@@ -2049,11 +2103,11 @@ if __name__ == "__main__":
 ================================================================================
 File: app.py
 Path: .\backend\app.py
-Size: 22525
-Modified: 2025-04-25T19:16:52.204065
+Size: 21550
+Modified: 2025-04-26T14:56:51.731743
 Created: 2025-03-30T15:12:25.167734
-Hash: 3b8374d3791b7535aed6bd3e473c68efc70da0c1e7f265ec2f3f5fba6090e88a
-Lines: 550
+Hash: 83c6d64f8a724301b036bfdd44b34c370b45d35298dd2d2a7fa7c6654a6e2144
+Lines: 533
 ================================================================================
 #!/usr/bin/env python
 # app.py - Main Flask application entry point
@@ -2151,6 +2205,7 @@ def create_app(test_config=None):
                      "https://icmp-events-frontend.onrender.com",
                      "https://icmp.onrender.com",
                      "https://icmp-api.onrender.com",
+                     "https://*.onrender.com",  # Allow all Render subdomains
                      "null",
                      "file://"  # Allow requests from file:// protocol
                  ],
@@ -2554,38 +2609,20 @@ def create_app(test_config=None):
                 release_db_connection(conn)
 
     # Register blueprints
-    app.register_blueprint(message_bp, url_prefix='/api')
+    app.register_blueprint(message_bp)
     app.register_blueprint(routing_bp)
-    
-    # Log registration of templates blueprints to help debug route conflicts
-    log.info("Registering templates_bp at /templates")
-    app.register_blueprint(templates_bp, url_prefix='/templates')
-    
-    log.info("Registering template_management_bp at /api/templates")
-    # POTENTIAL CONFLICT: Both templates_bp and template_management_bp handle templates
-    # templates_bp uses /templates, while template_management_bp uses /api/templates
-    # Make sure frontend calls the correct endpoint for default templates (/api/templates/default-templates)
-    app.register_blueprint(template_management_bp, url_prefix='/api/templates')
-    
-    app.register_blueprint(stages_bp, url_prefix='/api/stages')
-    app.register_blueprint(conversation_bp, url_prefix='/conversations')
+    app.register_blueprint(templates_bp)
+    app.register_blueprint(stages_bp)
+    app.register_blueprint(template_management_bp)
+    app.register_blueprint(conversation_bp, url_prefix='/api/v1/conversations')
     app.register_blueprint(businesses_bp)
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(config_bp, url_prefix='/config')
+    app.register_blueprint(auth_bp)
+    app.register_blueprint(config_bp)
     app.register_blueprint(agents_bp)
     app.register_blueprint(users_bp)
-    
-    # Register the template variables blueprint
-    log.info("Registering template_variables_bp at /api/variables")
-    app.register_blueprint(template_variables_bp, url_prefix='/api/variables')
-    
-    # Register the LLM blueprint
-    log.info("Registering llm_bp at /api/llm")
-    app.register_blueprint(llm_bp, url_prefix='/api/llm')
-    
-    # Register the data extraction blueprint
-    log.info("Registering data_extraction_bp at /api/extraction")
-    app.register_blueprint(data_extraction_bp, url_prefix='/api/extraction')
+    app.register_blueprint(template_variables_bp)
+    app.register_blueprint(llm_bp)
+    app.register_blueprint(data_extraction_bp)
     
     # Setup Facebook Messenger routes
     setup_messenger_routes(app)
@@ -2609,15 +2646,15 @@ if __name__ == '__main__':
 ================================================================================
 File: auth.py
 Path: .\backend\auth.py
-Size: 7209
-Modified: 2025-04-19T10:55:13.005615
+Size: 7961
+Modified: 2025-04-26T12:19:12.324514
 Created: 2025-03-30T15:12:25.177570
-Hash: 59056b868eba5e509bcad6c438ffa564e97e5959ba77f185d2b177265062d63b
-Lines: 169
+Hash: 1df1acd6b5c21241ac33cd28180b67bc8a33917212fc0180cb4522687feb9a9b
+Lines: 181
 ================================================================================
 import logging
 import functools
-from flask import jsonify, request, current_app
+from flask import jsonify, request, current_app, make_response
 from werkzeug.security import check_password_hash
 from backend.db import get_db_connection, release_db_connection
 from backend.utils import is_valid_uuid
@@ -2629,6 +2666,15 @@ log = logging.getLogger(__name__)
 def require_api_key(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Skip authentication for OPTIONS requests (preflight)
+        if request.method == 'OPTIONS':
+            # Let Flask-CORS handle the response by calling the original function
+            # or returning a simple response. Since the route might not be set
+            # up to handle OPTIONS intrinsically, calling f might error.
+            # Let's just let Flask-CORS try its best.
+            # If issues persist, we might need `return make_response(), 200` here.
+            return f(*args, **kwargs)
+
         config_api_key = current_app.config.get("ICMP_API_KEY")
         if not config_api_key:
             log.error("ICMP_API_KEY not configured in the application.")
@@ -2673,7 +2719,10 @@ def require_business_api_key(f):
     def decorated_function(*args, **kwargs):
         # Skip authentication for OPTIONS requests (preflight)
         if request.method == 'OPTIONS':
-            return f(*args, **kwargs)
+            # Return an empty successful response directly for CORS preflight
+            response = make_response()
+            # Let Flask-CORS add the necessary headers later
+            return response, 204 # 204 No Content is common for OPTIONS
             
         business_id_from_request = None
         
@@ -4833,18 +4882,24 @@ if __name__ == "__main__":
 ================================================================================
 File: messenger.py
 Path: .\backend\messenger.py
-Size: 2290
-Modified: 2025-04-25T18:24:35.069443
+Size: 5016
+Modified: 2025-04-26T14:57:06.566416
 Created: 2025-04-25T18:24:32.538134
-Hash: 3ad46c872422f09007c58952d96b5b1a261e7647cd77b70c21d21739b933ff95
-Lines: 68
+Hash: a257726c2c951ffcf89b2b1b2f6ea5391c70834b97768c89424a164f6afd386d
+Lines: 139
 ================================================================================
 from flask import Flask, request, jsonify
 import os
 import hmac
 import hashlib
 import json
+import uuid
+import logging
 from functools import wraps
+from db import get_db_connection, release_db_connection
+
+# Set up logging
+log = logging.getLogger(__name__)
 
 # Facebook Messenger verification token
 VERIFY_TOKEN = os.getenv('FB_VERIFY_TOKEN')
@@ -4863,16 +4918,78 @@ def verify_fb_token(f):
 
 def handle_message(sender_id, message):
     """Handle incoming messages from Facebook Messenger"""
-    # Your message processing logic here
-    response = {
-        'recipient': {'id': sender_id},
-        'message': {'text': f"Received: {message}"}
-    }
-    return response
+    log.info(f"Received message from {sender_id}: {message}")
+    
+    # Get a database connection
+    conn = get_db_connection()
+    try:
+        # Check if this user exists in our system
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id FROM users WHERE external_id = %s", (sender_id,))
+        result = cursor.fetchone()
+        
+        if result:
+            user_id = result[0]
+        else:
+            # Create a new user if they don't exist
+            user_id = str(uuid.uuid4())
+            cursor.execute(
+                "INSERT INTO users (user_id, external_id, first_name, last_name) VALUES (%s, %s, %s, %s)",
+                (user_id, sender_id, "Facebook", "User")
+            )
+            conn.commit()
+        
+        # Get the business ID (using a default for now)
+        cursor.execute("SELECT business_id FROM businesses LIMIT 1")
+        business_result = cursor.fetchone()
+        
+        if not business_result:
+            log.error("No business found in the database")
+            return {
+                'recipient': {'id': sender_id},
+                'message': {'text': "Sorry, there was an error processing your message."}
+            }
+        
+        business_id = business_result[0]
+        
+        # Process the message using the message handler
+        from backend.message_processing.message_handler import MessageHandler
+        from backend.db import get_db_pool
+        
+        message_handler = MessageHandler(get_db_pool())
+        result = message_handler.process_message({
+            'business_id': business_id,
+            'user_id': user_id,
+            'content': message,
+            'source': 'facebook_messenger'
+        })
+        
+        if result.get('success'):
+            response_text = result.get('response', '')
+        else:
+            response_text = "Sorry, there was an error processing your message."
+            log.error(f"Error processing message: {result.get('error')}")
+        
+        return {
+            'recipient': {'id': sender_id},
+            'message': {'text': response_text}
+        }
+    except Exception as e:
+        log.error(f"Error handling message: {str(e)}", exc_info=True)
+        return {
+            'recipient': {'id': sender_id},
+            'message': {'text': "Sorry, there was an error processing your message."}
+        }
+    finally:
+        release_db_connection(conn)
 
 def send_message(recipient_id, response):
     """Send message to Facebook Messenger"""
     import requests
+    
+    if not PAGE_ACCESS_TOKEN:
+        log.error("Facebook PAGE_ACCESS_TOKEN is not set")
+        return None
     
     params = {
         "access_token": PAGE_ACCESS_TOKEN
@@ -4886,9 +5003,10 @@ def send_message(recipient_id, response):
     
     try:
         result = requests.post(url, params=params, headers=headers, data=data)
+        log.info(f"Facebook API response: {result.status_code} - {result.text}")
         return result.json()
     except Exception as e:
-        print(f"Error sending message: {e}")
+        log.error(f"Error sending message: {e}", exc_info=True)
         return None
 
 def setup_messenger_routes(app):
@@ -4897,6 +5015,8 @@ def setup_messenger_routes(app):
     def webhook():
         if request.method == 'POST':
             output = request.get_json()
+            log.info(f"Received webhook data: {json.dumps(output)}")
+            
             for event in output['entry']:
                 messaging = event['messaging']
                 for message in messaging:
@@ -7140,11 +7260,11 @@ class DataExtractionService:
 ================================================================================
 File: message_handler.py
 Path: .\backend\message_processing\message_handler.py
-Size: 46313
-Modified: 2025-04-17T16:47:50.640490
+Size: 43733
+Modified: 2025-04-26T02:01:49.888612
 Created: 2025-04-09T02:14:15.942951
-Hash: a53ce282c40a78b908036a5c01fc7899c17e2b16b04d4d6ff4ce10aeb240e98e
-Lines: 967
+Hash: 7ea21267d5c352c3c3bc088c3945c44adad8e8d0b6ee1932616f6ea1dbed9b63
+Lines: 924
 ================================================================================
 """
 Message handler for processing incoming messages.
@@ -7206,6 +7326,7 @@ class MessageHandler:
             Dictionary containing the response
         """
         log_id = str(uuid.uuid4())
+        processing_steps = []  # Initialize processing_steps at the start
         self._store_process_log(log_id, {
             'status': 'started',
             'timestamp': datetime.now().isoformat(),
@@ -7237,6 +7358,9 @@ class MessageHandler:
             conn = self.db_pool.getconn()
             
             try:
+                # --- Start Transaction ---
+                # conn.autocommit is set to False by get_db_connection
+
                 # Check if the conversation exists
                 cursor = conn.cursor()
                 if conversation_id:
@@ -7265,7 +7389,6 @@ class MessageHandler:
                             """,
                             (conversation_id, business_id, user_id, session_id, llm_call_id)
                         )
-                        conn.commit()
                         log.info(f"Created conversation: {conversation_id}")
                     else:
                         log.info(f"Using existing conversation: {conversation_id}")
@@ -7292,16 +7415,12 @@ class MessageHandler:
                     """,
                     (llm_call_id, conversation_id)
                 )
-                conn.commit()
                 
                 log.info(f"Using llm_call_id {llm_call_id} for conversation {conversation_id}")
                 
                 # Get current stage and templates
                 stage_result = self.get_stage_for_message(conn, user_id, conversation_id, business_id)
                 current_stage, selection_template_id, extraction_template_id, response_template_id = stage_result
-                
-                # Initialize processing steps list
-                processing_steps = []
                 
                 # Build context for template substitution
                 context = {
@@ -7419,47 +7538,25 @@ class MessageHandler:
                                 # Log raw stage response for debugging
                                 log.info(f"Raw stage detection response: {stage_response}")
                                 
-                                # Update the conversation's stage if a match was found
-                                if detected_stage_id and detected_stage_id != current_stage:
-                                    log.info(f"Updating conversation {conversation_id} stage from {current_stage} to {detected_stage_id}")
+                                # If a stage was detected, update the conversation
+                                if detected_stage_id:
+                                    log.info(f"Updating conversation {conversation_id} stage to {detected_stage_id}")
+                                    cursor = conn.cursor()
                                     cursor.execute(
                                         """
                                         UPDATE conversations 
-                                        SET stage_id = %s 
+                                        SET stage_id = %s, last_updated = NOW() 
                                         WHERE conversation_id = %s
                                         """,
                                         (detected_stage_id, conversation_id)
                                     )
-                                    # Ensure the changes are committed
-                                    conn.commit()
-                                    # Update current_stage for the rest of this method
-                                    current_stage = detected_stage_id
-                                    
-                                    # Log successful stage transition
-                                    log.info(f"Successfully updated conversation stage: {current_stage} -> {detected_stage_id}")
-                                    
-                                    # Refresh the templates based on the new stage
-                                    cursor.execute(
-                                        """
-                                        SELECT
-                                            stage_selection_template_id,
-                                            data_extraction_template_id,
-                                            response_generation_template_id
-                                        FROM stages
-                                        WHERE stage_id = %s
-                                        """,
-                                        (detected_stage_id,)
-                                    )
-                                    
-                                    new_templates = cursor.fetchone()
-                                    if new_templates:
-                                        # Update the template IDs to use the ones from the new stage
-                                        selection_template_id = new_templates[0]
-                                        extraction_template_id = new_templates[1]
-                                        response_template_id = new_templates[2]
-                                        log.info(f"Updated templates for new stage: selection={selection_template_id}, extraction={extraction_template_id}, response={response_template_id}")
-                        except Exception as e:
-                            log.error(f"Error updating stage from detection response: {str(e)}")
+                                    current_stage = detected_stage_id  # Update local variable
+                                    log.info(f"Conversation {conversation_id} stage updated successfully.")
+                                else:
+                                    log.warning(f"No matching stage found for response: {stage_response}")
+                        except Exception as stage_update_error:
+                            log.error(f"Error updating stage based on LLM response: {stage_update_error}", exc_info=True)
+                            # Do not commit here, let the main transaction handle it
                 
                 # Step 2: Data Extraction using new stage's template
                 extracted_data = ""
@@ -7567,7 +7664,7 @@ class MessageHandler:
                 )
                 
                 # Save AI response - using the actual LLM response (final_response), not the processed template
-                response_id = self._save_message(
+                response_message_id = self._save_message(
                     conn, 
                     conversation_id=conversation_id,
                     content=final_response,
@@ -7578,30 +7675,20 @@ class MessageHandler:
                 # Get current timestamp for response
                 current_time = datetime.now()
                 
-                # Commit transaction
+                # --- Commit Transaction ---
                 conn.commit()
-                
-                # Generate a single process log ID to use for both storage and return
-                process_log_id = str(uuid.uuid4())
-                
-                self._store_process_log(process_log_id, {
-                    'log_id': process_log_id,
-                    'original_message': content,
-                    'business_id': business_id,
-                    'user_id': user_id,
+                log.info(f"Transaction committed successfully for conversation {conversation_id}")
+
+                # Store final success log after commit
+                self._store_process_log(log_id, {
+                    'status': 'completed',
+                    'response': final_response,
                     'conversation_id': conversation_id,
-                    'start_time': current_time.isoformat(),
-                    'processing_steps': processing_steps,
-                    'final_response': final_response,  # Store actual LLM response in the log
+                    'message_id': message_id,
+                    'response_id': response_message_id,
                     'stage_id': current_stage,
-                    'agent_id': api_key,
-                    'current_stage_name': self._get_stage_name(conn, current_stage) if current_stage else 'Default',
-                    'stage_transition': {
-                        'detected': True if 'detected_stage_id' in locals() and detected_stage_id else False,
-                        'from_stage': stage_result[0] if stage_result else None,
-                        'to_stage': detected_stage_id if 'detected_stage_id' in locals() and detected_stage_id else stage_result[0] if stage_result else None,
-                        'successful': True if 'detected_stage_id' in locals() and detected_stage_id and detected_stage_id != (stage_result[0] if stage_result else None) else False
-                    }
+                    'processing_steps': processing_steps,
+                    'timestamp': current_time.isoformat()
                 })
                 
                 # Return the response
@@ -7609,53 +7696,55 @@ class MessageHandler:
                     "response": final_response,  # Return the actual LLM response not the processed template
                     "conversation_id": conversation_id,
                     "message_id": message_id,
-                    "response_id": response_id,
+                    "response_id": response_message_id,
                     "created_at": current_time.isoformat(),
-                    "process_log_id": process_log_id,
+                    "process_log_id": log_id,
                     "success": True,
                     "processing_steps": processing_steps
                 }
                 
             except Exception as e:
-                # Rollback the transaction if we have a connection
+                # --- Rollback Transaction ---
+                log.error(f"Error during message processing for conversation {conversation_id}. Rolling back transaction. Error: {str(e)}", exc_info=True)
                 if conn:
                     try:
                         conn.rollback()
-                        
-                        # If this was a new conversation and it failed, clean it up
-                        if not conversation_id:
-                            try:
-                                cursor = conn.cursor()
-                                cursor.execute(
-                                    "DELETE FROM conversations WHERE conversation_id = %s",
-                                    (conversation_id,)
-                                )
-                                conn.commit()
-                            except Exception as cleanup_error:
-                                log.error(f"Error cleaning up failed conversation: {str(cleanup_error)}")
-                    except Exception as rollback_error:
-                        log.error(f"Error rolling back transaction: {str(rollback_error)}")
+                        log.info("Transaction rolled back successfully.")
+                    except Exception as rb_err:
+                        log.error(f"Error during rollback: {rb_err}", exc_info=True)
                 
-                log.error(f"Error processing message: {str(e)}")
+                # Store error log
+                self._store_process_log(log_id, {
+                    'status': 'error',
+                    'error': str(e),
+                    'processing_steps': processing_steps, # Log steps up to the error
+                    'timestamp': datetime.now().isoformat()
+                })
+                
+                # Return error response
                 return {
                     'success': False,
                     'error': f"Error processing message: {str(e)}",
-                    'process_log_id': str(uuid.uuid4())
+                    'process_log_id': log_id # Include log ID for debugging
                 }
-            finally:
-                # Return connection to pool if we have one
-                if conn:
-                    try:
-                        self.db_pool.putconn(conn)
-                    except Exception as e:
-                        log.error(f"Error returning connection to pool: {str(e)}")
             
-        except Exception as e:
-            log.error(f"Error processing message: {str(e)}")
+            finally:
+                # Return the connection to the pool
+                if conn:
+                    self.db_pool.putconn(conn)
+                    log.debug("Database connection returned to pool.")
+
+        except Exception as outer_e: # Catch errors before getting connection
+            log.error(f"Outer error in process_message: {str(outer_e)}", exc_info=True)
+            self._store_process_log(log_id, {
+                'status': 'error',
+                'error': f"Outer error: {str(outer_e)}",
+                'timestamp': datetime.now().isoformat()
+            })
             return {
                 'success': False,
-                'error': f"Error processing message: {str(e)}",
-                'process_log_id': str(uuid.uuid4())
+                'error': f"Outer error: {str(outer_e)}",
+                'process_log_id': log_id
             }
     
     def _create_conversation(self, conn, business_id: str, user_id: str) -> str:
@@ -7721,8 +7810,7 @@ class MessageHandler:
                 """,
                 (conversation_id, business_id, user_id, session_id, llm_call_id)
             )
-            
-            log.info(f"Created new conversation: {conversation_id}")
+            log.info(f"New conversation created in DB: {conversation_id}")
             return conversation_id
             
         except Exception as e:
@@ -7779,18 +7867,7 @@ class MessageHandler:
                 """,
                 (message_id, conversation_id, user_id, content, sender_type)
             )
-            
-            # Update conversation's updated timestamp and status
-            cursor.execute(
-                """
-                UPDATE conversations
-                SET last_updated = NOW(),
-                    status = 'active'
-                WHERE conversation_id = %s
-                """,
-                (conversation_id,)
-            )
-            
+            log.info(f"Message saved: ID={message_id}, Conversation={conversation_id}, Sender={sender_type}")
             return message_id
         except Exception as e:
             log.error(f"Error saving message: {str(e)}")
@@ -10034,6 +10111,55 @@ from . import available_stages
 from .. import standard_variables  # Import standard variables to ensure all providers are registered
 
 ================================================================================
+File: run_migration.py
+Path: .\backend\migrations\run_migration.py
+Size: 1027
+Modified: 2025-04-26T11:11:56.469582
+Created: 2025-04-26T11:11:54.555047
+Hash: 29c392a64700418b73e13e26e8da68ad0e25847a4501cd49bd84d0aa1cac4309
+Lines: 39
+================================================================================
+import os
+import sys
+from pathlib import Path
+
+# Add the parent directory to the Python path
+current_dir = Path(__file__).resolve().parent
+parent_dir = current_dir.parent
+sys.path.append(str(parent_dir))
+
+from backend.db import get_db_connection, release_db_connection
+
+def run_migration():
+    """Run the conversations table migration."""
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Read the SQL file
+        migration_file = current_dir / 'create_conversations_table.sql'
+        with open(migration_file, 'r') as f:
+            sql = f.read()
+
+        # Execute the SQL
+        cursor.execute(sql)
+        conn.commit()
+        print("Migration completed successfully!")
+
+    except Exception as e:
+        print(f"Error running migration: {str(e)}")
+        if conn:
+            conn.rollback()
+        raise
+    finally:
+        if conn:
+            release_db_connection(conn)
+
+if __name__ == '__main__':
+    run_migration() 
+
+================================================================================
 File: agents.py
 Path: .\backend\routes\agents.py
 Size: 11747
@@ -11154,106 +11280,85 @@ def validate_config():
 ================================================================================
 File: conversations.py
 Path: .\backend\routes\conversations.py
-Size: 4265
-Modified: 2025-04-17T01:15:26.176434
+Size: 2071
+Modified: 2025-04-26T11:11:27.097322
 Created: 2025-03-31T17:53:17.337052
-Hash: 3079e332ec08eb538f5afa335ec6c7fff9e63776a060530ab25fa8d32d2cf572
-Lines: 85
+Hash: c3fbb6c361c20f56a9b1f3629d79ce660681dcf95fbc89019bbef0fddfa5ecef
+Lines: 64
 ================================================================================
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, jsonify, request
+from backend.db import get_db_connection, release_db_connection
+from backend.auth import require_api_key
 import logging
-from db import get_db_connection, execute_query, release_db_connection
-from auth import require_business_api_key
-from routes.utils import is_valid_uuid
-import json
 
+# Set up logging
 log = logging.getLogger(__name__)
 
-bp = Blueprint('conversations_bp', __name__, url_prefix='/conversations')
+# Create blueprint
+bp = Blueprint('conversations', __name__, url_prefix='/conversations')
 
 @bp.route('/<user_id>', methods=['GET'])
-@require_business_api_key
+@require_api_key
 def get_conversations(user_id):
-    if not is_valid_uuid(user_id):
-        return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid user_id format"}), 400
-
-    # Ensure business_id is available either from query params or URL
-    business_id = request.args.get('business_id')
-    if not business_id:
-        return jsonify({"error_code": "BAD_REQUEST", "message": "Business ID is required"}), 400
-
+    """Get all conversations for a user."""
     try:
+        business_id = request.args.get('business_id')
+        if not business_id:
+            return jsonify({'error': 'business_id is required'}), 400
+
         conn = get_db_connection()
-        # Fetch conversation metadata
-        conv_query = """
-            SELECT conversation_id, business_id, user_id, agent_id, stage_id, session_id, start_time, last_updated, status, created_at, llm_call_id, conversation_summary
-            FROM conversations 
-            WHERE user_id = %s AND business_id = %s
-            ORDER BY last_updated DESC; -- Order by most recent first
+        cursor = conn.cursor()
+
+        # Get conversations for the user and business
+        query = """
+            SELECT 
+                c.id,
+                c.user_id,
+                c.business_id,
+                c.message,
+                c.sender,
+                c.status,
+                c.timestamp,
+                c.conversation_id
+            FROM conversations c
+            WHERE c.user_id = %s AND c.business_id = %s
+            ORDER BY c.timestamp DESC
         """
-        conv_cursor = execute_query(conn, conv_query, (user_id, business_id))
-        conv_rows = conv_cursor.fetchall()
         
-        conversations_data = []
-        if conv_rows:
-            conversation_ids = [row['conversation_id'] for row in conv_rows]
-            
-            # Fetch messages for these conversations
-            messages_query = """
-                SELECT conversation_id, sender_type, message_content, created_at
-                FROM messages
-                WHERE conversation_id = ANY(%s::uuid[]) -- Cast the array parameter to uuid[]
-                ORDER BY created_at ASC; -- Order messages chronologically
-            """
-            # Use list(conversation_ids) directly for psycopg2 parameter binding
-            messages_cursor = execute_query(conn, messages_query, (list(conversation_ids),))
-            message_rows = messages_cursor.fetchall()
-            
-            # Group messages by conversation_id
-            messages_by_conv = {}
-            for msg_row in message_rows:
-                conv_id_str = str(msg_row['conversation_id'])
-                if conv_id_str not in messages_by_conv:
-                    messages_by_conv[conv_id_str] = []
-                messages_by_conv[conv_id_str].append({
-                    "sender": msg_row['sender_type'],
-                    "content": msg_row['message_content'],
-                    "timestamp": msg_row['created_at'].isoformat()
-                })
+        cursor.execute(query, (user_id, business_id))
+        conversations = cursor.fetchall()
 
-            # Construct the final response
-            for conv_row in conv_rows:
-                conv_id_str = str(conv_row["conversation_id"])
-                conversations_data.append({
-                    "conversation_id": conv_id_str,
-                    "business_id": str(conv_row["business_id"]),
-                    "user_id": str(conv_row["user_id"]),
-                    "agent_id": str(conv_row["agent_id"]) if conv_row["agent_id"] else None,
-                    "stage_id": str(conv_row["stage_id"]) if conv_row["stage_id"] else None,
-                    "session_id": str(conv_row["session_id"]),
-                    "start_time": conv_row["start_time"].isoformat(),
-                    "last_updated": conv_row["last_updated"].isoformat(),
-                    "status": conv_row["status"],
-                    "created_at": conv_row["created_at"].isoformat(),
-                    "llm_call_id": conv_row["llm_call_id"],
-                    "conversation_summary": json.loads(conv_row["conversation_summary"]) if conv_row["conversation_summary"] else None,
-                    "messages": messages_by_conv.get(conv_id_str, []) # Add messages list
-                })
+        # Format the response
+        formatted_conversations = []
+        for conv in conversations:
+            formatted_conversations.append({
+                'id': conv[0],
+                'user_id': conv[1],
+                'business_id': conv[2],
+                'message': conv[3],
+                'sender': conv[4],
+                'status': conv[5],
+                'timestamp': conv[6].isoformat() if conv[6] else None,
+                'conversation_id': conv[7]
+            })
 
-        release_db_connection(conn)
-        return jsonify(conversations_data), 200
+        return jsonify(formatted_conversations)
+
     except Exception as e:
-        log.error({"message": "Error in get_conversations", "error": str(e)}, exc_info=True)
-        return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+        log.error(f"Error fetching conversations: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+    finally:
+        if 'conn' in locals():
+            release_db_connection(conn)
 
 ================================================================================
 File: conversation_management.py
 Path: .\backend\routes\conversation_management.py
-Size: 9170
-Modified: 2025-04-17T01:15:26.216742
+Size: 9673
+Modified: 2025-04-26T12:59:27.643418
 Created: 2025-04-09T09:52:25.246638
-Hash: 91390ddc8cc34abe763169fde21fe606cfcd7e4bcf64b6df6c367d3e0c747b4c
-Lines: 231
+Hash: 7ded85e4ed0b896323cd82510ed4955cd13377f77e21bb302ca8b4b132537c0b
+Lines: 238
 ================================================================================
 """
 Conversation management module.
@@ -11275,15 +11380,17 @@ log = logging.getLogger(__name__)
 # Create blueprint for conversation endpoints
 conversation_bp = Blueprint('conversations', __name__)
 
-@conversation_bp.route('/<user_id>', methods=['GET'])
+# Remove the test route
+# @conversation_bp.route('/test', methods=['GET'])
+# def test_route():
+#     return jsonify({"message": "Conversation blueprint test route OK"}), 200
+
+@conversation_bp.route('/', methods=['GET', 'OPTIONS'])
 @require_business_api_key
-def get_conversations(user_id):
+def get_conversations():
     """
-    Get all conversations for a specific user.
+    Get all conversations for the authenticated business.
     
-    Args:
-        user_id: The ID of the user whose conversations to retrieve
-        
     Query Parameters:
         business_id: (Required) The business ID to filter conversations by
     """
@@ -11295,20 +11402,23 @@ def get_conversations(user_id):
     try:
         conn = get_db_connection()
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            # Get all conversations for the user and business
+            # Query based only on business_id, join with users table
             cursor.execute("""
                 SELECT 
-                    conversation_id, 
-                    business_id, 
-                    user_id, 
-                    session_id, 
-                    start_time, 
-                    last_updated, 
-                    stage_id
-                FROM conversations 
-                WHERE user_id = %s AND business_id = %s
-                ORDER BY last_updated DESC;
-            """, (user_id, business_id))
+                    c.conversation_id, 
+                    c.business_id, 
+                    c.user_id, 
+                    c.session_id, 
+                    c.start_time, 
+                    c.last_updated, 
+                    c.stage_id,
+                    u.first_name, -- Get user's first name
+                    u.last_name   -- Get user's last name
+                FROM conversations c
+                LEFT JOIN users u ON c.user_id = u.user_id
+                WHERE c.business_id = %s
+                ORDER BY c.last_updated DESC;
+            """, (business_id,))
             
             conversations = cursor.fetchall()
             
@@ -11339,6 +11449,8 @@ def get_conversations(user_id):
                 conv['conversation_id'] = str(conv['conversation_id'])
                 conv['business_id'] = str(conv['business_id'])
                 conv['user_id'] = str(conv['user_id'])
+                # Handle potentially null first/last names (though join should handle this)
+                conv['user_name'] = f"{conv.get('first_name', '')} {conv.get('last_name', '')}".strip() 
                 if conv['session_id']:
                     conv['session_id'] = str(conv['session_id'])
                 if conv['stage_id']:
@@ -11363,7 +11475,7 @@ def get_conversations(user_id):
         if conn:
             release_db_connection(conn)
 
-@conversation_bp.route('/<conversation_id>', methods=['DELETE'])
+@conversation_bp.route('/<uuid:conversation_id>', methods=['DELETE', 'OPTIONS'])
 @require_business_api_key
 def delete_conversation(conversation_id):
     """
@@ -11413,7 +11525,7 @@ def delete_conversation(conversation_id):
         if conn:
             release_db_connection(conn)
 
-@conversation_bp.route('/reassign', methods=['POST'])
+@conversation_bp.route('/reassign', methods=['POST', 'OPTIONS'])
 @require_business_api_key
 def reassign_conversations():
     """
@@ -21088,6 +21200,342 @@ def create_business():
     except Exception as e:
         log.error(f"Error creating business: {str(e)}")
         return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+
+================================================================================
+File: conversations.py
+Path: .\old-_archive_files\backend\routes\conversations.py
+Size: 4265
+Modified: 2025-04-25T13:12:07.292993
+Created: 2025-04-25T13:12:07.292993
+Hash: 3079e332ec08eb538f5afa335ec6c7fff9e63776a060530ab25fa8d32d2cf572
+Lines: 85
+================================================================================
+from flask import Blueprint, request, jsonify, current_app
+import logging
+from db import get_db_connection, execute_query, release_db_connection
+from auth import require_business_api_key
+from routes.utils import is_valid_uuid
+import json
+
+log = logging.getLogger(__name__)
+
+bp = Blueprint('conversations_bp', __name__, url_prefix='/conversations')
+
+@bp.route('/<user_id>', methods=['GET'])
+@require_business_api_key
+def get_conversations(user_id):
+    if not is_valid_uuid(user_id):
+        return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid user_id format"}), 400
+
+    # Ensure business_id is available either from query params or URL
+    business_id = request.args.get('business_id')
+    if not business_id:
+        return jsonify({"error_code": "BAD_REQUEST", "message": "Business ID is required"}), 400
+
+    try:
+        conn = get_db_connection()
+        # Fetch conversation metadata
+        conv_query = """
+            SELECT conversation_id, business_id, user_id, agent_id, stage_id, session_id, start_time, last_updated, status, created_at, llm_call_id, conversation_summary
+            FROM conversations 
+            WHERE user_id = %s AND business_id = %s
+            ORDER BY last_updated DESC; -- Order by most recent first
+        """
+        conv_cursor = execute_query(conn, conv_query, (user_id, business_id))
+        conv_rows = conv_cursor.fetchall()
+        
+        conversations_data = []
+        if conv_rows:
+            conversation_ids = [row['conversation_id'] for row in conv_rows]
+            
+            # Fetch messages for these conversations
+            messages_query = """
+                SELECT conversation_id, sender_type, message_content, created_at
+                FROM messages
+                WHERE conversation_id = ANY(%s::uuid[]) -- Cast the array parameter to uuid[]
+                ORDER BY created_at ASC; -- Order messages chronologically
+            """
+            # Use list(conversation_ids) directly for psycopg2 parameter binding
+            messages_cursor = execute_query(conn, messages_query, (list(conversation_ids),))
+            message_rows = messages_cursor.fetchall()
+            
+            # Group messages by conversation_id
+            messages_by_conv = {}
+            for msg_row in message_rows:
+                conv_id_str = str(msg_row['conversation_id'])
+                if conv_id_str not in messages_by_conv:
+                    messages_by_conv[conv_id_str] = []
+                messages_by_conv[conv_id_str].append({
+                    "sender": msg_row['sender_type'],
+                    "content": msg_row['message_content'],
+                    "timestamp": msg_row['created_at'].isoformat()
+                })
+
+            # Construct the final response
+            for conv_row in conv_rows:
+                conv_id_str = str(conv_row["conversation_id"])
+                conversations_data.append({
+                    "conversation_id": conv_id_str,
+                    "business_id": str(conv_row["business_id"]),
+                    "user_id": str(conv_row["user_id"]),
+                    "agent_id": str(conv_row["agent_id"]) if conv_row["agent_id"] else None,
+                    "stage_id": str(conv_row["stage_id"]) if conv_row["stage_id"] else None,
+                    "session_id": str(conv_row["session_id"]),
+                    "start_time": conv_row["start_time"].isoformat(),
+                    "last_updated": conv_row["last_updated"].isoformat(),
+                    "status": conv_row["status"],
+                    "created_at": conv_row["created_at"].isoformat(),
+                    "llm_call_id": conv_row["llm_call_id"],
+                    "conversation_summary": json.loads(conv_row["conversation_summary"]) if conv_row["conversation_summary"] else None,
+                    "messages": messages_by_conv.get(conv_id_str, []) # Add messages list
+                })
+
+        release_db_connection(conn)
+        return jsonify(conversations_data), 200
+    except Exception as e:
+        log.error({"message": "Error in get_conversations", "error": str(e)}, exc_info=True)
+        return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+
+================================================================================
+File: conversation_management.py
+Path: .\old-_archive_files\backend\routes\conversation_management.py
+Size: 9170
+Modified: 2025-04-25T13:12:07.292993
+Created: 2025-04-25T13:12:07.292993
+Hash: 91390ddc8cc34abe763169fde21fe606cfcd7e4bcf64b6df6c367d3e0c747b4c
+Lines: 231
+================================================================================
+"""
+Conversation management module.
+
+This module provides endpoints for managing conversations, including
+retrieving conversation history, updating conversation data, and
+managing conversation state.
+"""
+
+from flask import Blueprint, jsonify, request
+import logging
+import uuid
+from db import get_db_connection, release_db_connection
+from auth import require_business_api_key
+from psycopg2.extras import RealDictCursor
+
+log = logging.getLogger(__name__)
+
+# Create blueprint for conversation endpoints
+conversation_bp = Blueprint('conversations', __name__)
+
+@conversation_bp.route('/<user_id>', methods=['GET'])
+@require_business_api_key
+def get_conversations(user_id):
+    """
+    Get all conversations for a specific user.
+    
+    Args:
+        user_id: The ID of the user whose conversations to retrieve
+        
+    Query Parameters:
+        business_id: (Required) The business ID to filter conversations by
+    """
+    business_id = request.args.get('business_id')
+    if not business_id:
+        return jsonify({"error": "business_id parameter is required"}), 400
+    
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # Get all conversations for the user and business
+            cursor.execute("""
+                SELECT 
+                    conversation_id, 
+                    business_id, 
+                    user_id, 
+                    session_id, 
+                    start_time, 
+                    last_updated, 
+                    stage_id
+                FROM conversations 
+                WHERE user_id = %s AND business_id = %s
+                ORDER BY last_updated DESC;
+            """, (user_id, business_id))
+            
+            conversations = cursor.fetchall()
+            
+            # If no conversations found, return empty list
+            if not conversations:
+                return jsonify([]), 200
+            
+            # Get messages for each conversation
+            for conv in conversations:
+                cursor.execute("""
+                    SELECT 
+                        message_id, 
+                        conversation_id, 
+                        user_id, 
+                        sender_type as sender, 
+                        message_content as content, 
+                        created_at as timestamp
+                    FROM messages 
+                    WHERE conversation_id = %s
+                    ORDER BY created_at ASC;
+                """, (conv['conversation_id'],))
+                
+                messages = cursor.fetchall()
+                conv['messages'] = messages if messages else []
+            
+            # Convert UUIDs and datetime objects to strings
+            for conv in conversations:
+                conv['conversation_id'] = str(conv['conversation_id'])
+                conv['business_id'] = str(conv['business_id'])
+                conv['user_id'] = str(conv['user_id'])
+                if conv['session_id']:
+                    conv['session_id'] = str(conv['session_id'])
+                if conv['stage_id']:
+                    conv['stage_id'] = str(conv['stage_id'])
+                conv['start_time'] = conv['start_time'].isoformat() if conv['start_time'] else None
+                conv['last_updated'] = conv['last_updated'].isoformat() if conv['last_updated'] else None
+                
+                # Convert message fields too
+                for msg in conv['messages']:
+                    msg['message_id'] = str(msg['message_id'])
+                    msg['conversation_id'] = str(msg['conversation_id'])
+                    msg['user_id'] = str(msg['user_id'])
+                    msg['timestamp'] = msg['timestamp'].isoformat() if msg['timestamp'] else None
+            
+            return jsonify(conversations), 200
+    
+    except Exception as e:
+        log.error(f"Error retrieving conversations: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Failed to retrieve conversations: {str(e)}"}), 500
+    
+    finally:
+        if conn:
+            release_db_connection(conn)
+
+@conversation_bp.route('/<conversation_id>', methods=['DELETE'])
+@require_business_api_key
+def delete_conversation(conversation_id):
+    """
+    Delete a conversation and all associated messages.
+    
+    Args:
+        conversation_id: The ID of the conversation to delete
+    """
+    business_id = request.args.get('business_id')
+    if not business_id:
+        return jsonify({"error": "business_id parameter is required"}), 400
+    
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor() as cursor:
+            # First, verify the conversation belongs to the business
+            cursor.execute("""
+                SELECT 1 FROM conversations 
+                WHERE conversation_id = %s AND business_id = %s
+            """, (conversation_id, business_id))
+            
+            if not cursor.fetchone():
+                return jsonify({"error": "Conversation not found or not authorized"}), 404
+            
+            # Delete messages first (due to foreign key constraints)
+            cursor.execute("DELETE FROM messages WHERE conversation_id = %s", (conversation_id,))
+            message_count = cursor.rowcount
+            
+            # Then delete the conversation
+            cursor.execute("DELETE FROM conversations WHERE conversation_id = %s", (conversation_id,))
+            
+            conn.commit()
+            
+            return jsonify({
+                "message": f"Conversation deleted successfully with {message_count} messages",
+                "conversation_id": conversation_id
+            }), 200
+    
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        log.error(f"Error deleting conversation: {str(e)}", exc_info=True)
+        return jsonify({"error": f"Failed to delete conversation: {str(e)}"}), 500
+    
+    finally:
+        if conn:
+            release_db_connection(conn)
+
+@conversation_bp.route('/reassign', methods=['POST'])
+@require_business_api_key
+def reassign_conversations():
+    """
+    Reassign conversations from one stage to another.
+    
+    Request Body:
+        source_stage_id: The ID of the stage to reassign conversations from
+        target_stage_id: The ID of the stage to reassign conversations to
+        business_id: The business ID to ensure authorization
+    """
+    data = request.get_json()
+    
+    # Validate request data
+    source_stage_id = data.get('source_stage_id')
+    target_stage_id = data.get('target_stage_id')
+    business_id = data.get('business_id')
+    
+    # Also check for business_id in query params (frontend sends it both ways)
+    if not business_id:
+        business_id = request.args.get('business_id')
+        
+    if not source_stage_id or not target_stage_id or not business_id:
+        return jsonify({
+            "error_code": "BAD_REQUEST", 
+            "message": "Missing required fields: source_stage_id, target_stage_id, and business_id are required"
+        }), 400
+    
+    conn = None
+    try:
+        conn = get_db_connection()
+        with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            # First, verify the stages belong to the business
+            cursor.execute("""
+                SELECT stage_id FROM stages 
+                WHERE stage_id IN (%s, %s) AND business_id = %s
+            """, (source_stage_id, target_stage_id, business_id))
+            
+            found_stages = cursor.fetchall()
+            if len(found_stages) != 2:
+                return jsonify({
+                    "error_code": "NOT_FOUND",
+                    "message": "One or both stages not found or not authorized"
+                }), 404
+            
+            # Update conversations from source stage to target stage
+            cursor.execute("""
+                UPDATE conversations 
+                SET stage_id = %s, last_updated = NOW()
+                WHERE stage_id = %s AND business_id = %s
+                RETURNING conversation_id
+            """, (target_stage_id, source_stage_id, business_id))
+            
+            updated_conversations = cursor.fetchall()
+            update_count = len(updated_conversations)
+            
+            conn.commit()
+            
+            return jsonify({
+                "message": f"Successfully reassigned {update_count} conversations from stage {source_stage_id} to stage {target_stage_id}",
+                "updated_conversations": [str(conv['conversation_id']) for conv in updated_conversations],
+                "count": update_count
+            }), 200
+    
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        log.error(f"Error reassigning conversations: {str(e)}", exc_info=True)
+        return jsonify({"error_code": "SERVER_ERROR", "message": f"Failed to reassign conversations: {str(e)}"}), 500
+    
+    finally:
+        if conn:
+            release_db_connection(conn)
 
 ================================================================================
 File: stages.py
