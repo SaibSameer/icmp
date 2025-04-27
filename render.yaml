@@ -17,7 +17,7 @@ services:
       - key: REACT_APP_API_KEY
         value: 2f3df4e4-71d6-4f3c-9f02-e6101287e8d8
       - key: REACT_APP_API_URL
-        value: https://icmp-api.onrender.com
+        value: https://icmp-events-api.onrender.com
     autoDeploy: true
 
   - type: web
@@ -39,6 +39,8 @@ services:
       - key: FB_VERIFY_TOKEN
         sync: false
       - key: FB_PAGE_ACCESS_TOKEN
+        sync: false
+      - key: FB_APP_SECRET
         sync: false
       - key: CORS_ORIGINS
         value: https://icmp.onrender.com,https://icmp-events-frontend.onrender.com,https://icmp-events-api.onrender.com,https://icmp-api.onrender.com,https://*.onrender.com

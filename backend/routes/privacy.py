@@ -72,6 +72,14 @@ def facebook_data_deletion():
     """Handles Facebook's Data Deletion Request Callback."""
     log.info("Received request on /privacy/facebook/delete")
 
+    # Test mode for Facebook verification
+    if request.args.get('test') == 'true':
+        test_response = {
+            'url': f"https://{request.host}/privacy/status",
+            'confirmation_code': 'test-deletion-' + str(uuid.uuid4())
+        }
+        return jsonify(test_response), 200
+
     if not FB_APP_SECRET:
         log.error("FB_APP_SECRET is not configured. Cannot process data deletion request.")
         # Abort, but don't reveal internal config error to Facebook
