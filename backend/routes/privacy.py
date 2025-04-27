@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import uuid
+from typing import Union
 
 from flask import Blueprint, request, jsonify, abort
 
@@ -17,7 +18,7 @@ privacy_bp = Blueprint('privacy', __name__, url_prefix='/privacy')
 # Load Facebook App Secret from environment variable
 FB_APP_SECRET = os.getenv('FB_APP_SECRET')
 
-def parse_signed_request(signed_request: str, secret: str) -> dict | None:
+def parse_signed_request(signed_request: str, secret: str) -> Union[dict, None]:
     """Parses and verifies the Facebook signed_request.
 
     Args:
