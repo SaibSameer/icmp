@@ -141,7 +141,7 @@ class StageService:
             Dictionary containing default stage information
         """
         try:
-            # First try to get the default stage from the database
+            # First try to get the default stage from the database by name
             cursor.execute(
                 """
                 SELECT 
@@ -149,7 +149,7 @@ class StageService:
                     s.input_template_id, s.output_template_id,
                     s.config
                 FROM stages s
-                WHERE s.is_default = true
+                WHERE s.name = 'Default Conversation Stage'
                 LIMIT 1
                 """
             )
@@ -207,14 +207,14 @@ class StageService:
             cursor.execute(
                 """
                 INSERT INTO stages (
-                    id, name, description, is_default,
+                    id, name, description,
                     input_template_id, output_template_id, config
                 )
-                VALUES (%s, %s, %s, true, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """,
                 (
                     default_stage_id,
-                    'Initial Stage',
+                    'Default Conversation Stage',
                     'Default initial stage for new conversations',
                     None,  # input_template_id
                     None,  # output_template_id
@@ -224,7 +224,7 @@ class StageService:
             
             return {
                 'id': default_stage_id,
-                'name': 'Initial Stage',
+                'name': 'Default Conversation Stage',
                 'description': 'Default initial stage for new conversations',
                 'input_template_id': None,
                 'output_template_id': None,
@@ -493,7 +493,7 @@ class StageService:
                     """
                     SELECT stage_id
                     FROM stages
-                    WHERE business_id = %s AND stage_type = 'default'
+                    WHERE business_id = %s AND stage_name = 'Default Conversation Stage'
                     LIMIT 1
                     """,
                     (business_id,)

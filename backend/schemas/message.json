@@ -6,7 +6,11 @@
     "message": {"type": "string"},
     "conversation_id": {"type": "string", "format": "uuid"},
     "stage_id": {"type": "string", "format": "uuid"},
-    "agent_id": {"type": "string", "format": "uuid"}
+    "agent_id": {"type": "string", "format": "uuid"},
+    "sender_type": {
+      "type": "string",
+      "enum": ["user", "assistant", "ai", "staff"]
+    }
   },
   "required": ["business_id", "user_id", "message"]
 }

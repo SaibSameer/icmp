@@ -159,4 +159,4 @@ class BaseUpdateService:
                     return dict(result) if result else None
         except Exception as e:
             log.error(f"Error creating record in {table}: {str(e)}")
-            return None 
+            return None

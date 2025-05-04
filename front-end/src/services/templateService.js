@@ -3,13 +3,20 @@ import { getAuthHeaders } from './authService';
 import { normalizeUUID } from '../hooks/useConfig';
 
 // Fetch templates
-export const fetchTemplates = async (businessId, agentId) => {
+export const fetchTemplates = async (businessId, agentId = null) => {
   try {
     const normalizedBusinessId = normalizeUUID(businessId);
-    const normalizedAgentId = normalizeUUID(agentId);
+    let url = `${API_CONFIG.BASE_URL}/templates?business_id=${normalizedBusinessId}`;
+    
+    if (agentId) {
+      const normalizedAgentId = normalizeUUID(agentId);
+      url += `&agent_id=${normalizedAgentId}`;
+      console.log(`Fetching templates for business: ${normalizedBusinessId}, agent: ${normalizedAgentId}`);
+    } else {
+      console.log(`Fetching templates for business: ${normalizedBusinessId}`);
+    }
 
-    console.log(`Fetching templates for business: ${normalizedBusinessId}, agent: ${normalizedAgentId}`);
-    const response = await fetch(`${API_CONFIG.BASE_URL}/templates?business_id=${normalizedBusinessId}&agent_id=${normalizedAgentId}`, {
+    const response = await fetch(url, {
       method: 'GET',
       credentials: 'include',
       headers: getAuthHeaders()
@@ -160,6 +167,30 @@ export const duplicateTemplate = async (templateData) => {
     return await createTemplate(normalizedData);
   } catch (error) {
     console.error('Error in duplicateTemplate:', error);
+    throw error;
+  }
+};
+
+export const getTemplateVariables = async () => {
+  try {
+    const response = await fetch('http://localhost:5000/api/template-variables/', {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        ...getAuthHeaders(),
+        'Authorization': 'Bearer cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6',
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Failed to fetch template variables');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error in getTemplateVariables:', error);
     throw error;
   }
 };

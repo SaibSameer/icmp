@@ -19,6 +19,7 @@ from backend.message_processing.template_variables import TemplateVariableProvid
 from backend.message_processing.stage_service import StageService
 from backend.message_processing.template_service import TemplateService
 from backend.message_processing.data_extraction_service import DataExtractionService
+from backend.message_processing.ai_control_service import ai_control_service
 
 log = logging.getLogger(__name__)
 
@@ -33,6 +34,9 @@ class MessageHandler:
     # In-memory storage for process logs
     _process_logs = {}
     
+    # In-memory storage for stop flags per conversation
+    _stop_flags = {}
+    
     def __init__(self, db_pool, llm_service: LLMService = None):
         """
         Initialize the message handler.
@@ -46,6 +50,38 @@ class MessageHandler:
         self.stage_service = StageService(db_pool)
         self.template_service = TemplateService()
         self.data_extraction_service = DataExtractionService(db_pool, self.llm_service)
+    
+    def stop_ai_responses(self, conversation_id: str) -> None:
+        """
+        Stop AI from generating responses for a specific conversation.
+        
+        Args:
+            conversation_id: The ID of the conversation to stop
+        """
+        self._stop_flags[conversation_id] = True
+        log.info(f"AI responses stopped for conversation {conversation_id}")
+    
+    def resume_ai_responses(self, conversation_id: str) -> None:
+        """
+        Resume AI response generation for a specific conversation.
+        
+        Args:
+            conversation_id: The ID of the conversation to resume
+        """
+        self._stop_flags[conversation_id] = False
+        log.info(f"AI responses resumed for conversation {conversation_id}")
+    
+    def is_ai_stopped(self, conversation_id: str) -> bool:
+        """
+        Check if AI responses are stopped for a conversation.
+        
+        Args:
+            conversation_id: The ID of the conversation to check
+            
+        Returns:
+            bool: True if AI responses are stopped, False otherwise
+        """
+        return self._stop_flags.get(conversation_id, False)
     
     def process_message(self, message_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -66,16 +102,10 @@ class MessageHandler:
         })
         
         try:
-            # Extract required fields
-            business_id = message_data.get('business_id')
-            user_id = message_data.get('user_id')
-            content = message_data.get('content')
-            conversation_id = message_data.get('conversation_id')
-            api_key = message_data.get('api_key')
-            owner_id = message_data.get('owner_id')
-            
             # Validate required fields
-            if not all([business_id, user_id, content]):
+            if not all([message_data.get('business_id'), 
+                       message_data.get('user_id'), 
+                       message_data.get('content')]):
                 self._store_process_log(log_id, {
                     'status': 'error',
                     'error': "Missing required fields: business_id, user_id, content",
@@ -85,97 +115,115 @@ class MessageHandler:
                     'success': False,
                     'error': "Missing required fields: business_id, user_id, content"
                 }
-            
-            # Get a connection from the pool
-            conn = self.db_pool.getconn()
-            
-            try:
-                # --- Start Transaction ---
-                # conn.autocommit is set to False by get_db_connection
 
-                # Check if the conversation exists
-                cursor = conn.cursor()
-                if conversation_id:
-                    # Verify the conversation exists
-                    cursor.execute(
-                        """
-                        SELECT conversation_id FROM conversations WHERE conversation_id = %s
-                        """,
-                        (conversation_id,)
-                    )
-                    result = cursor.fetchone()
-                    
-                    if not result:
-                        # Conversation doesn't exist, create it
-                        log.info(f"Conversation {conversation_id} not found, creating it")
-                        session_id = str(uuid.uuid4())
-                        llm_call_id = str(uuid.uuid4())
-                        
-                        cursor.execute(
-                            """
-                            INSERT INTO conversations (
-                                conversation_id, business_id, user_id, session_id, 
-                                start_time, last_updated, status, llm_call_id
-                            )
-                            VALUES (%s, %s, %s, %s, NOW(), NOW(), 'active', %s)
-                            """,
-                            (conversation_id, business_id, user_id, session_id, llm_call_id)
-                        )
-                        log.info(f"Created conversation: {conversation_id}")
-                    else:
-                        log.info(f"Using existing conversation: {conversation_id}")
-                else:
-                    # No conversation_id provided, create a new one or find an existing one
-                    conversation_id = self._create_conversation(conn, business_id, user_id)
-                    log.info(f"Using conversation: {conversation_id}")
-                
-                # Get the llm_call_id for this conversation
-                cursor.execute(
-                    """
-                    SELECT llm_call_id FROM conversations WHERE conversation_id = %s
-                    """,
-                    (conversation_id,)
+            # Check if AI responses are stopped for this user
+            if ai_control_service.is_ai_stopped(None, message_data['user_id']):
+                log.info(f"AI responses are stopped for user {message_data['user_id']}")
+                return {
+                    'success': True,
+                    'response': None,
+                    'conversation_id': None,
+                    'message_id': None,
+                    'response_id': None,
+                    'process_log_id': log_id,
+                    'processing_steps': processing_steps,
+                    'ai_stopped': True
+                }
+
+            conn = self.db_pool.getconn()
+            try:
+                # Get or create conversation
+                conversation_id = self._get_or_create_conversation(
+                    conn, 
+                    message_data['business_id'], 
+                    message_data['user_id'],
+                    message_data.get('conversation_id')
                 )
-                result = cursor.fetchone()
-                llm_call_id = result[0] if result else None
                 
-                # Always generate a new llm_call_id for each message to avoid context issues
+                # Check if AI responses are stopped for this conversation
+                if ai_control_service.is_ai_stopped(conversation_id, None):
+                    log.info(f"AI responses are stopped for conversation {conversation_id}")
+                    return {
+                        'success': True,
+                        'response': None,
+                        'conversation_id': conversation_id,
+                        'message_id': None,
+                        'response_id': None,
+                        'process_log_id': log_id,
+                        'processing_steps': processing_steps,
+                        'ai_stopped': True
+                    }
+
+                # If we have a conversation_id in the message data, check if it's different from the one we got
+                if message_data.get('conversation_id') and message_data['conversation_id'] != conversation_id:
+                    # Check if AI is stopped for the original conversation
+                    if ai_control_service.is_ai_stopped(message_data['conversation_id'], None):
+                        log.info(f"AI responses are stopped for original conversation {message_data['conversation_id']}")
+                        return {
+                            'success': True,
+                            'response': None,
+                            'conversation_id': message_data['conversation_id'],
+                            'message_id': None,
+                            'response_id': None,
+                            'process_log_id': log_id,
+                            'processing_steps': processing_steps,
+                            'ai_stopped': True
+                        }
+                
+                # Generate a new llm_call_id for this message
                 llm_call_id = str(uuid.uuid4())
+                cursor = conn.cursor()
                 cursor.execute(
                     """
                     UPDATE conversations SET llm_call_id = %s WHERE conversation_id = %s
                     """,
                     (llm_call_id, conversation_id)
                 )
-                
+                conn.commit()
                 log.info(f"Using llm_call_id {llm_call_id} for conversation {conversation_id}")
                 
                 # Get current stage and templates
-                stage_result = self.get_stage_for_message(conn, user_id, conversation_id, business_id)
-                current_stage, selection_template_id, extraction_template_id, response_template_id = stage_result
+                stage_info = self.stage_service.get_stage_for_message(
+                    conn,
+                    message_data['business_id'],
+                    message_data['user_id'],
+                    conversation_id
+                )
+                
+                if not stage_info:
+                    self._store_process_log(log_id, {
+                        'status': 'error',
+                        'error': "No valid stage found for message",
+                        'timestamp': datetime.now().isoformat()
+                    })
+                    return {
+                        'success': False,
+                        'error': "No valid stage found for message"
+                    }
+                
+                stage_id, selection_template_id, extraction_template_id, response_template_id = stage_info
                 
                 # Build context for template substitution
                 context = {
-                    'user_message': content,
-                    'business_id': business_id,
-                    'user_id': user_id,
+                    'business_id': message_data['business_id'],
+                    'user_id': message_data['user_id'],
                     'conversation_id': conversation_id,
-                    'current_stage': current_stage,
+                    'message_content': message_data['content'],
+                    'stage_id': stage_id,
                     'llm_call_id': llm_call_id
                 }
                 
                 # Generate values for template variables
                 variable_values = TemplateVariableProvider.generate_variable_values(
                     conn=conn,
-                    business_id=business_id,
-                    user_id=user_id,
+                    business_id=message_data['business_id'],
+                    user_id=message_data['user_id'],
                     conversation_id=conversation_id,
-                    message_content=content
+                    message_content=message_data['content']
                 )
                 context.update(variable_values)
                 
-                # Step 1: Stage Selection (Intent Detection) using previous stage's template
-                stage_response = None
+                # Step 1: Stage Selection (Intent Detection)
                 if selection_template_id:
                     selection_template = self.template_service.get_template(conn, selection_template_id)
                     if selection_template:
@@ -188,11 +236,10 @@ class MessageHandler:
                             input_text=selection_input,
                             system_prompt=selection_system_prompt,
                             conversation_id=conversation_id,
-                            agent_id=api_key,
-                            call_type="intent",  # Specify this is an intent detection call
-                            business_id=business_id,  # Add business_id for saving calls
-                            llm_call_id=llm_call_id,  # Use the same llm_call_id for all calls
-                            available_stages=self._get_available_stages(conn, business_id)  # Add available stages
+                            business_id=message_data['business_id'],
+                            call_type="intent",
+                            llm_call_id=llm_call_id,
+                            available_stages=self._get_available_stages(conn, message_data['business_id'])
                         )
                         
                         # Add intent detection step to processing steps
@@ -207,266 +254,226 @@ class MessageHandler:
                         })
                         
                         # Use the stage response to update the conversation's stage
-                        try:
-                            # First, check if the response contains a stage name
-                            if stage_response and len(stage_response.strip()) > 0:
-                                log.info(f"Stage detection response: {stage_response}")
+                        if stage_response and len(stage_response.strip()) > 0:
+                            log.info(f"Stage detection response: {stage_response}")
+                            
+                            # Query available stages to match against response
+                            cursor.execute(
+                                """
+                                SELECT stage_id, stage_name 
+                                FROM stages 
+                                WHERE business_id = %s
+                                """,
+                                (message_data['business_id'],)
+                            )
+                            available_stages = cursor.fetchall()
+                            
+                            # Enhanced matching - find the stage name in the response
+                            detected_stage_id = None
+                            stage_response_lower = stage_response.lower()
+                            
+                            # Method 1: Direct substring match (case insensitive)
+                            for stage in available_stages:
+                                stage_id = stage[0]
+                                stage_name = stage[1].lower()
                                 
-                                # Query available stages to match against response
-                                cursor = conn.cursor()
-                                cursor.execute(
-                                    """
-                                    SELECT stage_id, stage_name 
-                                    FROM stages 
-                                    WHERE business_id = %s
-                                    """,
-                                    (business_id,)
-                                )
-                                available_stages = cursor.fetchall()
-                                
-                                # Enhanced matching - find the stage name in the response
-                                detected_stage_id = None
-                                stage_response_lower = stage_response.lower()
-                                
-                                # Method 1: Direct substring match (case insensitive)
+                                if stage_name in stage_response_lower:
+                                    detected_stage_id = stage_id
+                                    log.info(f"Detected stage by direct match: {stage[1]} (ID: {stage_id})")
+                                    break
+                            
+                            # Method 2: If no direct match, try to find stage name at word boundaries
+                            if not detected_stage_id:
                                 for stage in available_stages:
                                     stage_id = stage[0]
                                     stage_name = stage[1].lower()
                                     
-                                    if stage_name in stage_response_lower:
+                                    # Look for stage name as a whole word
+                                    pattern = r'\b' + re.escape(stage_name) + r'\b'
+                                    if re.search(pattern, stage_response_lower):
                                         detected_stage_id = stage_id
-                                        log.info(f"Detected stage by direct match: {stage[1]} (ID: {stage_id})")
+                                        log.info(f"Detected stage by word boundary: {stage[1]} (ID: {stage_id})")
                                         break
+                            
+                            if detected_stage_id:
+                                # Update conversation with new stage
+                                cursor.execute(
+                                    """
+                                    UPDATE conversations 
+                                    SET stage_id = %s 
+                                    WHERE conversation_id = %s
+                                    """,
+                                    (detected_stage_id, conversation_id)
+                                )
+                                conn.commit()
+                                log.info(f"Updated conversation {conversation_id} to stage {detected_stage_id}")
                                 
-                                # Method 2: If no direct match, try to find stage name at word boundaries
-                                if not detected_stage_id:
-                                    for stage in available_stages:
-                                        stage_id = stage[0]
-                                        stage_name = stage[1].lower()
-                                        
-                                        # Look for stage name as a whole word
-                                        pattern = r'\b' + re.escape(stage_name) + r'\b'
-                                        if re.search(pattern, stage_response_lower):
-                                            detected_stage_id = stage_id
-                                            log.info(f"Detected stage by word boundary: {stage[1]} (ID: {stage_id})")
-                                            break
-                                
-                                # Method 3: Check for stage names with confidence levels
-                                if not detected_stage_id:
-                                    # Look for patterns like "Stage: Discovery (90% confidence)"
-                                    for stage in available_stages:
-                                        stage_id = stage[0]
-                                        stage_name = stage[1].lower()
-                                        
-                                        # Check for stage name followed by confidence indicator
-                                        confidence_pattern = stage_name + r'.*?(\d+)[%\s]*(confidence|certainty)'
-                                        match = re.search(confidence_pattern, stage_response_lower)
-                                        if match:
-                                            detected_stage_id = stage_id
-                                            confidence = match.group(1)
-                                            log.info(f"Detected stage with confidence: {stage[1]} ({confidence}%) (ID: {stage_id})")
-                                            break
-                                
-                                # Log raw stage response for debugging
-                                log.info(f"Raw stage detection response: {stage_response}")
-                                
-                                # If a stage was detected, update the conversation
-                                if detected_stage_id:
-                                    log.info(f"Updating conversation {conversation_id} stage to {detected_stage_id}")
-                                    cursor = conn.cursor()
-                                    cursor.execute(
-                                        """
-                                        UPDATE conversations 
-                                        SET stage_id = %s, last_updated = NOW() 
-                                        WHERE conversation_id = %s
-                                        """,
-                                        (detected_stage_id, conversation_id)
-                                    )
-                                    current_stage = detected_stage_id  # Update local variable
-                                    log.info(f"Conversation {conversation_id} stage updated successfully.")
-                                else:
-                                    log.warning(f"No matching stage found for response: {stage_response}")
-                        except Exception as stage_update_error:
-                            log.error(f"Error updating stage based on LLM response: {stage_update_error}", exc_info=True)
-                            # Do not commit here, let the main transaction handle it
+                                # Get new templates for the detected stage
+                                stage_info = self.stage_service.get_stage_for_message(
+                                    conn,
+                                    message_data['business_id'],
+                                    message_data['user_id'],
+                                    conversation_id
+                                )
+                                if stage_info:
+                                    stage_id, selection_template_id, extraction_template_id, response_template_id = stage_info
+                                    log.info(f"Updated stage info: stage_id={stage_id}, templates={[selection_template_id, extraction_template_id, response_template_id]}")
                 
-                # Step 2: Data Extraction using new stage's template
-                extracted_data = ""
+                # Step 2: Data Extraction
                 if extraction_template_id:
                     extraction_template = self.template_service.get_template(conn, extraction_template_id)
                     if extraction_template:
-                        # Use the data extraction service instead of direct LLM call
-                        extracted_data = self.data_extraction_service.extract_data(
-                            message_content=content,
-                            extraction_template_id=extraction_template_id,
-                            business_id=business_id,
-                            user_id=user_id,
-                            conversation_id=conversation_id
+                        applied_template = self.template_service.apply_template(extraction_template, context)
+                        extraction_input = applied_template['content']
+                        extraction_system_prompt = applied_template.get('system_prompt', '')
+                        
+                        # Extract data using LLM
+                        extracted_data = self.llm_service.generate_response(
+                            input_text=extraction_input,
+                            system_prompt=extraction_system_prompt,
+                            conversation_id=conversation_id,
+                            business_id=message_data['business_id'],
+                            call_type="extraction",
+                            llm_call_id=llm_call_id
                         )
                         
                         # Add data extraction step to processing steps
-                        extraction_step = {
+                        processing_steps.append({
                             'step': 'data_extraction',
                             'template_id': extraction_template_id,
                             'template_name': extraction_template.get('template_name', 'Unknown'),
-                            'extracted_data': extracted_data,
+                            'prompt': extraction_input,
+                            'response': extracted_data,
+                            'system_prompt': extraction_system_prompt,
                             'timestamp': datetime.now().isoformat()
-                        }
+                        })
                         
-                        # Get the extraction template content and system prompt for UI display
-                        if extraction_template:
-                            applied_template = self.template_service.apply_template(extraction_template, context)
-                            extraction_input = applied_template.get('content', '')
-                            extraction_system_prompt = applied_template.get('system_prompt', '')
-                            
-                            # Add these to the processing step
-                            extraction_step['prompt'] = extraction_input
-                            extraction_step['system_prompt'] = extraction_system_prompt
-                            
-                            # For the response, we'll convert the extracted_data to a formatted string
-                            if isinstance(extracted_data, dict):
-                                extraction_step['response'] = json.dumps(extracted_data, indent=2)
-                            else:
-                                extraction_step['response'] = str(extracted_data)
-                        
-                        # Add the extraction step to processing steps
-                        processing_steps.append(extraction_step)
-                        
-                        # Add extracted data to context for response generation
-                        context['extracted_data'] = extracted_data
+                        # Update context with extracted data
+                        try:
+                            extracted_data_dict = json.loads(extracted_data)
+                            context.update(extracted_data_dict)
+                            log.info(f"Updated context with extracted data: {extracted_data_dict}")
+                        except json.JSONDecodeError:
+                            log.warning(f"Could not parse extracted data as JSON: {extracted_data}")
                 
-                # Step 3: Response Generation using new stage's template
-                # Prepare response input and system prompt
-                response_input = content  # Default to original message content
-                response_system_prompt = ""  # Default to empty system prompt
+                # Step 3: Response Generation
+                if not response_template_id:
+                    self._store_process_log(log_id, {
+                        'status': 'error',
+                        'error': "No response template found",
+                        'timestamp': datetime.now().isoformat()
+                    })
+                    return {
+                        'success': False,
+                        'error': "No response template found"
+                    }
                 
-                # Get and apply response template if available
-                if response_template_id:
-                    response_template = self.template_service.get_template(conn, response_template_id)
-                    if response_template:
-                        applied_template = self.template_service.apply_template(response_template, context)
-                        response_input = applied_template['content']
-                        response_system_prompt = applied_template.get('system_prompt', '')
-                
-                # Generate final response
-                final_response = self.llm_service.generate_response(
-                    input_text=response_input,
-                    system_prompt=response_system_prompt,
-                    conversation_id=conversation_id,
-                    agent_id=api_key,
-                    call_type="response",  # Specify this is a response generation call
-                    business_id=business_id,  # Add business_id for saving calls
-                    llm_call_id=llm_call_id  # Use the same llm_call_id for all calls
+                # Save messages
+                message_id = self._save_message(
+                    conn,
+                    conversation_id,
+                    message_data['content'],
+                    message_data.get('sender_type', 'user'),  # Use sender_type from message_data if provided
+                    message_data['user_id']
                 )
                 
-                # Add response generation step to processing steps
-                processing_steps.append({
-                    'step': 'response_generation',
-                    'template_id': response_template_id,
-                    'template_name': response_template.get('template_name', 'Unknown'),
-                    'prompt': response_input,
-                    'response': final_response,
-                    'system_prompt': response_system_prompt,
+                # Only generate and save AI response if the message is from a regular user
+                sender_type = message_data.get('sender_type', 'user')
+                if sender_type == 'user':  # Only generate response for user messages
+                    response_template = self.template_service.get_template(conn, response_template_id)
+                    if not response_template:
+                        self._store_process_log(log_id, {
+                            'status': 'error',
+                            'error': "Response template not found",
+                            'timestamp': datetime.now().isoformat()
+                        })
+                        return {
+                            'success': False,
+                            'error': "Response template not found"
+                        }
+                    
+                    applied_template = self.template_service.apply_template(response_template, context)
+                    response_input = applied_template['content']
+                    response_system_prompt = applied_template.get('system_prompt', '')
+                    
+                    # Generate response using LLM
+                    response = self.llm_service.generate_response(
+                        input_text=response_input,
+                        system_prompt=response_system_prompt,
+                        conversation_id=conversation_id,
+                        business_id=message_data['business_id'],
+                        call_type="response",
+                        llm_call_id=llm_call_id
+                    )
+                    
+                    # Add response generation step to processing steps
+                    processing_steps.append({
+                        'step': 'response_generation',
+                        'template_id': response_template_id,
+                        'template_name': response_template.get('template_name', 'Unknown'),
+                        'prompt': response_input,
+                        'response': response,
+                        'system_prompt': response_system_prompt,
+                        'timestamp': datetime.now().isoformat()
+                    })
+                    
+                    # Save AI response
+                    response_id = self._save_message(
+                        conn,
+                        conversation_id,
+                        response,
+                        'assistant'
+                    )
+                else:
+                    response = None
+                    response_id = None
+                
+                # Update conversation timestamp
+                self._update_conversation_timestamp(conn, conversation_id)
+                
+                # Commit the transaction
+                conn.commit()
+                
+                # Store final success log
+                self._store_process_log(log_id, {
+                    'status': 'completed',
+                    'response': response,
+                    'conversation_id': conversation_id,
+                    'message_id': message_id,
+                    'response_id': response_id,
+                    'stage_id': stage_id,
+                    'processing_steps': processing_steps,
                     'timestamp': datetime.now().isoformat()
                 })
                 
-                # Get and apply output template if available
-                processed_output = final_response
-                
-                if response_template_id:
-                    # Add LLM response to context
-                    context['llm_response'] = final_response
-                    
-                    # IMPORTANT: We don't want to apply the template to the response that we store in the database
-                    # Output template only applies to the contextual metadata seen in the UI/frontend
-                    # We store the actual LLM response in the database
-                    output_template = self.template_service.get_template(conn, response_template_id)
-                    if output_template:
-                        # Store the original final_response as what gets saved in the database
-                        processed_output = final_response
-                
-                # Save user message and AI response to the database
-                # Save user message first
-                message_id = self._save_message(
-                    conn, 
-                    conversation_id=conversation_id,
-                    content=content,
-                    sender_type='user',
-                    user_id=user_id
-                )
-                
-                # Save AI response - using the actual LLM response (final_response), not the processed template
-                response_message_id = self._save_message(
-                    conn, 
-                    conversation_id=conversation_id,
-                    content=final_response,
-                    sender_type='ai',
-                    user_id=user_id
-                )
-                
-                # Get current timestamp for response
-                current_time = datetime.now()
-                
-                # --- Commit Transaction ---
-                conn.commit()
-                log.info(f"Transaction committed successfully for conversation {conversation_id}")
-
-                # Store final success log after commit
-                self._store_process_log(log_id, {
-                    'status': 'completed',
-                    'response': final_response,
+                return {
+                    'success': True,
+                    'response': response,
                     'conversation_id': conversation_id,
                     'message_id': message_id,
-                    'response_id': response_message_id,
-                    'stage_id': current_stage,
-                    'processing_steps': processing_steps,
-                    'timestamp': current_time.isoformat()
-                })
-                
-                # Return the response
-                return {
-                    "response": final_response,  # Return the actual LLM response not the processed template
-                    "conversation_id": conversation_id,
-                    "message_id": message_id,
-                    "response_id": response_message_id,
-                    "created_at": current_time.isoformat(),
-                    "process_log_id": log_id,
-                    "success": True,
-                    "processing_steps": processing_steps
+                    'response_id': response_id,
+                    'process_log_id': log_id,
+                    'processing_steps': processing_steps
                 }
                 
             except Exception as e:
-                # --- Rollback Transaction ---
-                log.error(f"Error during message processing for conversation {conversation_id}. Rolling back transaction. Error: {str(e)}", exc_info=True)
-                if conn:
-                    try:
-                        conn.rollback()
-                        log.info("Transaction rolled back successfully.")
-                    except Exception as rb_err:
-                        log.error(f"Error during rollback: {rb_err}", exc_info=True)
-                
-                # Store error log
+                log.error(f"Error processing message: {str(e)}", exc_info=True)
                 self._store_process_log(log_id, {
                     'status': 'error',
                     'error': str(e),
-                    'processing_steps': processing_steps, # Log steps up to the error
+                    'processing_steps': processing_steps,
                     'timestamp': datetime.now().isoformat()
                 })
-                
-                # Return error response
                 return {
                     'success': False,
-                    'error': f"Error processing message: {str(e)}",
-                    'process_log_id': log_id # Include log ID for debugging
+                    'error': str(e),
+                    'process_log_id': log_id
                 }
             
             finally:
-                # Return the connection to the pool
-                if conn:
-                    self.db_pool.putconn(conn)
-                    log.debug("Database connection returned to pool.")
+                self.db_pool.putconn(conn)
 
-        except Exception as outer_e: # Catch errors before getting connection
+        except Exception as outer_e:
             log.error(f"Outer error in process_message: {str(outer_e)}", exc_info=True)
             self._store_process_log(log_id, {
                 'status': 'error',
@@ -478,6 +485,103 @@ class MessageHandler:
                 'error': f"Outer error: {str(outer_e)}",
                 'process_log_id': log_id
             }
+    
+    def _get_or_create_conversation(self, conn, business_id: str, user_id: str, 
+                                  conversation_id: Optional[str] = None) -> str:
+        """Get existing conversation or create a new one."""
+        cursor = conn.cursor()
+        
+        try:
+            # First, check if the user exists
+            cursor.execute(
+                """
+                SELECT user_id FROM users WHERE user_id = %s
+                """,
+                (user_id,)
+            )
+            if not cursor.fetchone():
+                # User doesn't exist, create them
+                cursor.execute(
+                    """
+                    INSERT INTO users (
+                        user_id, first_name, last_name, email, created_at
+                    )
+                    VALUES (%s, %s, %s, %s, NOW())
+                    """,
+                    (user_id, 'NEW', 'User', f'auto-{user_id}@example.com')
+                )
+                log.info(f"Created new user: {user_id}")
+            
+            if conversation_id:
+                # Verify the conversation exists
+                cursor.execute(
+                    """
+                    SELECT conversation_id FROM conversations WHERE conversation_id = %s
+                    """,
+                    (conversation_id,)
+                )
+                result = cursor.fetchone()
+                
+                if result:
+                    return conversation_id
+                else:
+                    log.info(f"Conversation {conversation_id} not found, creating new one")
+            
+            # Create a new conversation
+            new_conversation_id = str(uuid.uuid4())
+            session_id = str(uuid.uuid4())  # Generate a unique session ID
+            llm_call_id = str(uuid.uuid4())  # Generate a unique LLM call ID
+            
+            cursor.execute(
+                """
+                INSERT INTO conversations (
+                    conversation_id, business_id, user_id, session_id, 
+                    start_time, last_updated, status, llm_call_id
+                )
+                VALUES (%s, %s, %s, %s, NOW(), NOW(), 'active', %s)
+                """,
+                (new_conversation_id, business_id, user_id, session_id, llm_call_id)
+            )
+            
+            log.info(f"Created new conversation: {new_conversation_id}")
+            return new_conversation_id
+            
+        except Exception as e:
+            log.error(f"Error in _get_or_create_conversation: {str(e)}")
+            raise
+    
+    def _save_message(self, conn, conversation_id: str, content: str, 
+                     sender_type: str, user_id: str = None) -> str:
+        """Save a message to the database."""
+        cursor = conn.cursor()
+        message_id = str(uuid.uuid4())
+        try:
+            cursor.execute(
+                """
+                INSERT INTO messages (message_id, conversation_id, message_content, sender_type, user_id)
+                VALUES (%s, %s, %s, %s, %s)
+                RETURNING message_id
+                """,
+                (message_id, conversation_id, content, sender_type, user_id)
+            )
+            message_id = cursor.fetchone()[0]
+            log.info(f"Saved message {message_id} for conversation {conversation_id}")
+            return message_id
+        except Exception as e:
+            log.error(f"Error saving message: {str(e)}")
+            raise
+    
+    def _update_conversation_timestamp(self, conn, conversation_id: str) -> None:
+        """Update the conversation's last updated timestamp."""
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            UPDATE conversations
+            SET last_updated = CURRENT_TIMESTAMP
+            WHERE conversation_id = %s
+            """,
+            (conversation_id,)
+        )
     
     def _create_conversation(self, conn, business_id: str, user_id: str) -> str:
         """
@@ -549,141 +653,6 @@ class MessageHandler:
             log.error(f"Error creating conversation: {str(e)}")
             # Generate a new conversation ID even if there's an error
             return str(uuid.uuid4())
-    
-    def _save_message(self, conn, conversation_id: str, content: str, 
-                     sender_type: str, user_id: str = None) -> str:
-        """
-        Save a message to the database.
-        
-        Args:
-            conn: Database connection
-            conversation_id: UUID of the conversation
-            content: Message content
-            sender_type: Type of sender ('user' or 'ai')
-            user_id: UUID of the user (optional)
-            
-        Returns:
-            UUID of the created message
-        """
-        try:
-            message_id = str(uuid.uuid4())
-            cursor = conn.cursor()
-            
-            # Get user_id from conversation if not provided
-            if user_id is None:
-                cursor.execute(
-                    """
-                    SELECT user_id FROM conversations WHERE conversation_id = %s
-                    """,
-                    (conversation_id,)
-                )
-                result = cursor.fetchone()
-                if result:
-                    user_id = result[0]
-                else:
-                    log.error(f"Could not find user_id for conversation {conversation_id}")
-                    raise ValueError(f"Could not find user_id for conversation {conversation_id}")
-            
-            # Map 'assistant' to 'ai' for database compatibility
-            if sender_type == 'assistant':
-                sender_type = 'ai'
-            
-            # Save the message
-            cursor.execute(
-                """
-                INSERT INTO messages (
-                    message_id, conversation_id, user_id, message_content, 
-                    sender_type, created_at
-                )
-                VALUES (%s, %s, %s, %s, %s, NOW())
-                """,
-                (message_id, conversation_id, user_id, content, sender_type)
-            )
-            log.info(f"Message saved: ID={message_id}, Conversation={conversation_id}, Sender={sender_type}")
-            return message_id
-        except Exception as e:
-            log.error(f"Error saving message: {str(e)}")
-            raise
-
-    def get_stage_for_message(self, conn, user_id: str, conversation_id: str, business_id: str) -> Tuple[str, str, str, str]:
-        """
-        Get the appropriate stage for a message.
-        
-        Args:
-            conn: Database connection
-            user_id: UUID of the user
-            conversation_id: UUID of the conversation
-            business_id: UUID of the business
-            
-        Returns:
-            Tuple containing (stage_id, selection_template_id, extraction_template_id, response_template_id)
-        """
-        try:
-            cursor = conn.cursor()
-            
-            # First check if there's a stage set for this conversation
-            cursor.execute(
-                """
-                SELECT stage_id FROM conversations 
-                WHERE conversation_id = %s
-                """,
-                (conversation_id,)
-            )
-            result = cursor.fetchone()
-            stage_id = result[0] if result and result[0] else None
-            
-            # If no stage is set, get the first stage for this business
-            if not stage_id:
-                cursor.execute(
-                    """
-                    SELECT stage_id FROM stages 
-                    WHERE business_id = %s 
-                    ORDER BY created_at ASC 
-                    LIMIT 1
-                    """,
-                    (business_id,)
-                )
-                result = cursor.fetchone()
-                if result:
-                    stage_id = result[0]
-                    # Update conversation with the new stage
-                    cursor.execute(
-                        """
-                        UPDATE conversations 
-                        SET stage_id = %s 
-                        WHERE conversation_id = %s
-                        """,
-                        (stage_id, conversation_id)
-                    )
-            
-            # Get template IDs for this stage
-            if stage_id:
-                cursor.execute(
-                    """
-                    SELECT stage_id, 
-                           stage_selection_template_id, 
-                           data_extraction_template_id, 
-                           response_generation_template_id
-                    FROM stages 
-                    WHERE stage_id = %s
-                    """,
-                    (stage_id,)
-                )
-                result = cursor.fetchone()
-                if result:
-                    return (
-                        result[0],  # stage_id
-                        result[1],  # stage_selection_template_id
-                        result[2],  # data_extraction_template_id
-                        result[3]   # response_generation_template_id
-                    )
-            
-            # If no stage found, return None values
-            return None, None, None, None
-            
-        except Exception as e:
-            log.error(f"Error getting stage for message: {str(e)}")
-            return None, None, None, None 
 
     @classmethod
     def _store_process_log(cls, log_id: str, log_data: Dict[str, Any]) -> None:

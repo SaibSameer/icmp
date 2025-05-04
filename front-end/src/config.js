@@ -3,13 +3,13 @@
 // API Configuration
 const API_CONFIG = {
   // Base URL for API requests
-  BASE_URL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || 'https://icmp-events-api.onrender.com',
+  BASE_URL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000',
   
   // API endpoints
   ENDPOINTS: {
     LOGIN: '/api/save-config',
     MESSAGE: '/api/message',
-    CONVERSATIONS: '/api/v1/conversations',
+    CONVERSATIONS: '/api/conversations',
     BUSINESSES: '/businesses',
     STAGES: '/api/stages',
     TEMPLATES: '/templates',

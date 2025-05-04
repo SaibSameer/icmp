@@ -206,8 +206,14 @@ class TemplateService:
                 conversation_history.append({
                     'content': msg['message_content'],
                     'sender': msg['sender_type'],
-                    'timestamp': msg['created_at'].isoformat() if msg['created_at'] else ''
+                    'timestamp': msg['created_at'].isoformat() if msg['created_at'] else '',
+                    'formatted_timestamp': msg['created_at'].strftime('%Y-%m-%d %H:%M:%S') if msg['created_at'] else ''
                 })
+            
+            # Limit the number of messages in history
+            max_history_messages = 50
+            if len(conversation_history) > max_history_messages:
+                conversation_history = conversation_history[-max_history_messages:]
             
             # Build basic context
             context = {
@@ -218,7 +224,8 @@ class TemplateService:
                 'user': user_info,
                 'conversation': {
                     'id': conversation_id,
-                    'history': conversation_history
+                    'history': conversation_history,
+                    'message_count': len(conversation_history)
                 },
                 'current_message': message_content,
                 'user_message': message_content

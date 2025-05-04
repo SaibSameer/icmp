@@ -61,4 +61,4 @@ def get_recent_process_logs(business_id: str, limit: int = 10) -> List[Dict[str,
     )
     
     # Return the most recent logs
-    return sorted_logs[:limit] 
+    return sorted_logs[:limit]

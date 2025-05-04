@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICMP Monitoring Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .dashboard-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .dashboard-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .plot-container {
+            width: 100%;
+            height: 400px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .stat-card p {
+            margin: 10px 0 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-card">
+            <h2>Overview</h2>
+            <div class="stats-grid" id="overview-stats"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Performance Trends</h2>
+            <div class="plot-container" id="trend-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Pattern Analysis</h2>
+            <div class="plot-container" id="pattern-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Error Analysis</h2>
+            <div class="plot-container" id="error-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Template Performance</h2>
+            <div class="plot-container" id="template-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Processing Pipeline</h2>
+            <div class="plot-container" id="pipeline-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>AI Performance</h2>
+            <div class="plot-container" id="ai-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Error Patterns</h2>
+            <div class="plot-container" id="error-pattern-plot"></div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('/api/monitoring/all');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('API Response:', data);  // Log the response
+                console.log('AI Performance Data:', data.ai_performance);  // Log AI performance data specifically
+                
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Invalid response format');
+                }
+                
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                // Show error message in all plots
+                showErrorPlot('trend-plot', 'Performance Trends');
+                showErrorPlot('pattern-plot', 'Pattern Analysis');
+                showErrorPlot('error-plot', 'Error Analysis');
+                showErrorPlot('template-plot', 'Template Performance');
+                showErrorPlot('pipeline-plot', 'Processing Pipeline');
+                showErrorPlot('ai-plot', 'AI Performance');
+                showErrorPlot('error-pattern-plot', 'Error Patterns');
+            }
+        }
+
+        function updateAIPerformance(data) {
+            console.log('updateAIPerformance called with:', data);  // Log the data
+            if (!data) {
+                console.error('AI performance data is missing');
+                showErrorPlot('ai-plot', 'AI Performance');
+                return;
+            }
+
+            try {
+                // The data structure is data.data.ai_plot
+                if (data.data && data.data.ai_plot && typeof data.data.ai_plot === 'string') {
+                    console.log('AI plot data:', data.data.ai_plot);  // Log the plot data
+                    const aiPlotData = JSON.parse(data.data.ai_plot);
+                    if (!aiPlotData.data || !aiPlotData.layout) {
+                        throw new Error('Invalid plot data structure');
+                    }
+                    Plotly.newPlot('ai-plot', aiPlotData.data, aiPlotData.layout);
+                } else {
+                    console.error('AI plot data is missing or invalid');
+                    showErrorPlot('ai-plot', 'AI Performance');
+                }
+            } catch (e) {
+                console.error('Error parsing AI plot data:', e);
+                showErrorPlot('ai-plot', 'AI Performance');
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update overview stats
+            if (data.overview) {
+                const overviewStats = document.getElementById('overview-stats');
+                overviewStats.innerHTML = `
+                    <div class="stat-card">
+                        <h3>Total Extractions</h3>
+                        <p>${data.overview.total_extractions || 0}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Success Rate</h3>
+                        <p>${((data.overview.success_rate || 0) * 100).toFixed(1)}%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Recent Extractions</h3>
+                        <p>${data.overview.recent_extractions || 0}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Recent Success Rate</h3>
+                        <p>${((data.overview.recent_success_rate || 0) * 100).toFixed(1)}%</p>
+                    </div>
+                `;
+            }
+
+            // Update plots
+            if (data.performance_trends?.trend_plot) {
+                try {
+                    const trendPlotData = JSON.parse(data.performance_trends.trend_plot);
+                    Plotly.newPlot('trend-plot', trendPlotData.data, trendPlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing trend plot data:', e);
+                    showErrorPlot('trend-plot', 'Performance Trends');
+                }
+            }
+            if (data.pattern_analysis?.pattern_plot) {
+                try {
+                    const patternPlotData = JSON.parse(data.pattern_analysis.pattern_plot);
+                    Plotly.newPlot('pattern-plot', patternPlotData.data, patternPlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing pattern plot data:', e);
+                    showErrorPlot('pattern-plot', 'Pattern Analysis');
+                }
+            }
+            if (data.error_analysis?.error_plot) {
+                try {
+                    const errorPlotData = JSON.parse(data.error_analysis.error_plot);
+                    Plotly.newPlot('error-plot', errorPlotData.data, errorPlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing error plot data:', e);
+                    showErrorPlot('error-plot', 'Error Analysis');
+                }
+            }
+            if (data.template_performance?.template_plot) {
+                try {
+                    const templatePlotData = JSON.parse(data.template_performance.template_plot);
+                    Plotly.newPlot('template-plot', templatePlotData.data, templatePlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing template plot data:', e);
+                    showErrorPlot('template-plot', 'Template Performance');
+                }
+            }
+            if (data.pipeline_metrics?.pipeline_plot) {
+                try {
+                    const pipelinePlotData = JSON.parse(data.pipeline_metrics.pipeline_plot);
+                    Plotly.newPlot('pipeline-plot', pipelinePlotData.data, pipelinePlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing pipeline plot data:', e);
+                    showErrorPlot('pipeline-plot', 'Processing Pipeline');
+                }
+            }
+            if (data.error_patterns?.error_pattern_plot) {
+                try {
+                    const errorPatternPlotData = JSON.parse(data.error_patterns.error_pattern_plot);
+                    Plotly.newPlot('error-pattern-plot', errorPatternPlotData.data, errorPatternPlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing error pattern plot data:', e);
+                    showErrorPlot('error-pattern-plot', 'Error Patterns');
+                }
+            }
+
+            // Update AI performance separately
+            if (data.ai_performance) {
+                console.log('Passing AI performance data:', data.ai_performance);
+                updateAIPerformance(data.ai_performance);
+            } else {
+                console.error('AI performance data is missing in the response');
+                showErrorPlot('ai-plot', 'AI Performance');
+            }
+        }
+
+        function showErrorPlot(containerId, title) {
+            Plotly.newPlot(containerId, [{
+                type: 'scatter',
+                mode: 'text',
+                text: ['Error loading data'],
+                textposition: 'middle center',
+                showlegend: false
+            }], {
+                title: title,
+                xaxis: {visible: false},
+                yaxis: {visible: false}
+            });
+        }
+
+        // Initial fetch
+        fetchDashboardData();
+
+        // Refresh every 30 seconds
+        setInterval(fetchDashboardData, 30000);
+    </script>
+</body>
+</html> 

@@ -167,4 +167,4 @@ def facebook_data_deletion():
 def deletion_status():
     """A simple page users can be directed to after requesting deletion."""
     # You could enhance this to show status based on confirmation_code if needed
-    return "Your data deletion request is being processed. Please allow up to 48 hours.", 200 
+    return "Your data deletion request is being processed. Please allow up to 48 hours.", 200

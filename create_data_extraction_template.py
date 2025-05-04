@@ -106,4 +106,4 @@ def main():
         print(f"Failed to create template: {str(e)}")
 
 if __name__ == "__main__":
-    main() 
+    main()

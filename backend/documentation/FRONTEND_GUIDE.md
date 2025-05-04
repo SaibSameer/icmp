@@ -54,11 +54,14 @@ This guide provides details specific to the `/front-end` React application.
 
 ## API Interaction
 
-*   Uses the browser's `fetch` API
-*   **Authentication:** Uses `businessApiKey` HttpOnly cookie
-*   **Error Handling:** Checks `response.ok` and handles errors appropriately
+*   Uses the browser's `fetch` API.
+*   **Authentication:** Relies primarily on the `businessApiKey` which is set as a secure, `HttpOnly` **cookie** by the backend `/api/save-config` endpoint after successful configuration via `Configuration.js`.
+    *   API calls using `fetch` should include `credentials: 'include'` in their options to ensure the browser sends the authentication cookie.
+    *   The backend decorator (`@require_business_api_key`) validates this cookie along with the `business_id` associated with the request.
+*   **Getting `business_id` for API calls:** Once configured, the application should store the active `business_id` in its state (e.g., React Context or component state). API service functions (like `stageService.getStage`) should receive the `business_id` from this state, rather than relying on `localStorage` as shown in some older examples.
+*   **Error Handling:** Checks `response.ok` and handles errors appropriately.
 
-Example service module:
+Example service module structure (ensure `credentials: 'include'` is set):
 ```javascript
 // src/services/stageService.js
 const API_BASE_URL = '/api';
@@ -127,20 +130,29 @@ export const stageService = {
 
 ## Key Components
 
-### StageView Component
+### StageView Component (Conceptual Update)
 
 ```jsx
-// src/components/StageView.jsx
+// src/components/StageView.jsx - Conceptual Example
+import React, { useState, useEffect, useContext } from 'react'; // Assuming context for businessId
+// import { AppContext } from '../contexts/AppContext'; // Example context
+
 function StageView({ stageId }) {
+    // const { businessId } = useContext(AppContext); // Get businessId from context/state
     const [stageData, setStageData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const businessId = "get-from-state-or-context"; // Placeholder
 
     useEffect(() => {
-        // Fetch stage data
+        if (!businessId) {
+            setError("Business not configured.");
+            setLoading(false);
+            return;
+        }
         const fetchStage = async () => {
             try {
-                const businessId = localStorage.getItem('businessId');
+                // Pass businessId obtained from state/context
                 const data = await stageService.getStage(stageId, businessId);
                 setStageData(data);
             } catch (err) {
@@ -151,22 +163,13 @@ function StageView({ stageId }) {
         };
 
         fetchStage();
-    }, [stageId]);
+    }, [stageId, businessId]);
 
     // Render loading, error, or stage data
-    if (loading) return <LoadingSpinner />;
-    if (error) return <ErrorMessage message={error} />;
-    if (!stageData) return <NoDataMessage />;
-
-    return (
-        <Paper>
-            <BasicInformation data={stageData} />
-            <TemplateConfiguration data={stageData} />
-            <CreationInfo data={stageData} />
-        </Paper>
-    );
+    // ... (render logic) ...
 }
 ```
+*Note: The example above is conceptual. The actual implementation might differ, but it illustrates obtaining `businessId` from application state rather than `localStorage` for API calls.* 
 
 ### StageManager Component
 
@@ -238,5 +241,5 @@ Creates an optimized build in `build/` directory.
 
 ## Key Components
 
-*   **`Configuration.js`:** Handles input for `userId`, `businessId`, `businessApiKey`, saves configuration via `/api/save-config`, and handles logout.
+*   **`Configuration.js`:** Handles user input for `userId`, `businessId`, and the `businessApiKey` obtained after business creation. It calls the backend `/api/save-config` endpoint, which validates these details and, upon success, sets the `businessApiKey` HttpOnly cookie required for subsequent API calls.
 *   *(Add descriptions of other major components as they are developed)* 

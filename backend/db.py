@@ -146,9 +146,12 @@ def setup_database():
     try:
         conn = get_db_connection()
         # Drop tables with CASCADE
+        execute_query(conn, 'DROP TABLE IF EXISTS messages CASCADE;')
+        execute_query(conn, 'DROP TABLE IF EXISTS ai_control_settings CASCADE;')
         execute_query(conn, 'DROP TABLE IF EXISTS conversations CASCADE;')
         execute_query(conn, 'DROP TABLE IF EXISTS stages CASCADE;')
         execute_query(conn, 'DROP TABLE IF EXISTS businesses CASCADE;')
+        execute_query(conn, 'DROP TABLE IF EXISTS users CASCADE;')
 
         # Businesses table
         execute_query(conn, '''CREATE TABLE IF NOT EXISTS businesses (
@@ -208,6 +211,24 @@ def setup_database():
             CONSTRAINT fk_stage FOREIGN KEY (stage_id) REFERENCES stages(stage_id)
         );''')
         execute_query(conn, 'CREATE INDEX IF NOT EXISTS idx_conversations_business_id ON conversations (business_id);')
+
+        # AI Control Settings table
+        execute_query(conn, '''CREATE TABLE IF NOT EXISTS ai_control_settings (
+            id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+            user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+            conversation_id UUID REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+            is_stopped BOOLEAN NOT NULL DEFAULT false,
+            stop_time TIMESTAMP WITH TIME ZONE,
+            expiration_time TIMESTAMP WITH TIME ZONE,
+            created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+            updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+            CONSTRAINT check_entity CHECK (
+                (user_id IS NOT NULL AND conversation_id IS NULL) OR
+                (user_id IS NULL AND conversation_id IS NOT NULL)
+            )
+        );''')
+        execute_query(conn, 'CREATE INDEX IF NOT EXISTS idx_ai_control_user_id ON ai_control_settings(user_id);')
+        execute_query(conn, 'CREATE INDEX IF NOT EXISTS idx_ai_control_conversation_id ON ai_control_settings(conversation_id);')
 
         # Messages table
         execute_query(conn, '''CREATE TABLE IF NOT EXISTS messages (

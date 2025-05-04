@@ -9,12 +9,18 @@ def setup_database():
     # Database connection parameters
     db_params = {
         "dbname": os.getenv("DB_NAME", "icmp_db"),
-        "user": os.getenv("DB_USER", "icmp_splash"),
-        "password": os.getenv("DB_PASSWORD"),
-        "host": os.getenv("DB_HOST", "dpg-d0169m2l9vc739rdtv0-a"),
+        "user": os.getenv("DB_USER", "icmp_user"),
+        "password": os.getenv("DB_PASSWORD", "your_password"),
+        "host": os.getenv("DB_HOST", "localhost"),
         "port": os.getenv("DB_PORT", "5432")
     }
     
+    # Add check for password as it's often not defaulted
+    if not db_params["password"] and not os.getenv("PGPASSWORD"): 
+        print("ERROR: DB_PASSWORD environment variable not set and no default provided in script.")
+        print("Please set DB_PASSWORD in your .env file.")
+        return # Exit if password is truly missing
+
     try:
         # Connect to the database
         print("Connecting to the database...")
@@ -41,4 +47,4 @@ def setup_database():
             conn.close()
 
 if __name__ == "__main__":
-    setup_database() 
+    setup_database()

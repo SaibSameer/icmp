@@ -32,9 +32,10 @@ See [Project Summary](c:\icmp_events_api\archive_output\project_archive\sumary.t
     DB_HOST=localhost
     DB_PORT=5432
     OPENAI_API_KEY=your_openai_key
-    ICMP_API_KEY=generate_a_strong_secret_key # Used for admin/server tasks
+    ICMP_API_KEY=generate_a_strong_secret_key # Master key for admin/server tasks (e.g., passed via Authorization: Bearer header)
     # Add other variables as needed (e.g., for Flask secret key)
     FLASK_SECRET_KEY=generate_another_strong_secret
+    # NOTE: The businessApiKey is generated per business and handled via HttpOnly cookie, not set here.
     ```
 3.  **Database Setup:**
     *   Ensure PostgreSQL is running.
@@ -117,3 +118,12 @@ pytest
 - Some tests in the business routes are currently failing and being addressed
 - Conversation route tests need updates to match the latest API changes
 - Authentication tests are being updated to handle standardized error responses 
+
+## Authentication
+
+This project uses two primary authentication methods:
+
+1.  **Master API Key (`ICMP_API_KEY`):** Set in the `.env` file. Used for administrative actions and server-to-server communication. Typically passed via the `Authorization: Bearer <key>` header. See `@require_api_key` in `backend/auth.py`.
+2.  **Business API Key (`businessApiKey`):** Generated when a business is created. Handled via a secure `HttpOnly` cookie set by the `/api/save-config` endpoint after frontend configuration. Used for authenticating requests related to specific business data. See `@require_business_api_key` in `backend/auth.py`.
+
+Refer to `AUTH_GUIDELINES.md` for detailed usage. 

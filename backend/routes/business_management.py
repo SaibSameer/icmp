@@ -4,7 +4,7 @@ import uuid
 import logging
 from jsonschema import validate, ValidationError
 from db import get_db_connection, release_db_connection
-from auth import require_api_key, require_business_api_key
+from auth import require_api_key
 
 log = logging.getLogger(__name__)
 
@@ -169,7 +169,7 @@ default_stage_schema = {
 }
 
 @bp.route('/<uuid:business_id>/default-stage', methods=['PUT'])
-@require_business_api_key
+@require_api_key
 def set_default_stage(business_id):
     if not request.is_json:
         return jsonify({"error": "Request must be JSON"}), 400

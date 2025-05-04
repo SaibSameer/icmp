@@ -1,64 +1,73 @@
-from flask import Blueprint, jsonify, request
-from backend.db import get_db_connection, release_db_connection
-from backend.auth import require_api_key
+from flask import Blueprint, request, jsonify, g
 import logging
+from backend.db import get_db_connection, release_db_connection
+from backend.auth import require_internal_key
 
 # Set up logging
 log = logging.getLogger(__name__)
 
 # Create blueprint
-bp = Blueprint('conversations', __name__, url_prefix='/conversations')
+bp = Blueprint('conversations', __name__, url_prefix='/api/conversations')
 
-@bp.route('/<user_id>', methods=['GET'])
-@require_api_key
-def get_conversations(user_id):
-    """Get all conversations for a user."""
+@bp.route('', methods=['GET'])
+@require_internal_key
+def get_conversations():
+    # Get business_id from context
+    if not hasattr(g, 'business_id'):
+        log.error("Business context (g.business_id) not found after @require_internal_key.")
+        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
+    business_id = g.business_id
+    log.info(f"Fetching conversations for business {business_id}")
+
+    # Optional filters (e.g., user_id, status)
+    user_id = request.args.get('user_id')
+    status = request.args.get('status')
+    limit = request.args.get('limit', default=100, type=int)
+    offset = request.args.get('offset', default=0, type=int)
+
+    conn = None
     try:
-        business_id = request.args.get('business_id')
-        if not business_id:
-            return jsonify({'error': 'business_id is required'}), 400
-
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # Get conversations for the user and business
         query = """
-            SELECT 
-                c.id,
-                c.user_id,
-                c.business_id,
-                c.message,
-                c.sender,
-                c.status,
-                c.timestamp,
-                c.conversation_id
-            FROM conversations c
-            WHERE c.user_id = %s AND c.business_id = %s
-            ORDER BY c.timestamp DESC
+            SELECT conversation_id, user_id, agent_id, stage_id, session_id, 
+                   start_time, last_updated, status 
+            FROM conversations 
+            WHERE business_id = %s 
         """
+        params = [business_id]
+
+        if user_id:
+            query += " AND user_id = %s"
+            params.append(user_id)
+        if status:
+            query += " AND status = %s"
+            params.append(status)
         
-        cursor.execute(query, (user_id, business_id))
-        conversations = cursor.fetchall()
+        query += " ORDER BY last_updated DESC LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
 
-        # Format the response
-        formatted_conversations = []
-        for conv in conversations:
-            formatted_conversations.append({
-                'id': conv[0],
-                'user_id': conv[1],
-                'business_id': conv[2],
-                'message': conv[3],
-                'sender': conv[4],
-                'status': conv[5],
-                'timestamp': conv[6].isoformat() if conv[6] else None,
-                'conversation_id': conv[7]
-            })
+        cursor.execute(query, tuple(params))
+        rows = cursor.fetchall()
 
-        return jsonify(formatted_conversations)
+        conversations_list = [
+            {
+                "conversation_id": str(row[0]),
+                "user_id": str(row[1]),
+                "agent_id": str(row[2]) if row[2] else None,
+                "stage_id": str(row[3]) if row[3] else None,
+                "session_id": row[4],
+                "start_time": row[5].isoformat() if row[5] else None,
+                "last_updated": row[6].isoformat() if row[6] else None,
+                "status": row[7]
+            } for row in rows
+        ]
+        return jsonify(conversations_list), 200
 
     except Exception as e:
-        log.error(f"Error fetching conversations: {str(e)}")
-        return jsonify({'error': 'Internal server error'}), 500
+        log.error(f"Error fetching conversations for business {business_id}: {str(e)}", exc_info=True)
+        return jsonify({"error_code": "DB_ERROR", "message": f"Database error: {str(e)}"}), 500
     finally:
-        if 'conn' in locals():
+        if conn:
             release_db_connection(conn)

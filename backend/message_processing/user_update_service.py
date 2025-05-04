@@ -1,4 +1,4 @@
-    # -*- coding: utf-8 -*-"""
+# -*- coding: utf-8 -*-"""
 from typing import Dict, Any, Optional
 import logging
 import psycopg2
@@ -117,4 +117,4 @@ class UserUpdateService:
             # Log the error safely before re-raising
             log.error(f"Error during update_user for {user_id}: {e!r}") 
             # Re-raise the original exception to be caught by the caller
-            raise e 
+            raise e

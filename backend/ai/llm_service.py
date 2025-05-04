@@ -124,7 +124,7 @@ class LLMService:
                 """
                 INSERT INTO llm_calls (
                     call_id, business_id, input_text, response, 
-                    system_prompt, call_type, timestamp
+                    system_prompt, call_type, created_at
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP)
                 """,

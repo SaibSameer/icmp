@@ -146,4 +146,4 @@ class UserUpdateService(BaseUpdateService):
             
         if update_data:
             return self.update_user(user_id, update_data)
-        return None 
+        return None

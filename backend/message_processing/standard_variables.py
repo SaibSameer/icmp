@@ -97,35 +97,50 @@ def provide_conversation_history(conn, conversation_id: str, **kwargs) -> str:
     Args:
         conn: Database connection
         conversation_id: UUID of the conversation
+        **kwargs: Additional arguments including:
+            - max_messages: Maximum number of messages to retrieve (default: 50)
+            - include_timestamps: Whether to include timestamps (default: True)
         
     Returns:
         Formatted string with conversation messages
     """
     try:
+        if not conn:
+            log.error("No database connection provided")
+            return "Error: No database connection"
+            
+        max_messages = kwargs.get('max_messages', 50)
+        include_timestamps = kwargs.get('include_timestamps', True)
+        
         cursor = conn.cursor()
         cursor.execute(
             """
             SELECT message_content, sender_type, created_at 
             FROM messages 
             WHERE conversation_id = %s 
-            ORDER BY created_at ASC
+            ORDER BY created_at DESC
+            LIMIT %s
             """,
-            (conversation_id,)
+            (conversation_id, max_messages)
         )
         
         messages = cursor.fetchall()
         if not messages:
             return "No conversation history"
             
+        # Reverse to get chronological order
+        messages.reverse()
+        
         history = []
         for msg in messages:
             sender = "User" if msg['sender_type'] == 'user' else "Assistant"
-            history.append(f"{sender}: {msg['message_content']}")
+            timestamp = f"[{msg['created_at'].strftime('%Y-%m-%d %H:%M:%S')}] " if include_timestamps and msg['created_at'] else ""
+            history.append(f"{timestamp}{sender}: {msg['message_content']}")
             
         return "\n".join(history)
         
     except Exception as e:
-        log.error(f"Error providing conversation_history: {str(e)}")
+        log.error(f"Error providing conversation_history: {str(e)}", exc_info=True)
         return "Error retrieving conversation history"
 
 @TemplateVariableProvider.register_provider('summary_of_last_conversations')

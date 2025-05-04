@@ -7,63 +7,66 @@ based on business rules and configuration.
 
 from flask import Blueprint, jsonify, request
 import logging
-from db import get_db_connection, release_db_connection
-from auth import require_business_api_key
+from backend.db import get_db_connection, release_db_connection
+from backend.auth import require_internal_key
 
 log = logging.getLogger(__name__)
 
 # Create blueprint for routing endpoints
-bp = Blueprint('routing', __name__)
+bp = Blueprint('routing', __name__, url_prefix='/routing')
 
 @bp.route('/route', methods=['POST'])
-@require_business_api_key
+@require_internal_key
 def route_message():
     """
     Route a message to the appropriate handler based on business rules.
-    
-    This is a placeholder endpoint that can be expanded in the future to provide
-    more sophisticated routing logic based on business requirements.
+    Assumes business context (g.business_id) is set by the decorator.
     """
     if not request.is_json:
         return jsonify({"error": "Request must be JSON"}), 400
         
     data = request.get_json()
     
-    # Extract required fields
-    business_id = data.get('business_id')
+    # Get business context from g
+    if not hasattr(g, 'business_id'):
+        log.error("Business context (g.business_id) not found after @require_internal_key.")
+        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
+    business_id = g.business_id
+
+    # Extract other required fields
     message = data.get('message')
     user_id = data.get('user_id')
     
-    if not all([business_id, message, user_id]):
+    if not all([message, user_id]):
+        log.warning(f"Missing message or user_id for business {business_id}")
         return jsonify({
             "error": "Missing required fields",
-            "required_fields": ["business_id", "message", "user_id"]
+            "required_fields": ["message", "user_id"]
         }), 400
     
-    # This is where complex routing logic would go in the future
-    # For now, just return a simple response indicating the message would be routed
-    
+    log.info(f"Routing message for business {business_id}, user {user_id}")
+    # Placeholder routing logic
     return jsonify({
         "status": "success",
         "routing_destination": "default_handler",
-        "message": "Message would be routed based on business rules"
+        "message": f"Message for business {business_id} would be routed"
     }), 200
 
 @bp.route('/handlers', methods=['GET'])
-@require_business_api_key
+@require_internal_key
 def get_available_handlers():
     """
     Get a list of available message handlers for the business.
-    
-    This is a placeholder endpoint that can be expanded in the future to provide
-    information about different message handling pathways available to the business.
+    Assumes business context (g.business_id) is set by the decorator.
     """
-    business_id = request.args.get('business_id')
+    # Get business context from g
+    if not hasattr(g, 'business_id'):
+        log.error("Business context (g.business_id) not found after @require_internal_key.")
+        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
+    business_id = g.business_id
     
-    if not business_id:
-        return jsonify({"error": "business_id parameter is required"}), 400
-    
-    # Mock response - in a real implementation, this would be fetched from the database
+    log.info(f"Fetching available handlers for business {business_id}")
+    # Mock response - fetch from DB based on business_id in a real implementation
     handlers = [
         {
             "handler_id": "default_handler",

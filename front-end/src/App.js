@@ -1,22 +1,25 @@
 // src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { Container, CssBaseline, ThemeProvider, createTheme, Box } from '@mui/material';
-import Login from './components/Login';
-import BusinessDetailsView from './components/BusinessDetailsView/BusinessDetailsView.jsx';
-import StageManager from './components/StageManager';
-import TemplateEditor from './components/TemplateEditor';
-import TemplateManagement from './components/TemplateManagement';
-import MessagePortal from './components/MessagePortal';
+import Configuration from './components/Configuration';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './components/Home';
-import StageViewPage from './pages/StageViewPage';
-import MessageDebugPage from './pages/MessageDebugPage';
+import BusinessDetail from './components/BusinessDetail';
+import BusinessMessages from './components/BusinessMessages';
+import StagesList from './components/StagesList';
+import StageEdit from './components/StageEdit';
+import DefaultStageEdit from './components/DefaultStageEdit';
+import TemplateForm from './components/TemplateForm';
+import TemplateEdit from './components/TemplateEdit';
+import AgentSection from './components/AgentSection';
+import ConversationMessages from './components/ConversationMessages';
+import BusinessInformation from './components/BusinessInformation';
 import { UI_CONFIG } from './config';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { BusinessProvider } from './context/BusinessContext';
 import './App.css';
 
 const theme = createTheme({
@@ -32,8 +35,8 @@ const theme = createTheme({
 });
 
 function AppContent() {
-  const { isAuthenticated, userId, businessId, businessApiKey, setUserId, setBusinessId, setBusinessApiKey, setIsAuthenticated } = useAuth();
   const [snackbar, setSnackbar] = React.useState({ open: false, message: '', severity: 'success' });
+  const [isAuthenticated, setIsAuthenticated] = useState(!!sessionStorage.getItem('adminApiKey'));
 
   const handleSnackbarOpen = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
@@ -43,124 +46,80 @@ function AppContent() {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+  };
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Header />
-      <Container component="main" sx={{ flexGrow: 1, py: 3 }}>
-        <Routes>
-          <Route 
-            path="/" 
-            element={
-              isAuthenticated ? (
-                <Navigate to="/business" replace />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            } 
-          />
-          <Route 
-            path="/messages" 
-            element={
-              isAuthenticated ? <MessagePortal /> : <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
-            path="/stages" 
-            element={
-              isAuthenticated ? <StageManager /> : <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
-            path="/stages/:stageId" 
-            element={
-              isAuthenticated ? <StageViewPage /> : <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
-            path="/stage-management/business_id=:businessId/agent_id=:agentId" 
-            element={
-              isAuthenticated ? <StageManager /> : <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
-            path="/debug/conversation/:conversationId" 
-            element={
-              isAuthenticated ? <MessageDebugPage /> : <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
-            path="/login" 
-            element={
-              isAuthenticated ? (
-                <Navigate to="/business" replace />
-              ) : (
-                <Login 
-                  userId={userId}
-                  setUserId={setUserId}
-                  businessId={businessId}
-                  setBusinessId={setBusinessId}
-                  businessApiKey={businessApiKey}
-                  setBusinessApiKey={setBusinessApiKey}
-                  setIsAuthenticated={setIsAuthenticated}
-                  handleSnackbarOpen={handleSnackbarOpen}
-                />
-              )
-            } 
-          />
-          <Route 
-            path="/business" 
-            element={
-              isAuthenticated ? (
-                <BusinessDetailsView />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            } 
-          />
-          <Route 
-            path="/templates" 
-            element={
-              isAuthenticated ? (
-                <TemplateManagement />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            } 
-          />
-          <Route 
-            path="/template-editor/:templateId" 
-            element={
-              isAuthenticated ? (
-                <TemplateEditor />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            } 
-          />
-          <Route 
-            path="/template-editor/new" 
-            element={
-              isAuthenticated ? (
-                <TemplateEditor />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            } 
-          />
-        </Routes>
-      </Container>
-      <Footer />
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={UI_CONFIG.SNACKBAR.AUTO_HIDE_DURATION} 
-        onClose={handleSnackbarClose}
-        anchorOrigin={UI_CONFIG.SNACKBAR.POSITION}
-      >
-        <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+    <BusinessProvider>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <Header />
+        <Container component="main" sx={{ flexGrow: 1, py: 3 }}>
+          <Routes>
+            <Route 
+                path="/" 
+                element={isAuthenticated ? <Home /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/config"
+                element={<Configuration />} 
+            />
+            <Route 
+                path="/business/:businessId"
+                element={isAuthenticated ? <BusinessDetail /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/business/:businessId/information"
+                element={isAuthenticated ? <BusinessInformation /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/business/:businessId/messages"
+                element={isAuthenticated ? <BusinessMessages /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/business/:businessId/conversation/:conversationId/messages"
+                element={isAuthenticated ? <ConversationMessages /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/business/:businessId/agents"
+                element={isAuthenticated ? <AgentSection handleSnackbarOpen={handleSnackbarOpen} /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/business/:businessId/stages"
+                element={isAuthenticated ? <StagesList /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/business/:businessId/stages/:stageId/edit"
+                element={isAuthenticated ? <StageEdit /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/business/:businessId/default-stages/:stageId/edit"
+                element={isAuthenticated ? <DefaultStageEdit /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/business/:businessId/templates/new"
+                element={isAuthenticated ? <TemplateForm /> : <Navigate replace to="/config" />}
+            />
+            <Route 
+                path="/business/:businessId/templates/:templateId/edit"
+                element={isAuthenticated ? <TemplateEdit /> : <Navigate replace to="/config" />}
+            />
+            <Route path="*" element={<Navigate replace to={isAuthenticated ? "/" : "/config"} />} />
+          </Routes>
+        </Container>
+        <Footer />
+        <Snackbar 
+          open={snackbar.open} 
+          autoHideDuration={UI_CONFIG.SNACKBAR.AUTO_HIDE_DURATION} 
+          onClose={handleSnackbarClose}
+          anchorOrigin={UI_CONFIG.SNACKBAR.POSITION}
+        >
+          <Alert onClose={handleSnackbarClose} severity={snackbar.severity} sx={{ width: '100%' }}>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </BusinessProvider>
   );
 }
 
@@ -169,9 +128,7 @@ function App() {
     <Router>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <AppContent />
       </ThemeProvider>
     </Router>
   );

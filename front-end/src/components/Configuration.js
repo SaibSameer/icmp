@@ -1,103 +1,113 @@
-import React from 'react';
-import { TextField, Button, Typography, Card, CardContent, Box } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Box, TextField, Button, Typography, Alert } from '@mui/material';
+import { API_CONFIG } from '../config';
 
-const Configuration = ({
-    userId,
-    setUserId,
-    businessId,
-    setBusinessId,
-    businessApiKey,
-    setBusinessApiKey,
-    handleSnackbarOpen,
-    handleLogout
-}) => {
+function Configuration() {
     const navigate = useNavigate();
+    const [adminApiKey, setAdminApiKey] = useState('');
+    const [userId, setUserId] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
-    const handleSave = async () => {
-        if (!userId || !businessId || !businessApiKey) {
-            handleSnackbarOpen('Please enter all the configuration values', 'warning');
+    const isAdminAuthenticated = !!sessionStorage.getItem('adminApiKey');
+
+    useEffect(() => {
+        setError('');
+        setSuccess('');
+        const storedKey = sessionStorage.getItem('adminApiKey');
+        if (storedKey) {
+            setAdminApiKey(storedKey);
+        }
+    }, []);
+
+    const handleAdminLogin = async () => {
+        setError('');
+        setSuccess('');
+        if (!adminApiKey) {
+            setError('Admin API Key is required.');
             return;
         }
-
+        
         try {
-            const response = await fetch('/api/save-config', {
-                method: 'POST',
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/admin-check`, {
+                method: 'GET', 
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${adminApiKey}`,
                     'Accept': 'application/json',
                 },
-                credentials: 'include',
-                body: JSON.stringify({
-                    userId,
-                    businessId,
-                    businessApiKey
-                })
             });
 
             if (!response.ok) {
-                const data = await response.json();
-                handleSnackbarOpen(data.message || 'Invalid credentials', 'error');
-                return;
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error ${response.status}`);
             }
 
-            handleSnackbarOpen('Configuration saved successfully', 'success');
-            navigate('/business');
-        } catch (error) {
-            handleSnackbarOpen('Error saving configuration', 'error');
+            sessionStorage.setItem('adminApiKey', adminApiKey);
+            setSuccess('Admin API Key validated and saved for session.');
+            
+        } catch (err) {
+            console.error("Admin validation failed:", err);
+            setError(`Admin validation failed: ${err.message}`);
+            sessionStorage.removeItem('adminApiKey');
         }
     };
 
-    const onLogout = () => {
-        handleLogout();
-        navigate('/login');
+    const handleAdminLogout = () => {
+        setAdminApiKey('');
+        sessionStorage.removeItem('adminApiKey');
+        setSuccess('Admin logged out.');
+        setError('');
     };
 
     return (
-        <Card>
-            <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6">Configuration</Typography>
-                    <Button variant="outlined" color="secondary" onClick={onLogout}>
-                        Logout
-                    </Button>
-                </Box>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <TextField
-                        label="Business API Key"
+        <Box sx={{ mt: 4, p: 2, border: '1px solid grey', borderRadius: '4px' }}>
+            <Typography variant="h6" gutterBottom>
+                Admin Configuration
+            </Typography>
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+            {!isAdminAuthenticated ? (
+                <Box component="form" noValidate autoComplete="off">
+                     <TextField
+                        label="Admin Master API Key"
+                        variant="outlined"
                         type="password"
-                        value={businessApiKey}
-                        onChange={(e) => setBusinessApiKey(e.target.value)}
-                        required
-                        error={!businessApiKey}
-                        helperText={!businessApiKey ? 'Business API Key is required' : ''}
-                        data-testid="business-api-key-input"
+                        fullWidth
+                        value={adminApiKey}
+                        onChange={(e) => setAdminApiKey(e.target.value)}
+                        sx={{ mb: 2 }}
                     />
-                    <TextField
-                        label="User ID"
+                    <TextField 
+                        label="Admin User ID (Optional)"
+                        variant="outlined"
+                        fullWidth
                         value={userId}
                         onChange={(e) => setUserId(e.target.value)}
-                        required
-                        error={!userId}
-                        helperText={!userId ? 'User ID is required' : ''}
-                        data-testid="user-id-input"
+                        sx={{ mb: 2 }}
                     />
-                    <TextField
-                        label="Business ID"
-                        value={businessId}
-                        onChange={(e) => setBusinessId(e.target.value)}
-                        required
-                        error={!businessId}
-                        helperText={!businessId ? 'Business ID is required' : ''}
-                        data-testid="business-id-input"
-                    />
-                    <Button variant="contained" color="primary" onClick={handleSave}>
-                        Save Config
+                   
+                    <Button variant="contained" onClick={handleAdminLogin} sx={{ mr: 1 }}>
+                        Validate & Save Admin Key
+                    </Button>
+                    <Button variant="outlined" onClick={() => navigate('/')}>
+                         View All Businesses
                     </Button>
                 </Box>
-            </CardContent>
-        </Card>
+            ) : (
+                <Box>
+                    <Typography sx={{ mb: 2 }}>Admin key is configured for this session.</Typography>
+                    <Button variant="outlined" onClick={handleAdminLogout} sx={{ mr: 1 }}>
+                        Clear Admin Key (Logout)
+                    </Button>
+                    <Button variant="outlined" onClick={() => navigate('/')}>
+                         View All Businesses
+                    </Button>
+                </Box>
+            )}
+        </Box>
     );
-};
+}
 
 export default Configuration;

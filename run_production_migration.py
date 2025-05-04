@@ -68,4 +68,4 @@ def run_migration():
             conn.close()
 
 if __name__ == '__main__':
-    run_migration() 
+    run_migration()

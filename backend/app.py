@@ -28,24 +28,25 @@ env_path = os.path.join(current_dir, '.env')
 load_dotenv(env_path)
 
 # Import modules from our app
-from backend.auth import require_api_key
+from backend.auth import require_api_key, require_auth
 from backend.db import get_db_connection, release_db_connection, execute_query, CONNECTION_POOL
 from backend.config import Config
 from backend.messenger import setup_messenger_routes
 from backend.whatsapp import setup_whatsapp_routes
+from backend.message_processing.ai_control_service import ai_control_service  # Import AI control service
 
 # Routes imports
 from backend.routes.message_handling import bp as message_bp
 from backend.routes.routing import bp as routing_bp
 from backend.routes.templates import templates_bp
 from backend.routes.stages import stages_bp
-from backend.routes.template_management import template_management_bp
+from backend.routes.template_management import template_admin_bp
 from backend.routes.conversation_management import conversation_bp
 from backend.routes.businesses import bp as businesses_bp
 from backend.routes.auth_bp import bp as auth_bp
 from backend.routes.configuration import bp as config_bp
 from backend.routes.agents import agents_bp
-from backend.routes.users import users_bp
+from backend.routes.users import bp as users_bp
 from backend.routes.template_variables import template_variables_bp
 from backend.routes.llm import llm_bp
 from backend.routes.data_extraction import data_extraction_bp
@@ -99,24 +100,9 @@ def create_app(test_config=None):
                      "null",
                      "file://"  # Allow requests from file:// protocol
                  ],
-                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-                 "allow_headers": [
-                     "Content-Type",
-                     "Authorization",
-                     "businessapikey",
-                     "Accept",
-                     "Origin",
-                     "X-Requested-With",
-                     "Access-Control-Request-Method",
-                     "Access-Control-Request-Headers"
-                 ],
-                 "expose_headers": [
-                     "Content-Type",
-                     "Authorization",
-                     "businessapikey",
-                     "Access-Control-Allow-Origin",
-                     "Access-Control-Allow-Credentials"
-                 ],
+                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                 "allow_headers": ["Content-Type", "Authorization", "businessapikey", "Accept", "Origin"],
+                 "expose_headers": ["Content-Type", "Authorization", "businessapikey"],
                  "supports_credentials": True,
                  "max_age": 3600  # Cache preflight requests for 1 hour
              }
@@ -207,6 +193,13 @@ def create_app(test_config=None):
         finally:
             if conn:
                 release_db_connection(conn)
+
+    @app.route('/api/admin-check', methods=['GET'])
+    @require_api_key
+    def admin_check():
+        """Simple endpoint to verify the Admin Master API Key."""
+        log.info("Admin API Key validation successful via /api/admin-check")
+        return jsonify({"message": "Admin key is valid"}), 200
 
     @app.route('/api/save-config', methods=['POST', 'OPTIONS'])
     def save_config():
@@ -500,21 +493,21 @@ def create_app(test_config=None):
 
     # Register blueprints
     log.info("--- Registering blueprints ---")
-    app.register_blueprint(message_bp, url_prefix='/api')
-    app.register_blueprint(routing_bp)
-    app.register_blueprint(templates_bp)
-    app.register_blueprint(stages_bp)
-    app.register_blueprint(template_management_bp)
-    app.register_blueprint(conversation_bp, url_prefix='/api/v1/conversations')
-    app.register_blueprint(businesses_bp)
-    app.register_blueprint(auth_bp)
-    app.register_blueprint(config_bp)
-    app.register_blueprint(agents_bp)
-    app.register_blueprint(users_bp)
-    app.register_blueprint(template_variables_bp)
-    app.register_blueprint(llm_bp)
-    app.register_blueprint(data_extraction_bp)
-    app.register_blueprint(privacy_bp)
+    app.register_blueprint(message_bp)
+    app.register_blueprint(conversation_bp, url_prefix='/api')
+    app.register_blueprint(routing_bp, url_prefix='/api/routing')
+    app.register_blueprint(templates_bp, url_prefix='/api/templates')
+    app.register_blueprint(stages_bp, url_prefix='/api/stages')
+    app.register_blueprint(template_admin_bp, url_prefix='/api/admin/templates')
+    app.register_blueprint(businesses_bp, url_prefix='/api/businesses')
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(config_bp, url_prefix='/api/config')
+    app.register_blueprint(agents_bp, url_prefix='/api/agents')
+    app.register_blueprint(users_bp, url_prefix='/api/users')
+    app.register_blueprint(template_variables_bp, url_prefix='/api/template-variables')
+    app.register_blueprint(llm_bp, url_prefix='/api/llm')
+    app.register_blueprint(data_extraction_bp, url_prefix='/api/data-extraction')
+    app.register_blueprint(privacy_bp, url_prefix='/api/privacy')
     
     # Setup Facebook Messenger routes
     setup_messenger_routes(app)
@@ -526,6 +519,21 @@ def create_app(test_config=None):
     with app.app_context():
         initialize_default_stage()
     
+    # Initialize the database connection pool if not already initialized
+    if not CONNECTION_POOL:
+        log.info("--- Initializing Database Connection Pool ---")
+        try:
+            # Attempt to get a connection to initialize the pool
+            conn = get_db_connection()
+            if conn:
+                release_db_connection(conn)
+                log.info("Database connection pool initialized successfully.")
+            else:
+                log.error("Failed to get initial database connection for pool.")
+        except Exception as e:
+            log.error(f"Error initializing database connection pool: {str(e)}", exc_info=True)
+
+    log.info("--- Flask App Initialization Complete ---")
     return app
 
 # Create the app

@@ -2,10 +2,12 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { API_BASE_URL } from '../config';
 import { 
     Box, Typography, TextField, Button, CircularProgress, Alert, 
-    Select, MenuItem, FormControl, InputLabel 
+    Select, MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent
 } from '@mui/material';
 import { businessService } from '../services/businessService';
 import { stageService } from '../services/stageService';
+import MessagePortal from './MessagePortal';
+import MessageIcon from '@mui/icons-material/Message';
 
 const BusinessDetailsView = () => {
   const [businessId, setBusinessId] = useState(localStorage.getItem('businessId'));
@@ -16,6 +18,7 @@ const BusinessDetailsView = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [showMessages, setShowMessages] = useState(false);
 
   const handleSnackbarOpen = (message, variant) => { console.log(`${variant}: ${message}`); };
 
@@ -116,7 +119,16 @@ const BusinessDetailsView = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-        <Typography variant="h4" gutterBottom>Business Details</Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h4">Business Details</Typography>
+            <Button
+                variant="contained"
+                startIcon={<MessageIcon />}
+                onClick={() => setShowMessages(true)}
+            >
+                View Messages
+            </Button>
+        </Box>
         
         <Box component="form" noValidate autoComplete="off" sx={{ mb: 4 }}>
             <TextField 
@@ -203,6 +215,17 @@ const BusinessDetailsView = () => {
             </Button>
         </Box>
 
+        <Dialog
+            open={showMessages}
+            onClose={() => setShowMessages(false)}
+            maxWidth="lg"
+            fullWidth
+        >
+            <DialogTitle>Business Messages</DialogTitle>
+            <DialogContent>
+                <MessagePortal />
+            </DialogContent>
+        </Dialog>
     </Box>
   );
 };

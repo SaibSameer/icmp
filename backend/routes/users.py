@@ -1,14 +1,15 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, g
 import uuid
 import logging
 from jsonschema import validate, ValidationError
-from db import get_db_connection, release_db_connection
-from auth import require_api_key
+from backend.db import get_db_connection, release_db_connection
+from backend.auth import require_api_key
+from backend.routes.utils import is_valid_uuid
 
 log = logging.getLogger(__name__)
 
 # Rename to match naming convention of other blueprints
-users_bp = Blueprint('users', __name__, url_prefix='/users')
+bp = Blueprint('users', __name__, url_prefix='/admin/users')
 
 user_schema = {
     "type": "object",
@@ -20,7 +21,7 @@ user_schema = {
     "required": ["first_name", "last_name", "email"]
 }
 
-@users_bp.route('', methods=['POST'])
+@bp.route('', methods=['POST'])
 # Note: Keeping authentication commented out like in archived code
 # @require_api_key
 def create_user():
@@ -55,23 +56,65 @@ def create_user():
     finally:
         release_db_connection(conn)
 
-@users_bp.route('', methods=['GET'])
+@bp.route('', methods=['GET'])
 @require_api_key
 def get_users():
-    conn = get_db_connection()
+    log.info("Admin fetching all users")
+    conn = None
     try:
-        c = conn.cursor()
-        c.execute("SELECT user_id, first_name, last_name, email FROM users;")
-        # Handle both dictionary-like and tuple-like cursor results
-        users = []
-        for row in c.fetchall():
-            if isinstance(row, tuple):
-                users.append({"user_id": row[0], "first_name": row[1], "last_name": row[2], "email": row[3]})
-            else:
-                users.append({"user_id": row["user_id"], "first_name": row["first_name"], "last_name": row["last_name"], "email": row["email"]})
-        return jsonify(users), 200
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id, first_name, last_name, email, phone, created_at FROM users ORDER BY last_name, first_name")
+        users = cursor.fetchall()
+        user_list = [
+            {
+                "user_id": str(row[0]),
+                "first_name": row[1],
+                "last_name": row[2],
+                "email": row[3],
+                "phone": row[4],
+                "created_at": row[5].isoformat() if row[5] else None
+            } for row in users
+        ]
+        return jsonify(user_list), 200
     except Exception as e:
-        log.error(f"Error in get_users: {str(e)}")
-        return jsonify({"error_code": "SERVER_ERROR", "message": str(e)}), 500
+        log.error(f"Error fetching users (admin): {str(e)}", exc_info=True)
+        return jsonify({"error_code": "DB_ERROR", "message": f"Database error: {str(e)}"}), 500
     finally:
-        release_db_connection(conn)
+        if conn:
+            release_db_connection(conn)
+
+@bp.route('/<user_id>', methods=['GET'])
+@require_api_key
+def get_user(user_id):
+    if not is_valid_uuid(user_id):
+        return jsonify({"error_code": "BAD_REQUEST", "message": "Invalid user_id format"}), 400
+    log.info(f"Admin fetching user {user_id}")
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id, first_name, last_name, email, phone, address, created_at, updated_at FROM users WHERE user_id = %s", (user_id,))
+        user = cursor.fetchone()
+        if user:
+            user_data = {
+                 "user_id": str(user[0]),
+                "first_name": user[1],
+                "last_name": user[2],
+                "email": user[3],
+                "phone": user[4],
+                "address": user[5],
+                "created_at": user[6].isoformat() if user[6] else None,
+                "updated_at": user[7].isoformat() if user[7] else None
+            }
+            return jsonify(user_data), 200
+        else:
+             return jsonify({"error_code": "NOT_FOUND", "message": "User not found"}), 404
+    except Exception as e:
+        log.error(f"Error fetching user {user_id} (admin): {str(e)}", exc_info=True)
+        return jsonify({"error_code": "DB_ERROR", "message": f"Database error: {str(e)}"}), 500
+    finally:
+        if conn:
+            release_db_connection(conn)
+
+# Add POST, PUT, DELETE for users if needed, protected by @require_api_key

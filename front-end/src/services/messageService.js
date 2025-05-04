@@ -1,6 +1,6 @@
 // Message service for handling message sending and conversation history
 import { API_CONFIG } from '../config';
-import { getAuthHeaders, getStoredCredentials } from './authService';
+import { getAuthHeaders } from './authService';
 
 /**
  * Handles API responses and throws errors for non-OK responses
@@ -33,19 +33,21 @@ const handleApiResponse = async (response) => {
 /**
  * Send a message to the API
  * @param {string} message - Message content
+ * @param {string} businessId - Business ID
+ * @param {string} userId - User ID
  * @param {Object} options - Additional options
  * @param {string} options.conversationId - Optional conversation ID
  * @param {string} options.agentId - Optional agent ID
+ * @param {string} options.senderType - Optional sender type ('user', 'staff', 'assistant', or 'ai')
  * @returns {Promise<Object>} - Response data
  */
-export const sendMessage = async (message, options = {}) => {
+export const sendMessage = async (message, businessId, userId, options = {}) => {
   try {
-    const { userId, businessId } = getStoredCredentials();
-    
     const requestData = {
       business_id: businessId,
       user_id: userId,
-      message: message
+      message: message,
+      sender_type: options.senderType || 'user' // Default to 'user' if not specified
     };
     
     // Add optional fields if provided
@@ -57,10 +59,9 @@ export const sendMessage = async (message, options = {}) => {
       requestData.agent_id = options.agentId;
     }
     
-    const response = await fetch(`${API_CONFIG.ENDPOINTS.MESSAGE}`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/message`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      credentials: 'include',
       body: JSON.stringify(requestData)
     });
     
@@ -72,22 +73,15 @@ export const sendMessage = async (message, options = {}) => {
 };
 
 /**
- * Fetch conversation history for a user
- * @returns {Promise<Array>} - Conversation history
+ * Fetch conversation history for a business
+ * @param {string} businessId - Business ID
+ * @returns {Promise<Array>} - Array of conversations
  */
-export const fetchConversationHistory = async () => {
+export const fetchConversationHistory = async (businessId) => {
   try {
-    const { userId, businessId } = getStoredCredentials();
-    
-    const response = await fetch(
-      `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.CONVERSATIONS}/?business_id=${businessId}`,
-      {
-        method: 'GET',
-        headers: getAuthHeaders(),
-        credentials: 'include'
-      }
-    );
-    
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/conversations?business_id=${businessId}`, {
+      headers: getAuthHeaders()
+    });
     return await handleApiResponse(response);
   } catch (error) {
     console.error('Fetch conversation history error:', error);
@@ -96,26 +90,50 @@ export const fetchConversationHistory = async () => {
 };
 
 /**
- * Test backend connection
- * @returns {Promise<Object>} - Connection test result
+ * Test the connection to the API
+ * @returns {Promise<Object>} - Response data
  */
 export const testConnection = async () => {
   try {
-    const response = await fetch(`/`, {
-      method: 'GET',
-      credentials: 'include'
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/health`, {
+      headers: getAuthHeaders()
     });
-    
-    const text = await response.text();
-    return { success: true, message: text };
+    return await handleApiResponse(response);
   } catch (error) {
-    console.error('Connection test error:', error);
-    return { success: false, message: error.message };
+    console.error('Test connection error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Stop or resume AI responses for a conversation or user
+ * @param {string} conversationId - Conversation ID
+ * @param {string} userId - Optional user ID
+ * @param {string} action - 'stop', 'resume', or 'status'
+ * @param {number} duration - Optional duration in hours
+ * @returns {Promise<Object>} - Response data
+ */
+export const stopAIResponses = async (conversationId, userId = null, action = 'stop', duration = null) => {
+  try {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/conversations/${conversationId}/ai-control`, {
+      method: action === 'status' ? 'GET' : 'POST',
+      headers: getAuthHeaders(),
+      body: action !== 'status' ? JSON.stringify({
+        action,
+        user_id: userId,
+        duration
+      }) : undefined
+    });
+    return await handleApiResponse(response);
+  } catch (error) {
+    console.error('Stop AI responses error:', error);
+    throw error;
   }
 };
 
 export default {
   sendMessage,
   fetchConversationHistory,
-  testConnection
+  testConnection,
+  stopAIResponses
 };

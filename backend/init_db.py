@@ -113,4 +113,4 @@ def init_database():
             conn.close()
 
 if __name__ == "__main__":
-    init_database() 
+    init_database()

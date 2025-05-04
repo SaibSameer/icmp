@@ -87,4 +87,4 @@ if __name__ == "__main__":
         log.info("Local database setup completed successfully.")
     else:
         log.error("Local database setup failed.")
-        sys.exit(1) 
+        sys.exit(1)

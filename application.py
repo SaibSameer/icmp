@@ -18,4 +18,4 @@ if 'DATABASE_URL' in os.environ and 'DB_HOST' not in os.environ:
     os.environ['DB_NAME'] = host_port_db[1]
 
 if __name__ == '__main__':
-    application.run() 
+    application.run()

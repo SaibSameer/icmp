@@ -7,10 +7,11 @@ This module provides endpoints for accessing and managing extracted data.
 import logging
 from flask import Blueprint, jsonify, request, g
 from typing import Dict, Any, List, Optional
+import traceback # For detailed error logging
 
 from backend.db import get_db_connection, release_db_connection
 from backend.message_processing.data_extraction_service import DataExtractionService
-from backend.auth import require_business_api_key
+from backend.auth import require_internal_key
 
 log = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ log = logging.getLogger(__name__)
 data_extraction_bp = Blueprint('data_extraction', __name__)
 
 @data_extraction_bp.route('/api/v1/conversations/<conversation_id>/extracted_data', methods=['GET'])
-@require_business_api_key
+@require_internal_key
 def get_conversation_extracted_data(conversation_id: str):
     """
     Get all extracted data for a conversation.
@@ -70,7 +71,7 @@ def get_conversation_extracted_data(conversation_id: str):
         })
         
     except Exception as e:
-        log.error(f"Error retrieving extracted data: {str(e)}")
+        log.error(f"Error retrieving extracted data: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -80,7 +81,7 @@ def get_conversation_extracted_data(conversation_id: str):
             conn.close()
 
 @data_extraction_bp.route('/api/v1/extracted_data/<extraction_id>', methods=['GET'])
-@require_business_api_key
+@require_internal_key
 def get_extraction_by_id(extraction_id: str):
     """
     Get a specific extraction by ID.
@@ -134,7 +135,7 @@ def get_extraction_by_id(extraction_id: str):
         })
         
     except Exception as e:
-        log.error(f"Error retrieving extraction: {str(e)}")
+        log.error(f"Error retrieving extraction: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -144,7 +145,7 @@ def get_extraction_by_id(extraction_id: str):
             conn.close()
 
 @data_extraction_bp.route('/api/v1/businesses/<business_id>/extraction_templates', methods=['GET'])
-@require_business_api_key
+@require_internal_key
 def get_extraction_templates(business_id: str):
     """
     Get all data extraction templates for a business.
@@ -198,7 +199,7 @@ def get_extraction_templates(business_id: str):
         })
         
     except Exception as e:
-        log.error(f"Error retrieving extraction templates: {str(e)}")
+        log.error(f"Error retrieving extraction templates: {str(e)}\n{traceback.format_exc()}")
         return jsonify({
             'success': False,
             'error': str(e)
@@ -208,7 +209,7 @@ def get_extraction_templates(business_id: str):
             conn.close()
 
 @data_extraction_bp.route('/api/v1/businesses/<business_id>/extraction_templates', methods=['POST'])
-@require_business_api_key
+@require_internal_key
 def create_extraction_template(business_id: str):
     """
     Create a new data extraction template.
@@ -278,7 +279,7 @@ def create_extraction_template(business_id: str):
         }), 201
         
     except Exception as e:
-        log.error(f"Error creating extraction template: {str(e)}")
+        log.error(f"Error creating extraction template: {str(e)}\n{traceback.format_exc()}")
         if conn:
             conn.rollback()
         return jsonify({
@@ -287,4 +288,68 @@ def create_extraction_template(business_id: str):
         }), 500
     finally:
         if conn:
-            conn.close() 
+            conn.close()
+
+@data_extraction_bp.route('/api/extract', methods=['POST'])
+@require_internal_key
+def extract_data():
+    if not hasattr(g, 'business_id'):
+        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
+    business_id = g.business_id
+    log.info(f"Data extraction request for business {business_id}")
+
+    data = request.get_json()
+    if not data:
+        return jsonify({"error_code": "BAD_REQUEST", "message": "Request must be JSON"}), 400
+
+    template_id = data.get('template_id')
+    text_content = data.get('text_content')
+    # Optional: allow passing context variables for the template
+    context_vars = data.get('context_variables', {})
+
+    if not template_id or not text_content:
+        return jsonify({"error_code": "BAD_REQUEST", "message": "Missing required fields: template_id and text_content"}), 400
+    
+    # TODO: Validate template_id format (is_valid_uuid?)
+
+    conn = None
+    try:
+        # Fetch the template content AND verify it belongs to the business
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("""SELECT content, system_prompt FROM templates 
+                          WHERE template_id = %s AND business_id = %s 
+                          AND template_type = 'data_extraction'""", 
+                       (template_id, business_id))
+        template_row = cursor.fetchone()
+
+        if not template_row:
+            log.warning(f"Data extraction template {template_id} not found or invalid type/access for business {business_id}")
+            return jsonify({"error_code": "NOT_FOUND", "message": "Data extraction template not found or access denied"}), 404
+        
+        template_content = template_row[0]
+        system_prompt = template_row[1]
+        release_db_connection(conn) # Release connection before potentially long LLM call
+        conn = None 
+
+        # Placeholder for the actual extraction logic
+        # This would likely involve formatting the prompt with text_content & context_vars,
+        # then calling the LLM.
+        log.info(f"TODO: Implement data extraction using template {template_id} for business {business_id}")
+        # Example call:
+        # extracted_data = extract_data_using_template(
+        #     template_content=template_content, 
+        #     system_prompt=system_prompt,
+        #     text_content=text_content, 
+        #     context_vars=context_vars
+        # )
+        extracted_data = {"placeholder": "extracted data would be here", "input_text": text_content[:50] + "..."}
+
+        return jsonify({"success": True, "extracted_data": extracted_data}), 200
+
+    except Exception as e:
+        log.error(f"Error during data extraction for business {business_id}: {str(e)}\n{traceback.format_exc()}")
+        return jsonify({"error_code": "EXTRACTION_FAILED", "message": "Failed to extract data"}), 500
+    finally:
+        if conn: # Ensure connection is released if error occurred before LLM call
+            release_db_connection(conn)

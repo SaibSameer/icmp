@@ -72,4 +72,4 @@ def setup_whatsapp_routes(app):
             
             return jsonify({'status': 'success'})
         
-        return "WhatsApp Webhook Setup" 
+        return "WhatsApp Webhook Setup"

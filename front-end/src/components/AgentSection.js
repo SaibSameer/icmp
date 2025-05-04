@@ -24,18 +24,17 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import StageIcon from '@mui/icons-material/Layers';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import useAgents from '../hooks/useAgents';
 import { createAgent, updateAgent, deleteAgent } from '../services/agentService';
-import useConfig from '../hooks/useConfig';
 import { normalizeUUID } from '../hooks/useConfig';
 
 function AgentSection({ handleSnackbarOpen, onAgentSelect }) {
     console.log("Rendering AgentSection component");
+    const { businessId } = useParams(); // Get businessId from URL params
+    const normalizedBusinessId = normalizeUUID(businessId);
     const { agents, isLoading, error, refreshAgents } = useAgents(handleSnackbarOpen);
     const [selectedAgentId, setSelectedAgentId] = useState(null);
-    const { businessId } = useConfig(); // Get businessId from config
-    const normalizedBusinessId = normalizeUUID(businessId);
     const navigate = useNavigate();
 
     // Debug logging
@@ -55,7 +54,7 @@ function AgentSection({ handleSnackbarOpen, onAgentSelect }) {
     const [dialogMode, setDialogMode] = useState('create'); // 'create' or 'edit'
     const [agentData, setAgentData] = useState({
         business_id: normalizedBusinessId,
-        agent_name: ''
+        name: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -81,15 +80,15 @@ function AgentSection({ handleSnackbarOpen, onAgentSelect }) {
         // Store agent ID in localStorage
         localStorage.setItem('agentId', agentId);
         
-        // Navigate to stage management with proper URL format
-        navigate(`/stage-management/business_id=${normalizedBusinessId}/agent_id=${agentId}`);
+        // Navigate to stages list with the correct URL format
+        navigate(`/business/${normalizedBusinessId}/stages?agent_id=${agentId}`);
     };
 
     const openCreateDialog = () => {
         console.log("Opening create dialog with businessId:", normalizedBusinessId);
         setAgentData({
             business_id: normalizedBusinessId,
-            agent_name: ''
+            name: ''
         });
         setDialogMode('create');
         setOpenDialog(true);
@@ -100,7 +99,7 @@ function AgentSection({ handleSnackbarOpen, onAgentSelect }) {
         console.log("Opening edit dialog for agent:", agent);
         setAgentData({
             business_id: normalizedBusinessId,
-            agent_name: agent.agent_name
+            name: agent.agent_name
         });
         setSelectedAgentId(agent.agent_id);
         setDialogMode('edit');
@@ -113,8 +112,13 @@ function AgentSection({ handleSnackbarOpen, onAgentSelect }) {
     };
 
     const handleSubmit = async () => {
-        if (!agentData.agent_name.trim()) {
+        if (!agentData.name.trim()) {
             handleSnackbarOpen("Agent name is required", "error");
+            return;
+        }
+
+        if (!normalizedBusinessId) {
+            handleSnackbarOpen("Business ID is required", "error");
             return;
         }
 
@@ -262,8 +266,8 @@ function AgentSection({ handleSnackbarOpen, onAgentSelect }) {
                         label="Agent Name"
                         fullWidth
                         variant="outlined"
-                        value={agentData.agent_name}
-                        onChange={(e) => setAgentData({ ...agentData, agent_name: e.target.value })}
+                        value={agentData.name}
+                        onChange={(e) => setAgentData({ ...agentData, name: e.target.value })}
                         disabled={isSubmitting}
                     />
                 </DialogContent>

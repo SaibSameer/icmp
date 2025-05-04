@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, Response, stream_with_context
-from auth import require_business_api_key
+from backend.auth import require_api_key
 import json
 import time
 from datetime import datetime
@@ -7,7 +7,7 @@ from datetime import datetime
 debug_bp = Blueprint('debug', __name__)
 
 @debug_bp.route('/debug/conversation/<conversation_id>', methods=['GET'])
-@require_business_api_key
+@require_api_key
 def get_conversation_debug(conversation_id):
     """
     Get debug information for a specific conversation.
@@ -54,7 +54,7 @@ def get_conversation_debug(conversation_id):
         return jsonify({"error": str(e)}), 500
 
 @debug_bp.route('/debug/message/<message_id>', methods=['GET'])
-@require_business_api_key
+@require_api_key
 def get_message_debug(message_id):
     """
     Get debug information for a specific message processing instance.
@@ -80,7 +80,7 @@ def get_message_debug(message_id):
         return jsonify({"error": str(e)}), 500
 
 @debug_bp.route('/debug/stages/<conversation_id>', methods=['GET'])
-@require_business_api_key
+@require_api_key
 def get_stage_navigation_debug(conversation_id):
     """
     Get stage navigation history for a conversation.
@@ -105,7 +105,7 @@ def get_stage_navigation_debug(conversation_id):
         return jsonify({"error": str(e)}), 500
 
 @debug_bp.route('/debug/prompts/<message_id>', methods=['GET'])
-@require_business_api_key
+@require_api_key
 def get_prompt_generation_debug(message_id):
     """
     Get prompt generation details for a message.
@@ -132,7 +132,7 @@ def get_prompt_generation_debug(message_id):
         return jsonify({"error": str(e)}), 500
 
 @debug_bp.route('/debug/extraction/<message_id>', methods=['GET'])
-@require_business_api_key
+@require_api_key
 def get_data_extraction_debug(message_id):
     """
     Get data extraction results for a message.
@@ -160,7 +160,7 @@ def get_data_extraction_debug(message_id):
         return jsonify({"error": str(e)}), 500
 
 @debug_bp.route('/debug/events/<conversation_id>')
-@require_business_api_key
+@require_api_key
 def debug_events(conversation_id):
     """
     Stream debug events for a conversation using Server-Sent Events (SSE).

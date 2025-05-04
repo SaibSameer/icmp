@@ -142,4 +142,4 @@ class BusinessUpdateService(BaseUpdateService):
             
         if update_data:
             return self.update_business(business_id, update_data)
-        return None 
+        return None

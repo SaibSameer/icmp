@@ -35,22 +35,22 @@ class DataExtractionService:
         self.db_pool = db_pool
         self.llm_service = llm_service
     
-    def extract_data(self, message_content: str, extraction_template_id: str, 
-                    business_id: str, user_id: str, conversation_id: str) -> Dict[str, Any]:
+    def extract_data(self, conn, extraction_template_id: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
         Extract structured data from a message using a template.
         
         Args:
-            message_content: The message to extract data from
+            conn: Database connection
             extraction_template_id: ID of the template to use for extraction
-            business_id: ID of the business
-            user_id: ID of the user
-            conversation_id: ID of the conversation
+            context: Dictionary containing context data including:
+                - message_content: The message to extract data from
+                - business_id: ID of the business
+                - user_id: ID of the user
+                - conversation_id: ID of the conversation
             
         Returns:
             Dictionary containing extracted data
         """
-        conn = self.db_pool.getconn()
         try:
             # Get the extraction template
             template = self._get_extraction_template(conn, extraction_template_id)
@@ -60,17 +60,18 @@ class DataExtractionService:
             
             # Process the template with variable substitution
             processed_template = self._process_template(
-                conn, template, business_id, user_id, conversation_id, message_content
+                conn, template, context['business_id'], context['user_id'], 
+                context['conversation_id'], context['message_content']
             )
             
             # Extract data using the appropriate method
             if self.llm_service:
                 extracted_data = self._extract_with_llm(
-                    message_content, processed_template, business_id
+                    context['message_content'], processed_template, context['business_id']
                 )
             else:
                 extracted_data = self._extract_with_patterns(
-                    message_content, processed_template
+                    context['message_content'], processed_template
                 )
             
             # Check for errors immediately after extraction
@@ -88,7 +89,7 @@ class DataExtractionService:
             
             # Store the extracted data
             self._store_extracted_data(
-                conn, conversation_id, template.get('template_type', 'general'),
+                conn, context['conversation_id'], template.get('template_type', 'general'),
                 extracted_data
             )
             
@@ -118,13 +119,13 @@ class DataExtractionService:
                     if user_update_data:
                         try:
                             # --- Add specific logging before the call ---
-                            log.info(f"Attempting to update user {user_id} with data: {user_update_data!r}") 
-                            user_service.update_user(user_id, user_update_data) 
-                            log.info(f"Successfully updated user {user_id}") 
+                            log.info(f"Attempting to update user {context['user_id']} with data: {user_update_data!r}") 
+                            user_service.update_user(context['user_id'], user_update_data) 
+                            log.info(f"Successfully updated user {context['user_id']}") 
                             # ----------------------------------------------
                         except Exception as e:
                             # --- Add more verbose error logging ---
-                            log.error(f"Exception caught while calling user_service.update_user for user {user_id}.")
+                            log.error(f"Exception caught while calling user_service.update_user for user {context['user_id']}.")
                             log.exception(f"Error details: {e!r}") # Use log.exception to include stack trace
                             # --- Store the actual caught error, not the potentially misleading string ---
                             extracted_data['update_error'] = f"Failed update: {str(e)}" 
@@ -167,8 +168,6 @@ class DataExtractionService:
             return_error = {"error": f"extract_data failed: {error_message!r}"}
             log.error(f"Returning error dictionary from main handler: {return_error}")
             return return_error
-        finally:
-            self.db_pool.putconn(conn)
     
     def _get_extraction_template(self, conn, template_id: str) -> Optional[Dict[str, Any]]:
         """
@@ -503,4 +502,4 @@ class DataExtractionService:
             log.error(f"Error retrieving extracted data: {str(e)}")
             return []
         finally:
-            self.db_pool.putconn(conn) 
+            self.db_pool.putconn(conn)

@@ -4,15 +4,15 @@ Configuration routes module.
 This module provides endpoints for system and user configuration management.
 """
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, g
 import logging
-from db import get_db_connection, release_db_connection
-from auth import require_api_key, require_business_api_key
+from backend.db import get_db_connection, release_db_connection
+from backend.auth import require_api_key, require_internal_key
 
 log = logging.getLogger(__name__)
 
 # Create blueprint for config endpoints
-bp = Blueprint('config', __name__)
+bp = Blueprint('config', __name__, url_prefix='/config')
 
 @bp.route('/system', methods=['GET'])
 @require_api_key
@@ -36,36 +36,48 @@ def get_system_config():
         }
     }), 200
 
-@bp.route('/business/<business_id>', methods=['GET'])
-@require_business_api_key
-def get_business_config(business_id):
+@bp.route('/business/<business_id_param>', methods=['GET'])
+@require_internal_key
+def get_business_config(business_id_param):
     """
-    Get configuration for a specific business.
-    
-    Args:
-        business_id: The ID of the business to get configuration for
+    Get configuration for the authenticated business.
+    Assumes business context (g.business_id) is set by the decorator.
+    Verifies path parameter matches authenticated business.
     """
+    # Get business context from g
+    if not hasattr(g, 'business_id'):
+        log.error("Business context (g.business_id) not found after @require_internal_key.")
+        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
+    business_id_auth = g.business_id
+
+    # Verify path param matches authenticated business ID
+    if business_id_auth != business_id_param:
+        log.warning(f"Auth mismatch: Internal key for {business_id_auth}, path asks for {business_id_param}")
+        return jsonify({"error_code": "FORBIDDEN", "message": "Access denied to requested business configuration"}), 403
+
+    log.info(f"Fetching configuration for business {business_id_auth}")
     conn = None
     try:
         conn = get_db_connection()
         with conn.cursor() as cursor:
-            # Check if business exists
+            # Query using authenticated business_id
             cursor.execute(
                 "SELECT business_name FROM businesses WHERE business_id = %s",
-                (business_id,)
+                (business_id_auth,)
             )
             
             business = cursor.fetchone()
+            # The decorator already validated the key, so business should exist
             if not business:
-                return jsonify({"error": "Business not found"}), 404
+                 log.error(f"Business {business_id_auth} passed auth but not found in DB during config fetch.")
+                 return jsonify({"error": "Business consistency error"}), 500
             
-            # Fetch business configuration from database
-            # For now, return a mock configuration
+            # Fetch business configuration from database (using mock for now)
             return jsonify({
-                "business_id": business_id,
+                "business_id": business_id_auth,
                 "business_name": business[0],
                 "settings": {
-                    "default_stage_id": "00000000-0000-0000-0000-000000000001",
+                    "default_stage_id": "00000000-0000-0000-0000-000000000001", # Placeholder
                     "enable_history": True,
                     "message_retention_days": 30,
                     "enable_analytics": False
@@ -78,36 +90,45 @@ def get_business_config(business_id):
             }), 200
     
     except Exception as e:
-        log.error(f"Error retrieving business configuration: {str(e)}", exc_info=True)
+        log.error(f"Error retrieving config for business {business_id_auth}: {str(e)}", exc_info=True)
         return jsonify({"error": f"Failed to retrieve configuration: {str(e)}"}), 500
     
     finally:
         if conn:
             release_db_connection(conn)
 
-@bp.route('/business/<business_id>', methods=['PUT'])
-@require_business_api_key
-def update_business_config(business_id):
+@bp.route('/business/<business_id_param>', methods=['PUT'])
+@require_internal_key
+def update_business_config(business_id_param):
     """
-    Update configuration for a specific business.
-    
-    Args:
-        business_id: The ID of the business to update configuration for
+    Update configuration for the authenticated business.
+    Assumes business context (g.business_id) is set by the decorator.
+    Verifies path parameter matches authenticated business.
     """
+    # Get business context from g
+    if not hasattr(g, 'business_id'):
+        log.error("Business context (g.business_id) not found after @require_internal_key.")
+        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
+    business_id_auth = g.business_id
+
+    # Verify path param matches authenticated business ID
+    if business_id_auth != business_id_param:
+        log.warning(f"Auth mismatch: Internal key for {business_id_auth}, path asks for update on {business_id_param}")
+        return jsonify({"error_code": "FORBIDDEN", "message": "Access denied to update requested business configuration"}), 403
+
     data = request.get_json()
     if not data:
         return jsonify({"error": "Request must be JSON"}), 400
     
-    # Extract settings from request
     settings = data.get('settings', {})
     features = data.get('features', {})
     
-    # In a real implementation, this would validate and update configuration in the database
-    # For now, just acknowledge the update
+    log.info(f"Updating configuration for business {business_id_auth}")
+    # Placeholder - Validate and update config in DB here
     return jsonify({
         "message": "Business configuration updated successfully",
-        "business_id": business_id,
-        "updated_settings": settings,
+        "business_id": business_id_auth,
+        "updated_settings": settings, # Echo back received data
         "updated_features": features
     }), 200
 

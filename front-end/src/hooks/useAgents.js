@@ -2,15 +2,21 @@ import { useState, useEffect, useCallback } from 'react';
 // Assuming an agentService.js file will export fetchAgents
 // We might need to create/update this service file later
 import { fetchAgents } from '../services/agentService';
-import useConfig from './useConfig';
+import { useParams } from 'react-router-dom';
 import { normalizeUUID } from './useConfig';
 
 const useAgents = (handleSnackbarOpen) => {
     const [agents, setAgents] = useState([]); // Initialize as empty array
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
-    const { businessId } = useConfig(); // Get businessId from config
+    const { businessId } = useParams(); // Get businessId from URL params instead of config
     const normalizedBusinessId = normalizeUUID(businessId);
+
+    // Debug log for businessId
+    useEffect(() => {
+        console.log('useAgents hook - businessId:', businessId);
+        console.log('useAgents hook - normalizedBusinessId:', normalizedBusinessId);
+    }, [businessId, normalizedBusinessId]);
 
     const fetchAgentsData = useCallback(async () => {
         if (!normalizedBusinessId) {

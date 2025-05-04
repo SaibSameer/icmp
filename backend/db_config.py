@@ -58,4 +58,4 @@ def get_db_config():
         masked_config['password'] = '****'
     log.info(f"Using database configuration: {masked_config}")
     
-    return config 
+    return config

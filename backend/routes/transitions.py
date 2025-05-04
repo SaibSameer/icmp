@@ -1,224 +1,165 @@
 # routes/transitions.py
-from flask import Blueprint, request, jsonify
-from db import get_db_connection
+from flask import Blueprint, request, jsonify, g
+from db import get_db_connection, release_db_connection
 import uuid
 import logging
-from auth import require_business_api_key
+from auth import require_internal_key
 from .utils import is_valid_uuid
+import json
 
 log = logging.getLogger(__name__)
 
 transitions_bp = Blueprint('transitions', __name__, url_prefix='/transitions')
 
-@transitions_bp.route('', methods=['GET'])
-@require_business_api_key
-def get_transitions():
-    business_id = request.args.get('business_id')
-    agent_id = request.args.get('agent_id')  # Optional filter
+@transitions_bp.route('/by-stage/<stage_id>', methods=['GET'])
+@require_internal_key
+def get_transitions_for_stage(stage_id):
+    if not hasattr(g, 'business_id'):
+        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
+    business_id = g.business_id
+    log.info(f"Fetching transitions for stage {stage_id} in business {business_id}")
 
-    if not business_id:
-        return jsonify({"error": "Missing business_id query parameter"}), 400
+    if not is_valid_uuid(stage_id):
+        return jsonify({"error_code": "BAD_REQUEST", "message": "Invalid stage_id format"}), 400
     
-    # Validate business_id format
-    if not is_valid_uuid(business_id):
-        return jsonify({"error": "Invalid business_id format"}), 400
-
-    # Validate agent_id format if provided
-    if agent_id and agent_id.lower() != 'null' and not is_valid_uuid(agent_id):
-        return jsonify({"error": "Invalid agent_id format"}), 400
-
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-
-        # Base query
-        query = """
-            SELECT 
-                transition_id, business_id, agent_id, from_stage_id, to_stage_id,
-                condition, priority, created_at
-            FROM transitions 
-            WHERE business_id = %s
-        """
-        params = [business_id]
-
-        # Add agent_id filtering logic
-        if agent_id:
-            if agent_id.lower() == 'null':
-                query += " AND agent_id IS NULL"
-            else:
-                query += " AND agent_id = %s"
-                params.append(agent_id)
-
-        query += " ORDER BY priority ASC, created_at DESC"
+        # Verify stage belongs to business first
+        cursor.execute("SELECT 1 FROM stages WHERE stage_id = %s AND business_id = %s", (stage_id, business_id))
+        if not cursor.fetchone():
+            return jsonify({"error_code": "NOT_FOUND", "message": "Stage not found or access denied"}), 404
         
-        cursor.execute(query, tuple(params))
+        # Fetch transitions
+        cursor.execute("""
+            SELECT transition_id, from_stage_id, to_stage_id, conditions, priority 
+            FROM stage_transitions 
+            WHERE from_stage_id = %s 
+            ORDER BY priority ASC
+            """, (stage_id,))
         transitions = cursor.fetchall()
-        
-        # Define columns matching the SELECT statement order
-        columns = [
-            'transition_id', 'business_id', 'agent_id', 'from_stage_id', 'to_stage_id',
-            'condition', 'priority', 'created_at'
+        transition_list = [
+            {
+                "transition_id": str(row[0]),
+                "from_stage_id": str(row[1]),
+                "to_stage_id": str(row[2]),
+                "conditions": row[3], # Assuming JSONB or TEXT
+                "priority": row[4]
+            } for row in transitions
         ]
-        
-        result_list = []
-        for row in transitions:
-            transition_dict = {}
-            for i, col_name in enumerate(columns):
-                value = row[i]
-                # Ensure UUIDs and datetimes are strings for JSON
-                if isinstance(value, uuid.UUID):
-                    transition_dict[col_name] = str(value)
-                elif hasattr(value, 'isoformat'):  # Check for datetime objects
-                    transition_dict[col_name] = value.isoformat()
-                else:
-                    transition_dict[col_name] = value  # Handles None, strings, etc.
-            result_list.append(transition_dict)
-            
-        return jsonify(result_list), 200
+        return jsonify(transition_list), 200
 
     except Exception as e:
-        log.error(f"Error fetching transitions for business {business_id}: {str(e)}", exc_info=True)
-        return jsonify({"error": "Failed to fetch transition data", "details": str(e)}), 500
+        log.error(f"Error fetching transitions for stage {stage_id}: {str(e)}", exc_info=True)
+        return jsonify({"error_code": "DB_ERROR", "message": f"Database error: {str(e)}"}), 500
     finally:
         if conn:
-            conn.close()
+            release_db_connection(conn)
 
 @transitions_bp.route('', methods=['POST'])
-@require_business_api_key
+@require_internal_key
 def create_transition():
+    if not hasattr(g, 'business_id'):
+        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
+    business_id = g.business_id
+    log.info(f"Creating transition for business {business_id}")
+
     data = request.get_json()
     if not data:
-        return jsonify({"error": "Request must be JSON and contain data"}), 400
+        return jsonify({"error_code": "BAD_REQUEST", "message": "Request must be JSON"}), 400
 
-    # Define required fields
-    required_fields = ['business_id', 'from_stage_id', 'to_stage_id']
+    # Basic Validation
+    required = ['from_stage_id', 'to_stage_id', 'conditions', 'priority']
+    if not all(field in data for field in required):
+        return jsonify({"error_code": "BAD_REQUEST", "message": f"Missing required fields: {required}"}), 400
+    if not is_valid_uuid(data['from_stage_id']) or not is_valid_uuid(data['to_stage_id']):
+         return jsonify({"error_code": "BAD_REQUEST", "message": "Invalid stage ID format"}), 400
+    if not isinstance(data['priority'], int):
+         return jsonify({"error_code": "BAD_REQUEST", "message": "Priority must be an integer"}), 400
+    # TODO: Add validation for conditions format (JSON?)
 
-    # Check for missing or empty required fields
-    missing_or_empty = [field for field in required_fields if field not in data or not data[field]]
-    if missing_or_empty:
-        return jsonify({"error": f"Missing or empty required fields: {', '.join(missing_or_empty)}"}), 400
-
-    business_id = data.get('business_id')
-    agent_id = data.get('agent_id')  # Optional, can be None
-    from_stage_id = data.get('from_stage_id')
-    to_stage_id = data.get('to_stage_id')
-    condition = data.get('condition', '')
-    priority = data.get('priority', 1)
-
-    # Validate UUID formats
-    if not is_valid_uuid(business_id):
-        return jsonify({"error": "Invalid business_id format"}), 400
-    if agent_id and not is_valid_uuid(agent_id):
-        return jsonify({"error": "Invalid agent_id format"}), 400
-    if not is_valid_uuid(from_stage_id):
-        return jsonify({"error": "Invalid from_stage_id format"}), 400
-    if not is_valid_uuid(to_stage_id):
-        return jsonify({"error": "Invalid to_stage_id format"}), 400
-
+    from_stage_id = data['from_stage_id']
+    to_stage_id = data['to_stage_id']
+    conditions = data['conditions'] # Consider json.dumps if storing as TEXT
+    priority = data['priority']
+    transition_id = str(uuid.uuid4())
+    
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # SQL INSERT statement
-        sql = '''
-            INSERT INTO transitions (
-                transition_id, business_id, agent_id, from_stage_id, to_stage_id,
-                condition, priority
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+
+        # Verify both stages belong to the authenticated business
+        cursor.execute("SELECT 1 FROM stages WHERE stage_id = %s AND business_id = %s", (from_stage_id, business_id))
+        if not cursor.fetchone():
+            return jsonify({"error_code": "NOT_FOUND", "message": f"From stage {from_stage_id} not found or access denied"}), 404
+        cursor.execute("SELECT 1 FROM stages WHERE stage_id = %s AND business_id = %s", (to_stage_id, business_id))
+        if not cursor.fetchone():
+            return jsonify({"error_code": "NOT_FOUND", "message": f"To stage {to_stage_id} not found or access denied"}), 404
+
+        # Insert the transition
+        cursor.execute("""
+            INSERT INTO stage_transitions (transition_id, from_stage_id, to_stage_id, conditions, priority)
+            VALUES (%s, %s, %s, %s, %s)
             RETURNING transition_id;
-        '''
-        params = (
-            str(uuid.uuid4()),
-            business_id,
-            agent_id,
+        """, (
+            transition_id,
             from_stage_id,
             to_stage_id,
-            condition,
+            json.dumps(conditions) if isinstance(conditions, dict) else conditions, # Store as JSON string if dict
             priority
-        )
-
-        cursor.execute(sql, params)
-
-        transition_id = cursor.fetchone()[0]
-        conn.commit()
-        
-        # Fetch the newly created transition
-        cursor.execute("""
-            SELECT 
-                transition_id, business_id, agent_id, from_stage_id, to_stage_id,
-                condition, priority, created_at
-            FROM transitions 
-            WHERE transition_id = %s
-        """, (transition_id,))
-        
+        ))
         result = cursor.fetchone()
-        columns = [
-            'transition_id', 'business_id', 'agent_id', 'from_stage_id', 'to_stage_id',
-            'condition', 'priority', 'created_at'
-        ]
-        
-        transition_dict = {}
-        for i, col_name in enumerate(columns):
-            value = result[i]
-            if isinstance(value, uuid.UUID):
-                transition_dict[col_name] = str(value)
-            elif hasattr(value, 'isoformat'):
-                transition_dict[col_name] = value.isoformat()
-            else:
-                transition_dict[col_name] = value
-        
-        log.info(f"Transition created successfully with ID: {transition_id}")
-        return jsonify(transition_dict), 201
+        conn.commit()
+        log.info(f"Transition {result[0]} created from {from_stage_id} to {to_stage_id} for business {business_id}")
+        return jsonify({"message": "Transition created successfully", "transition_id": result[0]}), 201
 
     except Exception as e:
-        if conn: 
-            conn.rollback()
-        log.error(f"Error creating transition: {str(e)}", exc_info=True)
-        return jsonify({"error": "Failed to create transition", "details": str(e)}), 500
+        if conn: conn.rollback()
+        log.error(f"Error creating transition for business {business_id}: {str(e)}", exc_info=True)
+        return jsonify({"error_code": "DB_ERROR", "message": f"Database error: {str(e)}"}), 500
     finally:
         if conn:
-            conn.close()
+            release_db_connection(conn)
 
 @transitions_bp.route('/<transition_id>', methods=['DELETE'])
-@require_business_api_key
+@require_internal_key
 def delete_transition(transition_id):
-    # Validate transition_id format
-    if not is_valid_uuid(transition_id):
-        return jsonify({"error": "Invalid transition_id format"}), 400
+    if not hasattr(g, 'business_id'):
+        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
+    business_id = g.business_id
+    log.info(f"Deleting transition {transition_id} for business {business_id}")
 
-    business_id = request.args.get('business_id')
-    if not business_id:
-        return jsonify({"error": "Missing business_id query parameter"}), 400
-    
-    # Validate business_id format
-    if not is_valid_uuid(business_id):
-        return jsonify({"error": "Invalid business_id format"}), 400
+    if not is_valid_uuid(transition_id):
+        return jsonify({"error_code": "BAD_REQUEST", "message": "Invalid transition_id format"}), 400
 
     conn = None
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # Delete the transition
-        cursor.execute(
-            "DELETE FROM transitions WHERE transition_id = %s AND business_id = %s RETURNING transition_id",
-            (transition_id, business_id)
-        )
-        
-        result = cursor.fetchone()
-        if not result:
-            return jsonify({"error": "Transition not found or not owned by this business"}), 404
-            
+
+        # Verify the transition belongs to a stage within the authenticated business
+        cursor.execute("""
+            DELETE FROM stage_transitions st
+            USING stages s
+            WHERE st.transition_id = %s 
+            AND st.from_stage_id = s.stage_id 
+            AND s.business_id = %s
+        """, (transition_id, business_id))
         conn.commit()
+
+        if cursor.rowcount == 0:
+             log.warning(f"Delete attempted on non-existent or unauthorized transition {transition_id} for business {business_id}")
+             return jsonify({"error_code": "NOT_FOUND", "message": "Transition not found or access denied"}), 404
+        
+        log.info(f"Transition {transition_id} deleted successfully for business {business_id}")
         return jsonify({"message": "Transition deleted successfully"}), 200
 
     except Exception as e:
-        if conn:
-            conn.rollback()
-        log.error(f"Error deleting transition {transition_id}: {str(e)}", exc_info=True)
-        return jsonify({"error": "Failed to delete transition", "details": str(e)}), 500
+        if conn: conn.rollback()
+        log.error(f"Error deleting transition {transition_id} for business {business_id}: {str(e)}", exc_info=True)
+        return jsonify({"error_code": "DB_ERROR", "message": f"Database error: {str(e)}"}), 500
     finally:
         if conn:
-            conn.close()
+            release_db_connection(conn)
