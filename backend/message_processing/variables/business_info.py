@@ -16,9 +16,7 @@ log = logging.getLogger(__name__)
 @TemplateVariableProvider.register_provider(
     'business_info',
     description='Provides detailed information about a business including name, description, contact details, and address',
-    example_value='=== Business Information ===\nName: Example Business\nDescription: A sample business\nAddress: 123 Main St\nPhone: (555) 123-4567\nCreated: 2023-01-01\nLast Updated: 2023-01-02\n===========================',
-    category='business',
-    is_dynamic=True
+    auth_requirement='business_key'
 )
 def provide_business_info(business_id, **kwargs):
     """

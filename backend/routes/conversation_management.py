@@ -14,8 +14,8 @@ import json # Added for parsing message data
 from backend.db import get_db_connection, release_db_connection, get_db_pool # Added get_db_pool
 from backend.auth import require_internal_key, require_api_key
 from psycopg2.extras import RealDictCursor
-from backend.message_processing.message_handler import MessageHandler # Import MessageHandler
-from backend.message_processing.ai_control_service import ai_control_service # Import AI control service
+from backend.message_processing.message_handler import MessageHandler
+from backend.message_processing.services.storage.redis_manager import RedisStateManager
 from backend.utils import is_valid_uuid # Import utility
 from datetime import timedelta
 
@@ -29,7 +29,7 @@ conversation_bp = Blueprint('conversations', __name__)
 # def test_route():
 #     return jsonify({"message": "Conversation blueprint test route OK"}), 200
 
-@conversation_bp.route('/conversations', methods=['GET', 'OPTIONS'])
+@conversation_bp.route('', methods=['GET', 'OPTIONS'])
 @require_api_key
 def get_conversations():
     """
@@ -45,14 +45,19 @@ def get_conversations():
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
 
-    # Get optional business_id filter from query parameter
+    # Get optional business_id and user_id filter from query parameter
     business_id_filter = request.args.get('business_id')
+    user_id_filter = request.args.get('user_id')
     if business_id_filter and not is_valid_uuid(business_id_filter):
          return jsonify({"error_code": "BAD_REQUEST", "message": "Invalid business_id format in query parameter"}), 400
+    if user_id_filter and not is_valid_uuid(user_id_filter):
+         return jsonify({"error_code": "BAD_REQUEST", "message": "Invalid user_id format in query parameter"}), 400
     
     log_msg = "Fetching all conversations (admin)"
     if business_id_filter:
         log_msg += f" filtered by business_id={business_id_filter}"
+    if user_id_filter:
+        log_msg += f" and user_id={user_id_filter}"
     log.info(log_msg)
     
     conn = None
@@ -85,7 +90,7 @@ def get_conversations():
                                 ) ORDER BY m.created_at ASC
                             )
                             FROM messages m
-                            WHERE m.conversation_id = c.conversation_id
+                            WHERE m.conversation_id = c.conversation_id" + (" AND m.user_id = %s" if user_id_filter else "") + "
                         ),
                         '[]'::json
                     ) as messages
@@ -97,16 +102,21 @@ def get_conversations():
             if business_id_filter:
                 where_clauses.append("c.business_id = %s")
                 params.append(business_id_filter)
-                
+            if user_id_filter:
+                where_clauses.append("c.user_id = %s")
+                params.append(user_id_filter)
+            
             if where_clauses:
                 query = base_query + " WHERE " + " AND ".join(where_clauses)
             else:
                 query = base_query
-                
+            
             query += " GROUP BY c.conversation_id, c.business_id, c.user_id, c.session_id, c.start_time, c.last_updated, c.stage_id, u.first_name, u.last_name"
             query += " ORDER BY c.last_updated DESC;"
             
-            cursor.execute(query, tuple(params))
+            # If user_id_filter is present, add it to params for the subquery
+            subquery_params = tuple(params) + ((user_id_filter,) if user_id_filter else tuple())
+            cursor.execute(query, subquery_params)
             
             conversations = cursor.fetchall()
             

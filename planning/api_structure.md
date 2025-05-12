@@ -5,7 +5,7 @@
 ```
 backend/
 ├── api/                    # API versioning and endpoints
-├── routes/                 # Route definitions
+├── routes/                 # Route definitions (obsolete test files deleted May 2025)
 ├── services/              # Business logic services
 ├── message_processing/    # Message handling logic
 ├── database/             # Database related code
@@ -19,7 +19,7 @@ backend/
 │   ├── error_handler.py       # Error handling and logging
 │   └── request_validator.py   # Request validation utilities
 ├── ai/                   # AI and LLM related code
-├── tests/                # Test files
+├── tests/                # Test files (obsolete test files deleted May 2025)
 └── documentation/        # Documentation files
 ```
 

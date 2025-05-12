@@ -6,7 +6,7 @@ for specific conversations and users.
 """
 
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, Set
 from datetime import datetime, timedelta
 import uuid
 from backend.db import get_db_connection, release_db_connection
@@ -24,6 +24,9 @@ class AIControlService:
     """
     
     def __init__(self):
+        """Initialize the AI control service."""
+        self._stopped_conversations: Set[str] = set()
+        self._rate_limits: Dict[str, int] = {}
         # Default stop duration (24 hours)
         self._default_stop_duration = timedelta(hours=24)
     
@@ -31,13 +34,67 @@ class AIControlService:
         """Get current time in UTC timezone."""
         return datetime.now(timezone.utc)
     
-    def stop_ai_responses(self, conversation_id: str, user_id: Optional[str] = None, 
-                         duration: Optional[timedelta] = None) -> None:
+    def stop_ai_responses(self, conversation_id: str) -> None:
         """
-        Stop AI from generating responses for a conversation or user.
+        Stop AI responses for a conversation.
         
         Args:
-            conversation_id: The ID of the conversation to stop (can be string or UUID)
+            conversation_id: ID of the conversation to stop
+        """
+        self._stopped_conversations.add(conversation_id)
+        log.info(f"AI responses stopped for conversation {conversation_id}")
+    
+    def resume_ai_responses(self, conversation_id: str) -> None:
+        """
+        Resume AI responses for a conversation.
+        
+        Args:
+            conversation_id: ID of the conversation to resume
+        """
+        self._stopped_conversations.discard(conversation_id)
+        log.info(f"AI responses resumed for conversation {conversation_id}")
+    
+    def is_ai_stopped(self, conversation_id: str) -> bool:
+        """
+        Check if AI responses are stopped for a conversation.
+        
+        Args:
+            conversation_id: ID of the conversation to check
+            
+        Returns:
+            True if AI responses are stopped, False otherwise
+        """
+        return conversation_id in self._stopped_conversations
+    
+    def set_rate_limit(self, business_id: str, limit: int) -> None:
+        """
+        Set rate limit for a business.
+        
+        Args:
+            business_id: ID of the business
+            limit: Maximum number of requests per minute
+        """
+        self._rate_limits[business_id] = limit
+        log.info(f"Rate limit set to {limit} for business {business_id}")
+    
+    def get_rate_limit(self, business_id: str) -> int:
+        """
+        Get rate limit for a business.
+        
+        Args:
+            business_id: ID of the business
+            
+        Returns:
+            Rate limit value
+        """
+        return self._rate_limits.get(business_id, 60)  # Default to 60 requests per minute
+    
+    def stop_ai_responses_for_user(self, user_id: Optional[str] = None, 
+                                  duration: Optional[timedelta] = None) -> None:
+        """
+        Stop AI from generating responses for a user.
+        
+        Args:
             user_id: Optional user ID to stop responses for all their conversations (can be string or UUID)
             duration: Optional duration for the stop (defaults to 24 hours)
         """
@@ -134,12 +191,11 @@ class AIControlService:
             if conn:
                 release_db_connection(conn)
     
-    def resume_ai_responses(self, conversation_id: str, user_id: Optional[str] = None) -> None:
+    def resume_ai_responses_for_user(self, user_id: Optional[str] = None) -> None:
         """
-        Resume AI response generation for a conversation or user.
+        Resume AI response generation for a user.
         
         Args:
-            conversation_id: The ID of the conversation to resume (can be string or UUID)
             user_id: Optional user ID to resume responses for all their conversations (can be string or UUID)
         """
         conn = None
@@ -189,72 +245,6 @@ class AIControlService:
             if conn:
                 release_db_connection(conn)
     
-    def is_ai_stopped(self, conversation_id: str, user_id: Optional[str] = None) -> bool:
-        """
-        Check if AI responses are stopped for a conversation or user.
-        
-        Args:
-            conversation_id: The ID of the conversation to check (can be string or UUID)
-            user_id: Optional user ID to check (can be string or UUID)
-            
-        Returns:
-            bool: True if AI responses are stopped, False otherwise
-        """
-        conn = None
-        try:
-            conn = get_db_connection()
-            cursor = conn.cursor()
-            
-            # Check if user is stopped
-            if user_id:
-                # Convert to string if it's a UUID object
-                user_id_str = str(user_id) if hasattr(user_id, 'hex') else user_id
-                cursor.execute(
-                    """
-                    SELECT is_stopped, expiration_time 
-                    FROM ai_control_settings 
-                    WHERE user_id = %s
-                    """,
-                    (user_id_str,)
-                )
-                result = cursor.fetchone()
-                if result:
-                    is_stopped, expiration_time = result
-                    if is_stopped and expiration_time and self._get_current_time() > expiration_time:
-                        # Stop has expired, resume AI
-                        self.resume_ai_responses(conversation_id, user_id)
-                        return False
-                    return is_stopped
-            
-            # Check if conversation is stopped
-            # Convert to string if it's a UUID object
-            conv_id_str = str(conversation_id) if hasattr(conversation_id, 'hex') else conversation_id
-            cursor.execute(
-                """
-                SELECT is_stopped, expiration_time 
-                FROM ai_control_settings 
-                WHERE conversation_id = %s
-                """,
-                (conv_id_str,)
-            )
-            result = cursor.fetchone()
-            if result:
-                is_stopped, expiration_time = result
-                if is_stopped and expiration_time and self._get_current_time() > expiration_time:
-                    # Stop has expired, resume AI
-                    self.resume_ai_responses(conversation_id)
-                    return False
-                return is_stopped
-            
-            return False
-            
-        except Exception as e:
-            log.error(f"Error checking AI stop status: {str(e)}")
-            return False
-        finally:
-            if conn:
-                release_db_connection(conn)
-    
     def get_stop_status(self, conversation_id: str, user_id: Optional[str] = None) -> Dict:
         """
         Get the current stop status for a conversation or user.
@@ -271,7 +261,7 @@ class AIControlService:
             conn = get_db_connection()
             cursor = conn.cursor()
             
-            is_stopped = self.is_ai_stopped(conversation_id, user_id)
+            is_stopped = self.is_ai_stopped(conversation_id)
             
             if user_id:
                 # Convert to string if it's a UUID object

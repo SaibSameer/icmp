@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Error Log",
+  "description": "Represents an error log entry in the system.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the error log."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the error occurred."
+    },
+    "error_type": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Type of the error."
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message."
+    },
+    "stack_trace": {
+      "type": "string",
+      "description": "Stack trace of the error."
+    },
+    "user_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the user."
+    },
+    "conversation_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the conversation."
+    },
+    "endpoint": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Endpoint where the error occurred."
+    },
+    "stage": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Stage where the error occurred."
+    },
+    "processing_time": {
+      "type": "number",
+      "description": "Processing time in seconds."
+    }
+  },
+  "required": [
+    "id",
+    "timestamp"
+  ],
+  "additionalProperties": false
+} 

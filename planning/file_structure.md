@@ -7,7 +7,7 @@ This document provides a comprehensive overview of the project's file structure 
 ### Core Directories
 - `backend/` - Main backend application code
 - `front-end/` - React frontend application
-- `tests/` - Test suite and test utilities
+- `tests/` - Test suite and test utilities (obsolete test files deleted May 2025)
 - `planning/` - Project documentation and planning
 - `docs/` - Additional documentation
 - `scripts/` - Utility scripts
@@ -110,7 +110,7 @@ This document provides a comprehensive overview of the project's file structure 
 ## Backend Structure (`backend/`)
 ### Core Files
 - `app.py` - Main application file
-- `routes.py` - Route definitions
+- `routes/` - Route definitions (obsolete test files deleted May 2025)
 - `config.py` - Configuration settings
 - `auth.py` - Authentication system
 - `__init__.py` - Package initialization
@@ -146,8 +146,8 @@ This document provides a comprehensive overview of the project's file structure 
 - `.pytest_cache/` - Pytest cache
 
 ### Error Handling (`backend/error_handling/`)
-- `errors.py` - Error definitions
-- `__init__.py` - Package initialization
+- `errors.py` - Error definitions. Includes stubs for ErrorConfig, ErrorMonitor, ErrorLogger, ErrorResponse, ErrorValidator, and ErrorRecovery (added for test compatibility as of 2025-05-12).
+- `__init__.py` - Package initialization (exports new stubs for tests)
 - `tracking.py` - Error tracking
 - `middleware.py` - Error middleware
 

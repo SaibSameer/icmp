@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Extraction Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Custom CSS -->
+    <style>
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <h1 class="mb-4">Data Extraction Dashboard</h1>
+        
+        <!-- Overview Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-extractions">-</div>
+                    <div class="stat-label">Total Extractions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="success-rate">-</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-patterns">-</div>
+                    <div class="stat-label">Total Patterns</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="high-confidence">-</div>
+                    <div class="stat-label">High Confidence Patterns</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Trends -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <h3>Performance Trends</h3>
+                    <div id="trends-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pattern Analysis -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <h3>Pattern Analysis</h3>
+                    <div id="patterns-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Analysis -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>Error Distribution</h3>
+                    <div id="errors-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>Template Performance</h3>
+                    <div id="templates-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="btn btn-primary refresh-btn" onclick="refreshDashboard()">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading">
+        <div class="spinner-border loading-spinner text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Custom JS -->
+    <script>
+        // Show loading overlay
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        // Update overview stats
+        function updateOverview(data) {
+            document.getElementById('total-extractions').textContent = data.total_extractions;
+            document.getElementById('success-rate').textContent = (data.success_rate * 100).toFixed(1) + '%';
+            document.getElementById('total-patterns').textContent = data.total_patterns;
+            document.getElementById('high-confidence').textContent = data.high_confidence_patterns;
+        }
+
+        // Update trends plot
+        function updateTrends(data) {
+            const trendData = JSON.parse(data.trend_plot);
+            Plotly.newPlot('trends-plot', trendData.data, trendData.layout);
+        }
+
+        // Update patterns plot
+        function updatePatterns(data) {
+            const patternData = JSON.parse(data.pattern_plot);
+            Plotly.newPlot('patterns-plot', patternData.data, patternData.layout);
+        }
+
+        // Update errors plot
+        function updateErrors(data) {
+            const errorData = JSON.parse(data.error_plot);
+            Plotly.newPlot('errors-plot', errorData.data, errorData.layout);
+        }
+
+        // Update templates plot
+        function updateTemplates(data) {
+            const templateData = JSON.parse(data.template_plot);
+            Plotly.newPlot('templates-plot', templateData.data, templateData.layout);
+        }
+
+        // Fetch all dashboard data
+        async function fetchDashboardData() {
+            showLoading();
+            try {
+                const response = await fetch('/api/dashboard/all');
+                const data = await response.json();
+                
+                updateOverview(data.overview);
+                updateTrends(data.performance_trends);
+                updatePatterns(data.pattern_analysis);
+                updateErrors(data.error_analysis);
+                updateTemplates(data.template_performance);
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Refresh dashboard
+        function refreshDashboard() {
+            fetchDashboardData();
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDashboardData();
+            // Refresh every 5 minutes
+            setInterval(fetchDashboardData, 300000);
+        });
+    </script>
+</body>
+</html> 

@@ -65,9 +65,17 @@ See [Project Summary](c:\icmp_events_api\archive_output\project_archive\sumary.t
 
 ```
 /backend
+├── api/            # API version management and endpoints
+├── core/           # Core functionality and error handling
+├── database/       # Database management and operations
+├── message_processing/  # Message handling and processing
 ├── routes/         # API route handlers (Blueprints)
 ├── schemas/        # JSON schemas for validation
-├── documentation/  # Project documentation files
+├── services/       # Service layer implementation
+├── template_management/  # Template management and organization
+├── tests/          # Test suite and test utilities
+├── tools/          # Diagnostic and utility scripts
+├── utils/          # Utility functions and helpers
 ├── app.py          # Main Flask application
 ├── auth.py         # Authentication decorators
 ├── config.py       # Configuration loading

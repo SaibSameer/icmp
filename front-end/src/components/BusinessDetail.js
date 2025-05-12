@@ -246,25 +246,26 @@ function BusinessDetail() {
                     <Typography variant="h5">Business Details</Typography>
                     <Box>
                         <Button
-                            variant="outlined"
-                            onClick={() => navigate(`/business/${businessId}/information`)}
-                            sx={{ mr: 2 }}
-                        >
-                            View Business Information
-                        </Button>
-                        <Button
                             startIcon={<MessageIcon />}
                             onClick={() => navigate(`/business/${businessId}/messages`)}
-                            sx={{ mr: 2 }}
+                            sx={{ mr: 1 }}
                         >
-                            Messages
+                            View Messages
                         </Button>
                         <Button
                             startIcon={<EditIcon />}
                             onClick={handleEditClick}
                             disabled={isEditing}
+                            sx={{ mr: 1 }}
                         >
                             Edit
+                        </Button>
+                        <Button
+                            startIcon={<DeleteIcon />}
+                            onClick={() => setShowDeleteConfirm(true)}
+                            color="error"
+                        >
+                            Delete
                         </Button>
                     </Box>
                 </Box>

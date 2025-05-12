@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Conversation",
+  "description": "Represents a conversation between a user and an agent.",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the conversation."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the user."
+    },
+    "agent_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the agent."
+    },
+    "stage_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the current stage."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Session identifier for the conversation."
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the conversation started."
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the conversation was last updated."
+    },
+    "status": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Current status of the conversation.",
+      "default": "active"
+    },
+    "conversation_summary": {
+      "type": "string",
+      "description": "Summary of the conversation."
+    },
+    "message_history": {
+      "type": "object",
+      "description": "JSON object containing the message history."
+    },
+    "llm_call_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the last LLM call."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the conversation was last updated."
+    }
+  },
+  "required": [
+    "conversation_id",
+    "business_id",
+    "user_id"
+  ],
+  "additionalProperties": false
+} 

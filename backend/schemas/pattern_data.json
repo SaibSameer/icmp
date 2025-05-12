@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pattern Data",
+  "description": "Represents pattern data in the system.",
+  "type": "object",
+  "properties": {
+    "cluster_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the cluster."
+    },
+    "field": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Field name."
+    },
+    "usage_count": {
+      "type": "integer",
+      "description": "Number of times the pattern was used."
+    },
+    "success_rate": {
+      "type": "number",
+      "description": "Success rate of the pattern."
+    },
+    "pattern_type": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Type of the pattern."
+    }
+  },
+  "required": [
+    "cluster_id"
+  ],
+  "additionalProperties": false
+} 

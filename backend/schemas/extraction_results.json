@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Extraction Result",
+  "description": "Represents a result from data extraction.",
+  "type": "object",
+  "properties": {
+    "extraction_id": {
+      "type": "integer",
+      "description": "Unique identifier for the extraction result."
+    },
+    "template_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the template."
+    },
+    "cluster_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the cluster."
+    },
+    "business_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "conversation_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the conversation."
+    },
+    "message_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the message."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the extraction was performed."
+    },
+    "success": {
+      "type": "boolean",
+      "description": "Whether the extraction was successful."
+    },
+    "extracted_data": {
+      "type": "object",
+      "description": "The extracted data."
+    }
+  },
+  "required": [
+    "extraction_id",
+    "timestamp"
+  ],
+  "additionalProperties": false
+} 

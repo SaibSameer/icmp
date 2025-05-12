@@ -4,22 +4,18 @@
   "properties": {
     "business_id": { "type": "string", "format": "uuid" },
     "api_key": { "type": "string" },
-    "created_at": { "type": "string", "format": "date-time" },
+    "internal_api_key": { "type": "string" },
     "owner_id": { "type": "string", "format": "uuid" },
-    "business_information": {
-      "type": "object",
-      "properties": {
-        "business_name": { "type": "string" },
-        "business_description": { "type": "string" },
-        "address": { "type": "string" },
-        "phone_number": { "type": "string" },
-        "website": { "type": "string", "format": "uri" }
-      },
-      "required": [
-        "business_name"
-      ],
-      "additionalProperties": true
-    },
+    "business_name": { "type": "string" },
+    "business_description": { "type": "string" },
+    "address": { "type": "string" },
+    "phone_number": { "type": "string" },
+    "website": { "type": "string", "format": "uri" },
+    "first_stage_id": { "type": "string", "format": "uuid" },
+    "facebook_page_id": { "type": "string" },
+    "business_information": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
     "agent_list": {
       "type": "array",
       "items": { "type": "string", "format": "uuid" }
@@ -37,7 +33,7 @@
     "business_id",
     "api_key",
     "owner_id",
-    "business_information"
+    "business_name"
   ],
   "additionalProperties": false
 }

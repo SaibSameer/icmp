@@ -3,12 +3,11 @@
  * @returns {Object} Headers object with Authorization and Content-Type
  */
 export const getAuthHeaders = () => {
-    const adminApiKey = 'cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6';
+    const adminApiKey = sessionStorage.getItem('adminApiKey');
     return {
         'Authorization': `Bearer ${adminApiKey}`,
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'businessapikey': adminApiKey
+        'Accept': 'application/json'
     };
 };
 

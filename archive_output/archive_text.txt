@@ -1,4 +1,70 @@
 ================================================================================
+File: AUTH_GUIDELINES.md
+Path: .\AUTH_GUIDELINES.md
+Size: 5366
+Modified: 2025-04-28T14:50:41.622524
+Created: 2025-04-28T12:31:02.764879
+Hash: 5d03888869ac3968cab51a889d736b7cd348d28c53648f612ae24d26f8f5d3d9
+Lines: 56
+================================================================================
+# Authentication Guidelines (for AI Assistants & Developers)
+
+This document outlines the authentication mechanisms used in the ICMP project.
+
+**Current Model (Webhook-Centric):** The primary interaction with the system is expected via webhooks from external messaging platforms (e.g., Facebook Messenger, WhatsApp). Direct user UI access is not the main focus. Authentication relies on verifying the webhook source and using internal API keys.
+
+Ref: See `backend/documentation/auth_template_refactor_summary.md` for history of previous (now removed) authentication models.
+
+## 1. Master API Key (`ICMP_API_KEY`)
+
+*   **Purpose:** Administrative tasks via direct API calls (e.g., creating businesses, managing global settings or templates). **Not** used by webhooks or regular message processing.
+*   **Source:** Loaded from environment variables on the backend (`.env` file -> `backend/config.py`). Should **never** be exposed publicly.
+*   **Usage:** Pass this key in the `Authorization` header as a Bearer token.
+    ```
+    Authorization: Bearer <your_ICMP_API_KEY>
+    ```
+*   **Validation:** Checked by the `@require_api_key` decorator in `backend/auth.py`.
+
+## 2. Webhook Authentication & Authorization
+
+This is the primary flow for processing messages from external platforms.
+
+*   **Step 1: Webhook Signature Verification (Essential)**
+    *   **Purpose:** To verify that an incoming request to a webhook endpoint (e.g., `/webhooks/facebook`) genuinely originates from the expected platform (e.g., Facebook) and not a malicious actor.
+    *   **Mechanism:** Each platform has its own method, typically involving a shared secret (e.g., Facebook App Secret) configured on both the platform and in the backend (`.env` file). The platform signs the request payload, and the webhook handler uses the secret to verify the signature (e.g., using `hmac`).
+    *   **Implementation:** See webhook handlers in `backend/routes/message_handling.py` (or similar) for platform-specific verification logic (e.g., `verify_facebook_signature`). **This step must be performed before processing any payload data.**
+
+*   **Step 2: Business Identification & Internal API Key Retrieval**
+    *   **Purpose:** To map the incoming verified webhook request to the correct internal business context.
+    *   **Mechanism:** The webhook handler extracts platform-specific identifiers from the verified payload (e.g., Facebook Page ID, WhatsApp Business Number). It uses these identifiers to look up the corresponding `business_id` and its associated `internal_api_key` from the `businesses` database table.
+    *   **Internal API Key:** This key is generated securely (using `secrets.token_hex()`) when a business is created (via `POST /businesses`, protected by the Master API Key) and stored in the `businesses.internal_api_key` column. It acts as a pre-shared secret for internal authorization.
+
+*   **Step 3: Internal API Call Authorization**
+    *   **Purpose:** To authorize the webhook handler process to access internal backend routes/services (e.g., fetching stages, conversations, calling LLMs) on behalf of the identified business.
+    *   **Mechanism:** When the webhook handler needs to call another internal API endpoint or service function, it includes the retrieved `internal_api_key` in the `Authorization` header.
+        ```
+        Authorization: Bearer <internal_api_key_for_the_business>
+        ```
+    *   **Validation:** Internal routes (e.g., in `stages.py`, `conversations.py`) are protected by the `@require_internal_key` decorator (`backend/auth.py`). This decorator extracts the key from the Bearer token, verifies it exists in the `businesses.internal_api_key` column, and attaches the corresponding `business_id` to `flask.g` for the route to use.
+
+## Key Files
+
+*   `backend/auth.py`: Contains `@require_api_key` and `@require_internal_key` decorators.
+*   `backend/routes/message_handling.py` (or similar): Contains webhook handlers implementing signature verification and internal key usage.
+*   `backend/routes/businesses.py`: Contains `POST /businesses` (protected by `@require_api_key`) which generates `internal_api_key`.
+*   `backend/routes/stages.py`, `conversations.py`, etc.: Internal routes protected by `@require_internal_key`.
+*   `.env.example`: Shows required environment variables including `ICMP_API_KEY` and platform secrets (e.g., `FACEBOOK_APP_SECRET`).
+*   `database_setup.sql`: Defines the `businesses` table including `internal_api_key`.
+
+## Important Considerations
+
+*   **Signature Verification is Crucial:** Never process webhook payloads without first verifying the platform's signature.
+*   **Secret Management:** Keep platform secrets (`FACEBOOK_APP_SECRET`, etc.) and the `ICMP_API_KEY` secure (use environment variables, not hardcoding).
+*   **Business Mapping:** Ensure a reliable way to map incoming webhook identifiers (Page ID, phone number) to the internal `business_id`.
+*   **Internal Key Security:** The `internal_api_key` should be treated as sensitive. It's generated once and used internally. Ensure it's stored securely in the database.
+*   **Frontend:** If a frontend exists, it's likely for administrative purposes only, authenticated using the Master API Key (`@require_api_key`). Code related to user login via business keys/cookies should be removed.
+
+================================================================================
 File: CHANGELOG.md
 Path: .\CHANGELOG.md
 Size: 2470
@@ -445,103 +511,109 @@ The goal is to process a user's message within the context of a conversation, de
 ================================================================================
 File: README.md
 Path: .\README.md
-Size: 2174
-Modified: 2025-04-18T18:08:39.624731
+Size: 5240
+Modified: 2025-04-28T14:58:19.783029
 Created: 2025-04-12T19:18:59.091809
-Hash: f6ee74d8742b1f884565fa28d0b4ccae0be95ed23e544c8bfe7432034c77f1fe
-Lines: 82
+Hash: 73deba125f455b5948c5b468bbfcbe3cd312d208d5f803f9a492233f2654df84
+Lines: 88
 ================================================================================
 # ICMP Events API
 
-## Installation Guide
+## Overview
+
+Intelligent Conversation Management Platform (ICMP) API for handling message processing, conversation management, and business logic, primarily driven by external messaging platform webhooks.
+
+## Authentication
+
+The system uses two main authentication methods:
+
+1.  **Master API Key (`ICMP_API_KEY`):**
+    *   Used for administrative API calls (e.g., creating businesses via `POST /businesses`).
+    *   Set via the `ICMP_API_KEY` environment variable.
+    *   Passed in the `Authorization: Bearer <key>` header.
+    *   Validated by the `@require_api_key` decorator.
+
+2.  **Webhook & Internal Key Authentication:**
+    *   **Webhook Signature Verification:** Incoming webhooks (e.g., from Facebook) MUST be verified using platform-specific secrets (e.g., `FACEBOOK_APP_SECRET`) to ensure authenticity. See `backend/routes/message_handling.py`.
+    *   **Internal API Key (`internal_api_key`):** Each business has a unique internal key generated during creation (`POST /businesses`). Webhook handlers retrieve this key after verifying the source and identifying the business.
+    *   **Internal Authorization:** When webhook handlers or internal services call other backend API routes (e.g., `/api/stages`, `/api/conversations`), they pass the business's `internal_api_key` in the `Authorization: Bearer <internal_key>` header.
+    *   **Validation:** Internal routes are protected by the `@require_internal_key` decorator, which validates the key and associates the request with the correct `business_id`.
+
+**Note:** There is no direct user login or session management for business-specific operations via the API. Authentication is handled at the webhook source and internally via API keys.
+
+Refer to `AUTH_GUIDELINES.md` for more details.
+
+## Setup & Installation
 
 ### Prerequisites
-- Python 3.9 or higher
-- pip (Python package installer)
-- PostgreSQL database (provided by Render)
+- Python 3.x
+- pip
+- PostgreSQL
+- Access to OpenAI API
+- Platform App Secrets (e.g., Facebook App Secret for webhook verification)
 
-### Quick Installation
+### Local Setup
 
-1. Clone or download this repository to your local machine
+1.  **Clone Repository:** `git clone ...`
+2.  **Create Virtual Environment:** `python -m venv venv` and activate it.
+3.  **Install Dependencies:** `pip install -r requirements.txt` (ensure `PyJWT` and potentially `hmac`, `hashlib` are included if not built-in).
+4.  **Environment Variables:** Create a `.env` file in the project root (or `backend/` directory, check `run_local.py`). Copy `.env.example` and fill in your database credentials, `FLASK_SECRET_KEY`, `ICMP_API_KEY`, `OPENAI_API_KEY`, and platform secrets (`FACEBOOK_APP_SECRET`, etc.).
+5.  **Database Setup:** Ensure PostgreSQL is running. Run `python setup_database.py` to create tables based on `database_setup.sql`.
+6.  **Run Backend:** `python run_local.py` (starts Flask dev server, usually on port 5000).
 
-2. Make sure your `.env` file is properly configured with your Render database credentials:
-   ```
-   DB_NAME=icmp_db
-   DB_USER=saik_taimeh
-   DB_HOST=dpg-d0169m2l19vc739rdtv0-a
-   DB_PORT=5432
-   DB_PASSWORD=your_password
-   DATABASE_URL=your_database_url
-   ```
+### Deployment (Example: Render)
 
-3. Run the installation script:
-   ```bash
-   python install.py
-   ```
+1.  Use `render.yaml` for configuration.
+2.  Ensure all required environment variables (DB credentials, API keys, secrets) are set in the Render service configuration.
+3.  Build command likely involves `pip install`.
+4.  Start command typically uses `gunicorn` (e.g., `gunicorn backend.app:app`).
 
-   This script will:
-   - Check Python version compatibility
-   - Install required dependencies
-   - Set up necessary directories
-   - Verify environment configuration
-   - Set up the database tables
-   - Prepare files for Render deployment
+## Project Structure
 
-4. After successful installation, you'll find `render_upload.zip` in your current directory
+```
+/
+├── backend/            # Flask application
+│   ├── routes/         # API route handlers (Blueprints)
+│   ├── schemas/        # JSON schemas
+│   ├── tests/          # Pytest tests
+│   ├── app.py          # Flask app creation and configuration
+│   ├── auth.py         # Authentication decorators (@require_api_key, @require_internal_key)
+│   ├── config.py       # Config loading
+│   ├── db.py           # Database connection handling
+│   └── ...
+├── frontend/           # React frontend (if used, likely for admin)
+│   └── ... 
+├── .env.example        # Example environment variables
+├── .gitignore
+├── AUTH_GUIDELINES.md  # Detailed authentication explanation
+├── database_setup.sql  # Database schema
+├── requirements.txt    # Python dependencies
+├── run_local.py        # Script to run backend locally
+├── setup_database.py   # Script to setup database tables
+├── README.md           # This file
+└── ...
+```
 
-### Deploying to Render
+## Usage
 
-1. Go to [render.com](https://render.com) and sign in
-2. Create a new Web Service
-3. Choose "Upload Files" option
-4. Upload the `render_upload.zip` file
-5. Configure your service:
-   - Name: `icmp-events-api` (or your preferred name)
-   - Environment: `Python`
-   - Build Command: `chmod +x build.sh && ./build.sh`
-   - Start Command: `gunicorn application:application`
+1.  **Create a Business:** Make a `POST` request to `/businesses` with required data, authenticated using the Master API Key (`ICMP_API_KEY`). Note the returned `business_id` and `internal_api_key`.
+2.  **Configure Webhook:** Set up webhooks on the external platform (e.g., Facebook) pointing to your deployed `/webhooks/facebook` endpoint. Configure the necessary verification token and ensure the platform secret (`FACEBOOK_APP_SECRET`) matches your backend environment variable.
+3.  **Map Platform ID:** Ensure your backend has a way to map the platform identifier (e.g., Page ID) received in the webhook to the correct `business_id` to retrieve the `internal_api_key`.
+4.  **Send Messages:** Messages sent via the configured platform will trigger the webhook, initiating the processing flow.
 
-6. Add your environment variables in the Render dashboard (they should match your `.env` file)
+## Testing
 
-7. Deploy your application
-
-### Verifying the Installation
-
-To verify that everything is working:
-
-1. Check the deployment logs in Render dashboard
-2. Test the API endpoints:
-   - Health check: `https://your-app-url/health`
-   - API base: `https://your-app-url/api`
-
-### Troubleshooting
-
-If you encounter any issues:
-
-1. Check the logs in the Render dashboard
-2. Verify your environment variables are correctly set
-3. Ensure the database is accessible
-4. Check the application logs in the `/logs` directory
-
-### Support
-
-If you need help, please:
-1. Check the error messages and logs
-2. Review the documentation
-3. Contact the development team
-
-## License
-
-[Your License Information] 
+- Run backend tests using `pytest` from the `backend/` directory.
+- Tests need to be updated to mock the new authentication decorators and provide appropriate `Authorization` headers.
 
 ================================================================================
 File: requirements.txt
 Path: .\requirements.txt
-Size: 265
-Modified: 2025-04-25T19:20:04.084521
+Size: 296
+Modified: 2025-05-03T20:08:19.369734
 Created: 2025-04-12T22:27:25.863284
-Hash: d3664b7fbe0a4c03a81783f5c8faccd0d645484f8da2bbf3dbdfa5803850dc32
-Lines: 14
+Hash: 901b6f7fc0969defb09b6ce3ec3541de88813afb47d8d7d8721020891e7cd940
+Lines: 16
 ================================================================================
 flask>=2.0.0
 flask-limiter>=2.0.0
@@ -556,7 +628,9 @@ tabulate>=0.9.0
 colorama>=0.4.5
 PyYAML>=6.0.1
 jsonschema>=4.17.3
-icmplib>=3.0.0 
+icmplib>=3.0.0
+plotly==5.18.0
+pandas==2.1.4 
 
 ================================================================================
 File: README.md
@@ -578,13 +652,82 @@ See [the docs](https://docs.pytest.org/en/stable/how-to/cache.html) for more inf
 
 
 ================================================================================
+File: data_extraction_template.txt
+Path: .\archive\data_extraction_template.txt
+Size: 632
+Modified: 2025-05-04T22:40:55.918195
+Created: 2025-05-04T22:40:55.067430
+Hash: 937bb68552d504fd8c58cddb25f04491ade419eb9e04b42f3cd915b094a9e1e5
+Lines: 14
+================================================================================
+System: You are an expert in data extraction for conversational AI. Extract structured data from the user message and conversation history based on the specified fields. Use context from the history to improve accuracy. If a field cannot be extracted, return null for that field and provide a brief reason. Return the output in JSON format.
+
+User Message: {{message_content}}
+Conversation History: {{user_messages}}
+Fields to Extract: {{fields}}
+
+Response Format:
+{
+  "extracted_data": {
+    "{{field_name}}": {"value": "<extracted_value>", "reason": "<if null, explain why>"},
+    ...
+  },
+  "confidence": <float between 0 and 1>
+}
+
+================================================================================
+File: response_generation_template.txt
+Path: .\archive\response_generation_template.txt
+Size: 826
+Modified: 2025-05-04T22:45:32.552865
+Created: 2025-05-04T22:45:31.688676
+Hash: 6134bea6ced8df09a022f324ddee52efb6f7dde84b829deebc7d5c863acc0eaf
+Lines: 14
+================================================================================
+System: You are a conversational AI assistant for a business management platform. Generate a clear, concise, and professional response based on the user message, conversation history, and current stage. Guide the user toward completing their task or clarify ambiguous requests. Suggest a next step if relevant, considering the available stages and agent-specific context. Use a friendly yet professional tone, and ensure the response aligns with the current stage’s purpose.
+
+User Message: {{message_content}}
+Conversation History: {{user_messages}}
+Current Stage: {{current_stage}}
+Available Stages: {{available_stages}}
+Agent Type: {{agent_type}}
+
+Response Format:
+{
+  "response": "<response_text>",
+  "suggested_action": "<next step, clarification request, or stage transition>",
+  "confidence": <float between 0 and 1>
+}
+
+================================================================================
+File: stage_selection_template.txt
+Path: .\archive\stage_selection_template.txt
+Size: 487
+Modified: 2025-05-04T20:30:13.454643
+Created: 2025-05-04T20:30:12.368816
+Hash: 38dc76ca96fa4f26f602f764b7f6f3355b206c2e18d59dd71702806596339ccf
+Lines: 11
+================================================================================
+System: You are an expert conversational AI assistant. Based on the user message and conversation history, select the most suitable stage from the available stages. If no stage is appropriate, respond with "not_sure" and explain why. Provide a brief justification for your choice.
+
+User Message: {{message_content}}
+Conversation History: {{user_messages}}
+Available Stages: {{available_stages}}
+
+Response Format:
+{
+  "stage": "<stage_name>",
+  "justification": "<reason for selection>"
+}
+
+================================================================================
 File: README.md
 Path: .\backend\README.md
-Size: 4684
-Modified: 2025-04-10T14:48:41.885094
+Size: 5533
+Modified: 2025-04-28T12:54:12.358208
 Created: 2025-04-02T12:51:35.669451
-Hash: 5ea8844d64047c075f11a10a1d0ffd08c261f30289d1a02d40160f81bcc5fb06
-Lines: 119
+Hash: d88dd4c397ffeb3aa2c80a082b536275aee0b1bbbff334189f108ff5d23a58cb
+Lines: 129
 ================================================================================
 # ICMP - Intelligent Conversation Management Platform
 
@@ -620,9 +763,10 @@ See [Project Summary](c:\icmp_events_api\archive_output\project_archive\sumary.t
     DB_HOST=localhost
     DB_PORT=5432
     OPENAI_API_KEY=your_openai_key
-    ICMP_API_KEY=generate_a_strong_secret_key # Used for admin/server tasks
+    ICMP_API_KEY=generate_a_strong_secret_key # Master key for admin/server tasks (e.g., passed via Authorization: Bearer header)
     # Add other variables as needed (e.g., for Flask secret key)
     FLASK_SECRET_KEY=generate_another_strong_secret
+    # NOTE: The businessApiKey is generated per business and handled via HttpOnly cookie, not set here.
     ```
 3.  **Database Setup:**
     *   Ensure PostgreSQL is running.
@@ -706,6 +850,15 @@ pytest
 - Conversation route tests need updates to match the latest API changes
 - Authentication tests are being updated to handle standardized error responses 
 
+## Authentication
+
+This project uses two primary authentication methods:
+
+1.  **Master API Key (`ICMP_API_KEY`):** Set in the `.env` file. Used for administrative actions and server-to-server communication. Typically passed via the `Authorization: Bearer <key>` header. See `@require_api_key` in `backend/auth.py`.
+2.  **Business API Key (`businessApiKey`):** Generated when a business is created. Handled via a secure `HttpOnly` cookie set by the `/api/save-config` endpoint after frontend configuration. Used for authenticating requests related to specific business data. See `@require_business_api_key` in `backend/auth.py`.
+
+Refer to `AUTH_GUIDELINES.md` for detailed usage. 
+
 ================================================================================
 File: requirements.txt
 Path: .\backend\requirements.txt
@@ -732,11 +885,11 @@ PyYAML>=6.0.2
 ================================================================================
 File: 100%.txt
 Path: .\backend\documentation\100%.txt
-Size: 25306
-Modified: 2025-04-09T14:14:08.643889
+Size: 26314
+Modified: 2025-04-28T12:55:14.842874
 Created: 2025-04-01T17:32:05.083208
-Hash: 02c6bb7d9ee948d3f61cc2a68a1dec6edcf833760b310561e22510dcf931a271
-Lines: 615
+Hash: c86a94a2ac3a79f2d30408f8364dc4a3df8fbb25d72341bf9f1e9feaac747fcf
+Lines: 606
 ================================================================================
 Yes, I can draft a comprehensive document consolidating all aspects of the Intelligent Conversation Management Platform (ICMP) Proof of Concept (POC) into a single, cohesive guide for a future AI to fully understand and implement the project. Due to length constraints, I'll provide a detailed outline with key sections fully developed and others summarized with placeholders, ensuring all critical information—including the recent 10% gap fixes—is included. If you'd like any section expanded further, let me know!
 
@@ -935,7 +1088,22 @@ CREATE INDEX idx_conversations_business_id ON conversations (business_id);
 ## 4. API Reference
 
 ### 4.1 Authentication
-- Bearer token (API key) in `Authorization` header: `Bearer YOUR_API_KEY`.
+
+The API employs two distinct authentication mechanisms:
+
+1.  **Master API Key (`ICMP_API_KEY`):**
+    *   **Purpose:** Used for administrative tasks, server-to-server calls, or initial setup (e.g., creating businesses, managing global templates). **Not** intended for regular frontend user sessions.
+    *   **Source:** Backend loads this key from environment variables. It should **never** be exposed client-side.
+    *   **Usage:** Provide the key via the `Authorization` header: `Authorization: Bearer <ICMP_API_KEY>`.
+    *   **Validation:** Handled by the `@require_api_key` decorator in `backend/auth.py`.
+
+2.  **Business API Key (`businessApiKey`):**
+    *   **Purpose:** Authenticates requests related to a specific business's data during a user session (e.g., managing stages, messages, conversations for that business).
+    *   **Source:** Generated by the backend (`POST /businesses`), provided to the user, and configured in the frontend. The frontend calls `/api/save-config` which validates the key and sets a secure, `HttpOnly` cookie named `businessApiKey`.
+    *   **Usage:** The browser automatically sends the `businessApiKey` cookie with subsequent requests to the backend API. Backend endpoints operating on business-specific data require this cookie.
+    *   **Validation:** Handled by the `@require_business_api_key` decorator in `backend/auth.py`. This decorator reads the cookie and also extracts the relevant `business_id` from the request (URL path, query param, or body) to verify the key belongs to the correct business via a database check.
+
+**Note:** Refer to `backend/auth.py` for the implementation details of the `@require_api_key` and `@require_business_api_key` decorators, and `backend/app.py` for the `/api/save-config` endpoint logic.
 
 ### 4.2 Key Endpoints
 - **POST /api/v1/events**: Submit analytics event (no auth, with validation).  
@@ -1197,22 +1365,10 @@ def get_openai_response(message, stage):
         log.error({"message": "OpenAI API error", "error": str(e)}, exc_info=True)
         return "Error generating response"
 
-# Authentication Middleware
-def require_auth():
-    auth_header = request.headers.get('Authorization')
-    if not auth_header or not auth_header.startswith("Bearer ") or auth_header[7:] != ICMP_API_KEY:
-        log.warning({"message": "Unauthorized access attempt"})
-        return jsonify({"error_code": "UNAUTHORIZED", "message": "Unauthorized"}), 401
-    return None
-
 # Endpoints
 @app.route('/businesses', methods=['POST'])
 @limiter.limit("10 per minute")
 def create_business():
-    auth_error = require_auth()
-    if auth_error:
-        return auth_error
-
     try:
         data = request.get_json() or {}
         validate(data, business_schema)
@@ -1240,10 +1396,6 @@ def create_business():
 @app.route('/stages', methods=['POST'])
 @limiter.limit("10 per minute")
 def create_stage():
-    auth_error = require_auth()
-    if auth_error:
-        return auth_error
-
     try:
         data = request.get_json() or {}
         validate(data, stage_schema)
@@ -1272,10 +1424,6 @@ def create_stage():
 @app.route('/message', methods=['POST'])
 @limiter.limit("30 per minute")
 def handle_message():
-    auth_error = require_auth()
-    if auth_error:
-        return auth_error
-
     try:
         data = request.get_json() or {}
         validate(data, message_schema)
@@ -1320,10 +1468,6 @@ def handle_message():
 @app.route('/conversations/<user_id>', methods=['GET'])
 @limiter.limit("10 per minute")
 def get_conversations(user_id):
-    auth_error = require_auth()
-    if auth_error:
-        return auth_error
-
     if not is_valid_uuid(user_id):
         return jsonify({"error_code": "INVALID_REQUEST", "message": "Invalid user_id format"}), 400
 
@@ -2116,11 +2260,11 @@ For more information on database migrations, see [DATABASE_MIGRATION_GUIDE.md](D
 ================================================================================
 File: FRONTEND_GUIDE.md
 Path: .\backend\documentation\FRONTEND_GUIDE.md
-Size: 7462
-Modified: 2025-04-08T14:15:03.355308
+Size: 8810
+Modified: 2025-04-28T12:54:29.682558
 Created: 2025-04-02T12:53:35.156905
-Hash: 46791fefb5f07b0bcd121b14ae07aa11a83ea419fb3a93dddc17e683ecd84406
-Lines: 242
+Hash: ed63e0004a4599689082f25a47762da598ff1cb8c4be6ff0d60a4022d10f7825
+Lines: 245
 ================================================================================
 # Frontend Guide (React)
 
@@ -2178,11 +2322,14 @@ This guide provides details specific to the `/front-end` React application.
 
 ## API Interaction
 
-*   Uses the browser's `fetch` API
-*   **Authentication:** Uses `businessApiKey` HttpOnly cookie
-*   **Error Handling:** Checks `response.ok` and handles errors appropriately
+*   Uses the browser's `fetch` API.
+*   **Authentication:** Relies primarily on the `businessApiKey` which is set as a secure, `HttpOnly` **cookie** by the backend `/api/save-config` endpoint after successful configuration via `Configuration.js`.
+    *   API calls using `fetch` should include `credentials: 'include'` in their options to ensure the browser sends the authentication cookie.
+    *   The backend decorator (`@require_business_api_key`) validates this cookie along with the `business_id` associated with the request.
+*   **Getting `business_id` for API calls:** Once configured, the application should store the active `business_id` in its state (e.g., React Context or component state). API service functions (like `stageService.getStage`) should receive the `business_id` from this state, rather than relying on `localStorage` as shown in some older examples.
+*   **Error Handling:** Checks `response.ok` and handles errors appropriately.
 
-Example service module:
+Example service module structure (ensure `credentials: 'include'` is set):
 ```javascript
 // src/services/stageService.js
 const API_BASE_URL = '/api';
@@ -2251,20 +2398,29 @@ export const stageService = {
 
 ## Key Components
 
-### StageView Component
+### StageView Component (Conceptual Update)
 
 ```jsx
-// src/components/StageView.jsx
+// src/components/StageView.jsx - Conceptual Example
+import React, { useState, useEffect, useContext } from 'react'; // Assuming context for businessId
+// import { AppContext } from '../contexts/AppContext'; // Example context
+
 function StageView({ stageId }) {
+    // const { businessId } = useContext(AppContext); // Get businessId from context/state
     const [stageData, setStageData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const businessId = "get-from-state-or-context"; // Placeholder
 
     useEffect(() => {
-        // Fetch stage data
+        if (!businessId) {
+            setError("Business not configured.");
+            setLoading(false);
+            return;
+        }
         const fetchStage = async () => {
             try {
-                const businessId = localStorage.getItem('businessId');
+                // Pass businessId obtained from state/context
                 const data = await stageService.getStage(stageId, businessId);
                 setStageData(data);
             } catch (err) {
@@ -2275,22 +2431,13 @@ function StageView({ stageId }) {
         };
 
         fetchStage();
-    }, [stageId]);
+    }, [stageId, businessId]);
 
     // Render loading, error, or stage data
-    if (loading) return <LoadingSpinner />;
-    if (error) return <ErrorMessage message={error} />;
-    if (!stageData) return <NoDataMessage />;
-
-    return (
-        <Paper>
-            <BasicInformation data={stageData} />
-            <TemplateConfiguration data={stageData} />
-            <CreationInfo data={stageData} />
-        </Paper>
-    );
+    // ... (render logic) ...
 }
 ```
+*Note: The example above is conceptual. The actual implementation might differ, but it illustrates obtaining `businessId` from application state rather than `localStorage` for API calls.* 
 
 ### StageManager Component
 
@@ -2362,7 +2509,7 @@ Creates an optimized build in `build/` directory.
 
 ## Key Components
 
-*   **`Configuration.js`:** Handles input for `userId`, `businessId`, `businessApiKey`, saves configuration via `/api/save-config`, and handles logout.
+*   **`Configuration.js`:** Handles user input for `userId`, `businessId`, and the `businessApiKey` obtained after business creation. It calls the backend `/api/save-config` endpoint, which validates these details and, upon success, sets the `businessApiKey` HttpOnly cookie required for subsequent API calls.
 *   *(Add descriptions of other major components as they are developed)* 
 
 ================================================================================
@@ -3544,206 +3691,168 @@ Response format:
 Respond with ONLY the stage name, nothing else. 
 
 ================================================================================
-File: README.md
-Path: .\front-end\build\README.md
-Size: 767
-Modified: 2025-04-01T23:46:02.963441
-Created: 2025-04-19T15:27:02.839215
-Hash: 736a7535ad08cbfa7cf65f2f63c3bb577987eafdbe142e47d4172bd7257a2dc1
-Lines: 26
+File: enhanced_monitoring_system.md
+Path: .\docs\enhanced_monitoring_system.md
+Size: 4295
+Modified: 2025-05-03T20:09:38.385230
+Created: 2025-05-03T20:09:36.559289
+Hash: 407f93acc3c2f60000a4ff9999ea63e13da6cbbdfb4a1b1dda63217cfc80d62c
+Lines: 130
 ================================================================================
-# Static Files
+# Enhanced Monitoring System Documentation
 
-This directory contains the static files for the ICMP Events API frontend.
+## Overview
+The enhanced monitoring system provides comprehensive insights into the data extraction process, offering real-time metrics, visualizations, and analysis tools. This document outlines the system's architecture, components, and implementation details.
 
-## Required Files
+## System Components
 
-1. `favicon.ico` - A 16x16 or 32x32 pixel icon file for the browser tab
-2. `logo192.png` - A 192x192 pixel PNG logo for mobile devices
-3. `logo512.png` - A 512x512 pixel PNG logo for larger displays
+### 1. Frontend Dashboard (`templates/enhanced_dashboard.html`)
+- Modern, responsive UI built with Bootstrap
+- Interactive visualizations using Plotly.js
+- Real-time data updates
+- Auto-refresh functionality (every 5 minutes)
+- Key sections:
+  - Overview Statistics
+  - Performance Trends
+  - Processing Pipeline
+  - AI Performance
+  - Error Analysis
+  - Pattern Analysis
+  - Template Performance
 
-## How to Add Files
+### 2. Backend Monitoring Class (`backend/monitoring/enhanced_monitoring.py`)
+- Extends `ExtractionDashboard` class
+- Visualization methods for all metrics
+- Data processing and analysis
+- Error handling and logging
+- Key methods:
+  - `get_trend_plot()`: Performance trends visualization
+  - `get_pipeline_plot()`: Processing pipeline metrics
+  - `get_ai_performance_plot()`: AI component performance
+  - `get_pattern_plot()`: Pattern analysis visualization
+  - `get_error_plot()`: Error distribution analysis
+  - `get_error_pattern_plot()`: Error pattern visualization
+  - `get_template_plot()`: Template performance metrics
 
-1. Create or obtain the required image files
-2. Place them in this directory
-3. Ensure the files match the names exactly:
-   - `favicon.ico`
-   - `logo192.png`
-   - `logo512.png`
+### 3. API Routes (`backend/routes/monitoring_routes.py`)
+- RESTful endpoints for monitoring data
+- Endpoints:
+  - `/dashboard`: Serves the dashboard template
+  - `/api/monitoring/overview`: Overview statistics
+  - `/api/monitoring/performance`: Performance trends
+  - `/api/monitoring/patterns`: Pattern analysis
+  - `/api/monitoring/errors`: Error analysis
+  - `/api/monitoring/templates`: Template performance
+  - `/api/monitoring/pipeline`: Processing pipeline metrics
+  - `/api/monitoring/ai`: AI performance metrics
+  - `/api/monitoring/error-patterns`: Error pattern analysis
+  - `/api/monitoring/all`: All monitoring data
 
-## File Specifications
+### 4. Dependencies
+- Plotly (5.18.0): For interactive visualizations
+- Pandas (2.1.4): For data manipulation and analysis
+- Flask: Web framework
+- Bootstrap: UI components
+- Plotly.js: Client-side visualizations
 
-- `favicon.ico`: Should be 16x16 or 32x32 pixels
-- `logo192.png`: Should be 192x192 pixels
-- `logo512.png`: Should be 512x512 pixels
+## Implementation Details
 
-All files should be optimized for web use to ensure fast loading times. 
+### Data Flow
+1. Frontend requests data from API endpoints
+2. Backend processes requests using `EnhancedMonitoring` class
+3. Data is transformed into visualizations
+4. Results are returned to frontend
+5. Frontend updates UI with new data
 
-================================================================================
-File: main.b08dd1c0.js.LICENSE.txt
-Path: .\front-end\build\static\js\main.b08dd1c0.js.LICENSE.txt
-Size: 2379
-Modified: 2025-04-19T15:46:53.356833
-Created: 2025-04-19T15:46:53.334045
-Hash: 247f1f7640071baccdae8060793f1bff7a85dbbb654838f4d990ccfe15cd3ad3
-Lines: 102
-================================================================================
-/**
- * @license React
- * react-dom.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+### Error Handling
+- Comprehensive error logging
+- Graceful degradation of features
+- User-friendly error messages
+- Automatic retry mechanisms
 
-/**
- * @license React
- * react-is.production.js
- *
- * Copyright (c) Meta Platforms, Inc. and affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+### Performance Considerations
+- Caching of frequently accessed data
+- Optimized database queries
+- Efficient data transformation
+- Responsive UI updates
 
-/**
- * @license React
- * react-is.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+## Usage Guide
 
-/**
- * @license React
- * react-jsx-runtime.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+### Accessing the Dashboard
+1. Navigate to `/dashboard` endpoint
+2. Dashboard loads automatically
+3. Data refreshes every 5 minutes
+4. Manual refresh available via button
 
-/**
- * @license React
- * react.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+### Interpreting Metrics
+- Overview Stats: High-level system performance
+- Performance Trends: Historical performance analysis
+- Processing Pipeline: Stage-wise performance
+- AI Performance: Model-specific metrics
+- Error Analysis: Error distribution and patterns
+- Pattern Analysis: Extraction pattern effectiveness
+- Template Performance: Template success rates
 
-/**
- * @license React
- * scheduler.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
+## Future Enhancements
+1. Custom date range selection
+2. Export functionality for reports
+3. Alert configuration
+4. User-specific dashboards
+5. Advanced filtering options
+6. Real-time event streaming
+7. Machine learning-based anomaly detection
 
-/**
- * @remix-run/router v1.23.0
- *
- * Copyright (c) Remix Software Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE.md file in the root directory of this source tree.
- *
- * @license MIT
- */
+## Maintenance
+- Regular database optimization
+- Performance monitoring
+- Error log analysis
+- Security updates
+- Dependency updates
 
-/**
- * React Router DOM v6.30.0
- *
- * Copyright (c) Remix Software Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE.md file in the root directory of this source tree.
- *
- * @license MIT
- */
+## Troubleshooting
+1. Check browser console for errors
+2. Verify API endpoint accessibility
+3. Monitor database connection
+4. Check log files for errors
+5. Verify data pipeline integrity
 
-/**
- * React Router v6.30.0
- *
- * Copyright (c) Remix Software Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE.md file in the root directory of this source tree.
- *
- * @license MIT
- */
+## Security Considerations
+- API key authentication
+- Rate limiting
+- Data sanitization
+- Secure data transmission
+- Access control
 
-/** @license React v16.13.1
- * react-is.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
+## Version History
+- v1.0.0: Initial implementation
+  - Basic monitoring features
+  - Core visualizations
+  - Real-time updates
+  - Error handling 
 
 ================================================================================
-File: files.app.txt
-Path: .\front-end\src\components\files.app.txt
-Size: 1679
-Modified: 2025-03-31T18:05:57.577093
-Created: 2025-03-31T18:05:57.051458
-Hash: 84ffbffe5a4622ea47abd4469acb54bab2352cd602a7b21f276ad8ee9d9fcc9f
-Lines: 44
+File: - Copy.env.txt
+Path: .\front-end\- Copy.env.txt
+Size: 340
+Modified: 2025-05-07T12:03:56.373299
+Created: 2025-05-09T18:24:33.571367
+Hash: 4479b02563e1661999993a737d67235b64f194a809d7de3c844f3f92127a7a35
+Lines: 14
 ================================================================================
-import os
-import datetime
 
-def create_file_list(start_dir=".", output_file="file_list.txt"):
-    """
-    Creates a text file containing a listing of all files and directories
-    within a specified directory (and its subdirectories).
-
-    Args:
-        start_dir (str): The root directory to start the listing from. Defaults to the current directory.
-        output_file (str): The name of the output text file. Defaults to "file_list.txt".
-    """
-
-    try:
-        with open(output_file, "w") as f:
-            f.write(f"File and Directory Listing - {datetime.datetime.now()}\n")
-            f.write("-" * 40 + "\n")
-
-            for root, dirs, files in os.walk(start_dir):
-                # Write the directory name
-                f.write(f"Directory: {root}\n")
-
-                # Write the files in the directory
-                for file in files:
-                    f.write(f"  - File: {file}\n")
-
-                # Add a separator after each directory (optional)
-                f.write("-" * 20 + "\n")
-
-        print(f"File list created successfully: {output_file}")
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_API_BASE_URL=http://localhost:5000
+REACT_APP_ICMP_API_KEY=cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6
 
 
-if __name__ == "__main__":
-    # Get the directory from the user (optional - can be hardcoded if needed)
-    dir_to_list = input("Enter the directory to list (or press Enter for current directory): ")
-    if not dir_to_list:
-        dir_to_list = "." #Current Directory
-    output_filename = input("Enter the output filename (or press Enter for 'file_list.txt'): ")
-    if not output_filename:
-        output_filename = "file_list.txt"
-    create_file_list(dir_to_list, output_filename)
+
+
+
+PORT=3000
+DANGEROUSLY_DISABLE_HOST_CHECK=true
+FAST_REFRESH=true
+REACT_APP_API_BASE_URL=http://localhost:5000
+REACT_APP_API_URL=http://localhost:5000
 
 ================================================================================
 File: sameer website.txt

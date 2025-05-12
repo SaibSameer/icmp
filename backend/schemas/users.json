@@ -9,18 +9,40 @@
       "format": "uuid",
       "description": "Globally unique identifier for the user."
     },
-    "name": {
+    "first_name": {
       "type": "string",
-      "description": "User's full name."
+      "maxLength": 100,
+      "description": "User's first name."
+    },
+    "last_name": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "User's last name."
     },
     "email": {
       "type": "string",
       "format": "email",
+      "maxLength": 255,
       "description": "User's email address."
     },
     "phone": {
       "type": "string",
+      "maxLength": 50,
       "description": "User's phone number."
+    },
+    "address": {
+      "type": "string",
+      "description": "User's address."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the user was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the user was last updated."
     },
     "language": {
       "type": "string",
@@ -90,7 +112,7 @@
       },
       "description": "List of business IDs the user manages."
     },
-      "segmentation_tags": {
+    "segmentation_tags": {
       "type": "array",
       "items": {
         "type": "string"
@@ -104,7 +126,7 @@
         "type": "string"
       }
     },
-     "verification_status": {
+    "verification_status": {
       "type": "object",
       "description": "Verification status of email and phone.",
       "properties": {
@@ -119,7 +141,7 @@
       },
       "additionalProperties": false
     },
-      "privacy_settings": {
+    "privacy_settings": {
       "type": "object",
       "description": "User's privacy settings.",
       "properties": {
@@ -132,10 +154,7 @@
     }
   },
   "required": [
-    "user_id",
-    "name",
-    "email",
-    "phone"
+    "user_id"
   ],
   "additionalProperties": false
 }

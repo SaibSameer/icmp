@@ -36,11 +36,11 @@ def get_agents():
     conn = None
     try:
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
         params = []
         query = """
-            SELECT agent_id, business_id, agent_name, created_at
+            SELECT agent_id, business_id, agent_name, created_at, updated_at
             FROM agents
         """
         
@@ -56,22 +56,16 @@ def get_agents():
         
         cursor.execute(query, tuple(params))
         agents = cursor.fetchall()
-
-        columns = ['agent_id', 'business_id', 'agent_name', 'created_at']
-        result_list = []
-        for row in agents:
-            agent_dict = {}
-            for i, col_name in enumerate(columns):
-                value = row[i]
+        
+        # Convert UUIDs and timestamps to strings
+        for agent in agents:
+            for key, value in agent.items():
                 if isinstance(value, uuid.UUID):
-                    agent_dict[col_name] = str(value)
+                    agent[key] = str(value)
                 elif hasattr(value, 'isoformat'):
-                    agent_dict[col_name] = value.isoformat()
-                else:
-                    agent_dict[col_name] = value
-            result_list.append(agent_dict)
+                    agent[key] = value.isoformat()
             
-        return jsonify(result_list), 200
+        return jsonify(agents), 200
 
     except Exception as e:
         # Catch potential errors like table not existing if schema isn't confirmed
@@ -103,7 +97,7 @@ def create_agent():
     if not agent_name or not str(agent_name).strip():
          return jsonify({"error_code": "BAD_REQUEST", "message": "Missing or empty required field in payload: name"}), 400
 
-    log.info(f"Admin creating agent '{agent_name}' for business {business_id}") # Update log
+    log.info(f"Admin creating agent '{agent_name}' for business {business_id}")
 
     agent_id = str(uuid.uuid4())
     conn = None
@@ -116,33 +110,35 @@ def create_agent():
         if not cursor.fetchone():
              return jsonify({"error_code": "NOT_FOUND", "message": f"Business with ID {business_id} not found"}), 404
 
-        # Adapt INSERT based on actual agents table schema - check if description/system_prompt etc. exist
-        # Assuming a simpler schema for now based on GET /agents response
         cursor.execute("""
             INSERT INTO agents (agent_id, business_id, agent_name)
             VALUES (%s, %s, %s)
-            RETURNING agent_id;
+            RETURNING agent_id, business_id, agent_name, created_at, updated_at;
         """, (
             agent_id,
-            business_id, # Use business_id from payload
-            agent_name   # Use agent name from payload
-            # Add other fields from data.get() if they exist in the table schema
-            # data.get('description'),
-            # data.get('system_prompt'), ...
+            business_id,
+            agent_name
         ))
         result = cursor.fetchone()
         conn.commit()
-        log.info(f"Agent {result[0]} created for business {business_id} by admin")
-        return jsonify({"message": "Agent created successfully", "agent_id": result[0]}), 201
+        
+        # Convert UUIDs and timestamps to strings
+        agent = {
+            'agent_id': str(result[0]),
+            'business_id': str(result[1]),
+            'agent_name': result[2],
+            'created_at': result[3].isoformat() if result[3] else None,
+            'updated_at': result[4].isoformat() if result[4] else None
+        }
+        
+        log.info(f"Agent {agent_id} created for business {business_id} by admin")
+        return jsonify(agent), 201
 
     except Exception as e:
         if conn: conn.rollback()
-        log.error(f"Error creating agent for business {business_id} (admin): {str(e)}", exc_info=True)
-        if "unique constraint" in str(e).lower() and ("agents_business_id_agent_name_key" in str(e).lower() or "agents_business_id_name_key" in str(e).lower()):
+        log.error(f"Error creating agent for business {business_id}: {str(e)}", exc_info=True)
+        if "unique constraint" in str(e).lower() and "agents_business_id_agent_name_key" in str(e).lower():
              return jsonify({"error_code": "CONFLICT", "message": "Agent name already exists for this business"}), 409
-        # Handle FK constraint errors if business_id doesn't exist (though checked above)
-        if "foreign key constraint" in str(e).lower():
-             return jsonify({"error_code": "NOT_FOUND", "message": f"Business ID {business_id} not found or invalid"}), 404
         return jsonify({"error_code": "DB_ERROR", "message": f"Database error: {str(e)}"}), 500
     finally:
         if conn:
@@ -154,42 +150,21 @@ def update_agent(agent_id):
     """Updates an existing agent."""
     if not is_valid_uuid(agent_id):
         return jsonify({"error_code": "BAD_REQUEST", "message": "Invalid agent_id format"}), 400
-    
+
     data = request.get_json()
     if not data:
         return jsonify({"error_code": "BAD_REQUEST", "message": "Request must be JSON"}), 400
 
-    # Get business_id from request data
     business_id = data.get('business_id')
     if not business_id:
         return jsonify({"error_code": "BAD_REQUEST", "message": "Missing required field: business_id"}), 400
     if not is_valid_uuid(business_id):
         return jsonify({"error_code": "BAD_REQUEST", "message": "Invalid business_id format"}), 400
 
-    # Map frontend field names to database column names
-    field_mapping = {
-        'name': 'agent_name',  # Map 'name' to 'agent_name'
-        'description': 'description',
-        'system_prompt': 'system_prompt',
-        'temperature': 'temperature',
-        'max_tokens': 'max_tokens',
-        'top_p': 'top_p',
-        'frequency_penalty': 'frequency_penalty',
-        'presence_penalty': 'presence_penalty'
-    }
-
-    # Extract and map fields
-    update_fields = {}
-    for frontend_field, db_field in field_mapping.items():
-        if frontend_field in data:
-            update_fields[db_field] = data[frontend_field]
-
-    # Optional: Add specific validation for field types (e.g., temperature is float)
-    if 'agent_name' in update_fields and not update_fields['agent_name']:
-         return jsonify({"error_code": "VALIDATION_ERROR", "message": "Agent name cannot be empty"}), 400
-
-    if not update_fields:
-         return jsonify({"error_code": "BAD_REQUEST", "message": "No valid fields provided for update"}), 400
+    # Only allow updating agent_name for now
+    agent_name = data.get('name')
+    if not agent_name or not str(agent_name).strip():
+        return jsonify({"error_code": "BAD_REQUEST", "message": "Missing or empty required field: name"}), 400
 
     conn = None
     try:
@@ -202,21 +177,31 @@ def update_agent(agent_id):
             log.warning(f"Update attempted on non-existent or unauthorized agent {agent_id} for business {business_id}")
             return jsonify({"error_code": "NOT_FOUND", "message": "Agent not found or access denied"}), 404
 
-        set_clause = ", ".join([f"{field} = %s" for field in update_fields])
-        params = list(update_fields.values())
-        params.extend([agent_id, business_id])
-
-        query = f"UPDATE agents SET {set_clause}, updated_at = NOW() WHERE agent_id = %s AND business_id = %s"
+        cursor.execute("""
+            UPDATE agents 
+            SET agent_name = %s, updated_at = NOW() 
+            WHERE agent_id = %s AND business_id = %s
+            RETURNING agent_id, business_id, agent_name, created_at, updated_at;
+        """, (agent_name, agent_id, business_id))
         
-        cursor.execute(query, tuple(params))
+        result = cursor.fetchone()
+        if not result:
+            log.warning(f"Update affected 0 rows for agent {agent_id}, business {business_id}")
+            return jsonify({"error_code": "NOT_FOUND", "message": "Agent not found or access denied during update"}), 404
+            
         conn.commit()
-
-        if cursor.rowcount == 0:
-             log.warning(f"Update affected 0 rows for agent {agent_id}, business {business_id}")
-             return jsonify({"error_code": "NOT_FOUND", "message": "Agent not found or access denied during update"}), 404
-             
+        
+        # Convert UUIDs and timestamps to strings
+        agent = {
+            'agent_id': str(result[0]),
+            'business_id': str(result[1]),
+            'agent_name': result[2],
+            'created_at': result[3].isoformat() if result[3] else None,
+            'updated_at': result[4].isoformat() if result[4] else None
+        }
+        
         log.info(f"Agent {agent_id} updated successfully for business {business_id}")
-        return jsonify({"message": "Agent updated successfully", "agent_id": agent_id}), 200
+        return jsonify(agent), 200
 
     except Exception as e:
         if conn: conn.rollback()
@@ -291,11 +276,8 @@ def get_agent(agent_id):
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-        # Fetch agent without filtering by business_id from context
         cursor.execute("""
-            SELECT agent_id, business_id, name, description, system_prompt, 
-                   temperature, max_tokens, top_p, frequency_penalty, presence_penalty,
-                   created_at, updated_at
+            SELECT agent_id, business_id, agent_name, created_at, updated_at
             FROM agents 
             WHERE agent_id = %s;
         """, (agent_id,))

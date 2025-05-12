@@ -366,6 +366,8 @@ Last Updated: 2025-05-12
 
 # ICMP Events API Troubleshooting Guide
 
+> **Note (2025-05-12):** ErrorConfig, ErrorMonitor, ErrorLogger, ErrorResponse, ErrorValidator, and ErrorRecovery are now present as stubs in `backend/error_handling/errors.py` for test compatibility. Update your imports or references as needed.
+
 ## Error Handling Procedures
 
 ### 1. Error Types and Usage

@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Analytics/Event",
-  "description": "Represents an analytics event within the ICMP.",
+  "title": "Event",
+  "description": "Represents an event in the system.",
   "type": "object",
   "properties": {
     "event_id": {
@@ -12,128 +12,102 @@
     "user_id": {
       "type": "string",
       "format": "uuid",
-      "description": "ID of the user associated with the event."
+      "description": "Globally unique identifier for the user."
     },
     "business_id": {
       "type": "string",
       "format": "uuid",
-      "description": "ID of the business associated with the event."
+      "description": "Globally unique identifier for the business."
     },
     "session_id": {
       "type": "string",
-      "description": "ID of the user session."
+      "description": "Session identifier for the event."
     },
     "event_type": {
       "type": "string",
-      "description": "Type of event (e.g., 'message_sent', 'stage_entered')."
+      "description": "Type of the event."
     },
     "event_timestamp": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp of the event."
+      "description": "Timestamp when the event occurred."
     },
     "agent_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "ID of the agent involved (if applicable)."
+      "description": "Globally unique identifier for the agent."
     },
     "stage_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "ID of the stage involved (if applicable)."
+      "description": "Globally unique identifier for the stage."
     },
     "product_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "ID of the product involved (if applicable)."
+      "description": "Globally unique identifier for the product."
     },
     "order_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "ID of the order involved (if applicable)."
+      "description": "Globally unique identifier for the order."
     },
     "message_text": {
       "type": "string",
-      "description": "Content of the message (if applicable)."
+      "description": "Text content of the event."
     },
     "response_time": {
       "type": "number",
-      "description": "Time taken to generate a response (ms)."
+      "description": "Response time for the event."
     },
     "llm_cost": {
       "type": "number",
-      "description": "Cost of using the LLM for this event."
+      "description": "Cost of LLM usage for the event."
     },
     "satisfaction_score": {
-      "type": ["integer", "null"],
-      "description": "User satisfaction score (if available)."
+      "type": "integer",
+      "description": "Satisfaction score for the event."
     },
-       "sentiment_score": {
-      "type": ["number", "null"],
-      "description": "sentiment score of the user"
+    "sentiment_score": {
+      "type": "number",
+      "description": "Sentiment score for the event."
     },
-     "intent_confidence": {
-      "type": ["number", "null"],
-      "description": "confidence score"
+    "intent_confidence": {
+      "type": "number",
+      "description": "Confidence score for intent detection."
     },
-      "turn_count": {
-      "type": ["integer", "null"],
-      "description": "count turn "
+    "turn_count": {
+      "type": "integer",
+      "description": "Number of turns in the conversation."
     },
-       "custom_event_properties": {
+    "custom_event_properties": {
       "type": "object",
-      "description": "Store custom data (JSONB).",
-      "note": "Validate against a schema defined by the business."
+      "description": "Custom properties for the event."
     },
-        "goal_achieved": {
+    "goal_achieved": {
       "type": "boolean",
-      "description": "true of a goal is archieved"
+      "description": "Whether the goal was achieved."
     },
-        "geographic_data": {
-            "type": "object",
-            "description": "Describing the geographic info",
-            "properties": {
-                "longitude": {
-                    "type": "string",
-                    "description": "Describe the longitude"
-                },
-                "latitude": {
-                    "type": "string",
-                    "description": "Describe the latitude"
-                }
-            },
-             "additionalProperties": false
-        },
-      "error_tracking": {
-            "type": "object",
-            "description": "Describing the errors",
-            "properties": {
-                "error_type": {
-                    "type": "string",
-                    "description": "Describe the error"
-                },
-                "error_details": {
-                    "type": "string",
-                    "description": "Describe the error details"
-                }
-            },
-             "additionalProperties": false
-        },
-          "ab_testing_results": {
-            "type": "object",
-            "description": "Describing the AB Testting",
-            "properties": {
-                "test_id": {
-                    "type": "string",
-                    "description": "Describe the test_ID"
-                },
-                "group": {
-                    "type": "string",
-                    "description": "Describe the group A or B"
-                }
-            },
-             "additionalProperties": false
-        }
+    "longitude": {
+      "type": "string",
+      "description": "Longitude coordinate."
+    },
+    "latitude": {
+      "type": "string",
+      "description": "Latitude coordinate."
+    },
+    "error_tracking": {
+      "type": "object",
+      "description": "Error tracking information."
+    },
+    "ab_testing_results": {
+      "type": "object",
+      "description": "A/B testing results."
+    },
+    "schema_name": {
+      "type": "string",
+      "description": "Name of the schema."
+    }
   },
   "required": [
     "event_id",

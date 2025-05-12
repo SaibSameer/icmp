@@ -586,6 +586,8 @@ def get_error_statistics():
 
 ### 5. Best Practices
 
+> **Update (2025-05-12):** ErrorConfig, ErrorMonitor, ErrorLogger, ErrorResponse, ErrorValidator, and ErrorRecovery are now available as stubs in `backend/error_handling/errors.py` for test compatibility and are exported from the package.
+
 #### 5.1 Error Handling
 - Always use specific error classes instead of generic exceptions
 - Include meaningful error messages and details

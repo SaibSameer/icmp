@@ -22,7 +22,7 @@ import {
 } from '../services/testService'
 import Configuration from './Configuration';
 import UserManagement from './UserManagement';
-import BusinessManagement from './BusinessManagement';
+import BusinessManagement from './business/BusinessManagement';
 import TemplateManagement from './TemplateManagement';
 import StageManagement from './StageManagement';
 import SendMessage from './SendMessage';

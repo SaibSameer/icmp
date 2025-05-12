@@ -1,19 +1,19 @@
 === ARCHIVE SUMMARY REPORT ===
 
-Archive created: 2025-04-26 17:04:44
-Process started: 2025-04-26 17:04:43
-Duration: 0:00:01.625766
+Archive created: 2025-05-10 19:09:06
+Process started: 2025-05-10 19:09:05
+Duration: 0:00:00.737486
 
 === STATISTICS ===
 
-Files processed: 288
+Files processed: 331
 Output files created: 5
-Total size processed: 3.2 MiB
+Total size processed: 2.4 MiB
 
 File Type Breakdown:
-Json: 15
-Html: 17
-Javascript: 98
-Python: 129
-Text: 29
+Json: 27
+Html: 20
+Javascript: 97
+Python: 155
+Text: 32
 

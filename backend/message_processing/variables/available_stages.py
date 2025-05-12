@@ -1,24 +1,39 @@
 """
-Available stages variable provider.
+Variable provider for available conversation stages.
+
+This module provides functionality to retrieve and format available conversation stages
+for a business from the database.
 """
+
+from typing import Dict, Any, List
+from .base_provider import BaseVariableProvider
+from .database_utils import DatabaseUtils
+from backend.message_processing.template_variables import TemplateVariableProvider
 import logging
-from ..template_variables import TemplateVariableProvider
 
 log = logging.getLogger(__name__)
 
-@TemplateVariableProvider.register_provider('available_stages')
+@TemplateVariableProvider.register_provider(
+    'available_stages',
+    description='Returns a list of available conversation stages for a business',
+    auth_requirement='business_key'
+)
 def provide_available_stages(conn, business_id: str, **kwargs) -> str:
     """
-    Get list of available stage names with descriptions.
+    Generate a formatted list of available stages for a business.
     
     Args:
         conn: Database connection
-        business_id: UUID of the business
+        business_id: ID of the business
         
     Returns:
-        Formatted string with stage names and descriptions
+        Formatted string with available stages
     """
     try:
+        if not conn:
+            log.error("No database connection provided")
+            return "Error: No database connection"
+            
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -32,27 +47,15 @@ def provide_available_stages(conn, business_id: str, **kwargs) -> str:
         
         stages = cursor.fetchall()
         if not stages:
-            log.info(f"No stages found for business_id: {business_id}")
-            return "Default Conversation Stage"
+            return "No stages available"
             
-        # Handle both tuple and dictionary row formats
-        stage_info = []
+        result = []
         for stage in stages:
-            if isinstance(stage, dict):
-                # If using RealDictCursor, access by column name
-                stage_name = stage['stage_name']
-                stage_desc = stage['stage_description']
-            else:
-                # If using regular cursor, access by index
-                stage_name = stage[0]
-                stage_desc = stage[1]
-                
-            stage_info.append(f"{stage_name}: {stage_desc}")
-                
-        result = "\n".join(stage_info)
-        log.info(f"Found stages for business_id {business_id}")
-        return result
-        
+            name = stage['stage_name'] or "Unnamed Stage"
+            desc = stage['stage_description'] or "No description available"
+            result.append(f"{name}: {desc}")
+            
+        return "\n".join(result)
     except Exception as e:
         log.error(f"Error providing available_stages: {str(e)}", exc_info=True)
-        return "Default Conversation Stage"
+        return "Error retrieving available stages"

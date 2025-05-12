@@ -5,7 +5,7 @@ import logging
 import json
 from jsonschema import validate, ValidationError
 from db import get_db_connection, release_db_connection, get_db_pool
-from openai_helper import call_openai
+from backend.ai.openai_helper import call_openai
 from backend.auth import require_internal_key, require_api_key
 import re
 import hmac # For signature verification
@@ -13,6 +13,8 @@ import hashlib # For signature verification
 import requests # For calling internal APIs
 from backend.message_processing.message_handler import MessageHandler
 from backend.routes.utils import is_valid_uuid
+from backend.message_processing.services.storage.redis_manager import RedisStateManager
+from backend.message_processing.services.template_service import TemplateService
 
 log = logging.getLogger(__name__)
 
@@ -204,21 +206,21 @@ def handle_message():
         return jsonify({'success': False, 'error': 'No data provided'}), 400
 
     # Extract and validate required fields
-    business_id = data.get('business_id')
+    business_id = data.get('business_id', '32a6f42a-b6cf-41e3-a970-bdb051784eff')  # Default to Ask Samir business
     user_id = data.get('user_id')
     content = data.get('content')
     conversation_id = data.get('conversation_id')
 
-    if not all([business_id, user_id, content]):
+    if not all([user_id, content]):
         return jsonify({
             'success': False,
-            'error': 'Missing required fields: business_id, user_id, content'
+            'error': 'Missing required fields: user_id, content'
         }), 400
 
-    if not is_valid_uuid(business_id) or not is_valid_uuid(user_id):
+    if not is_valid_uuid(user_id):
         return jsonify({
             'success': False,
-            'error': 'Invalid UUID format for business_id or user_id'
+            'error': 'Invalid UUID format for user_id'
         }), 400
 
     if conversation_id and not is_valid_uuid(conversation_id):
@@ -251,5 +253,51 @@ def handle_message():
         log.error(f"Error processing message: {str(e)}", exc_info=True)
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': f"Error processing message: {str(e)}"
         }), 500
+
+@bp.route('/user/<user_id>', methods=['GET'])
+@require_api_key
+def get_user_messages(user_id):
+    """
+    Get all messages for a specific user.
+    
+    Required Headers:
+    - businessapikey: Your business API key
+    
+    Query Parameters:
+    - business_id: The business ID to filter messages by
+    """
+    business_id = request.args.get('business_id')
+    if not business_id:
+        return jsonify({'error': 'Missing business_id parameter'}), 400
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            SELECT 
+                m.message_id,
+                m.message_content as content,
+                m.created_at as timestamp,
+                m.sender_type,
+                c.conversation_id
+            FROM messages m
+            JOIN conversations c ON m.conversation_id = c.conversation_id
+            WHERE m.user_id = %s AND c.business_id = %s
+            ORDER BY m.created_at DESC
+            """,
+            (user_id, business_id)
+        )
+        messages = cursor.fetchall()
+        
+        return jsonify([{
+            'message_id': str(msg[0]),
+            'content': msg[1],
+            'timestamp': msg[2].isoformat(),
+            'sender_type': msg[3],
+            'conversation_id': str(msg[4])
+        } for msg in messages])
+    finally:
+        release_db_connection(conn)

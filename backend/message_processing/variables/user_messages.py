@@ -3,7 +3,11 @@ import logging
 
 log = logging.getLogger(__name__)
 
-@TemplateVariableProvider.register_provider('user_messages')
+@TemplateVariableProvider.register_provider(
+    'user_messages',
+    description='Generates a formatted history of all messages sent by a specific user',
+    auth_requirement='business_key'
+)
 def provide_user_messages(conn, user_id: str, business_id: str, **kwargs) -> str:
     """
     Generate a formatted history of all messages sent by a specific user.

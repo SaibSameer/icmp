@@ -1,8 +1,8 @@
 // File: src/components/MyInterface.js
 // Last Modified: 2026-03-30
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './MyInterface.css';
-import { Typography, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { Typography, Snackbar, Alert } from '@mui/material';
 import Configuration from './Configuration';
 import BusinessSection from './BusinessSection';
 import UserSection from './UserSection';
@@ -17,21 +17,18 @@ import AgentSection from './AgentSection';
 import StageSection from './StageSection';
 import StageDetailView from './StageDetailView';
 import TemplateSection from './TemplateSection';
-import MessagePortal from './MessagePortal';
 
 // Main MyInterface component
 function MyInterface() {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('info');
-    const [selectedStageId, setSelectedStageId] = useState(null);
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // or 'error'
     const [selectedAgentId, setSelectedAgentId] = useState(null);
-    const [conversations, setConversations] = useState([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [selectedStageId, setSelectedStageId] = useState(null);
 
-    const handleSnackbarOpen = (severity, message) => {
-        setSnackbarSeverity(severity);
+    const handleSnackbarOpen = (message, severity) => {
         setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
         setSnackbarOpen(true);
     };
 
@@ -42,7 +39,7 @@ function MyInterface() {
         setSnackbarOpen(false);
     };
 
-    const {
+   const {
         apiKey,
         setApiKey,
         userId,
@@ -102,15 +99,16 @@ function MyInterface() {
         createStage
     } = useStageManagement(apiKey, businessId, handleSnackbarOpen);
 
+    //user section
     const createUser = async () => {
         try {
             await createUserApi(firstName, lastName, email)
             setUserOutput("User Created (dummy)");
-            handleSnackbarOpen("success", "User Created!");
+            handleSnackbarOpen("User Created!", "success")
 
         } catch (error) {
             setUserOutput(`Error: ${error.message}`);
-            handleSnackbarOpen('error', error.message);
+            handleSnackbarOpen(error.message, "error")
 
         }
     };
@@ -123,48 +121,37 @@ function MyInterface() {
         try {
             const data = await createTemplateApi(templateData, apiKey)
             setTemplateOutput(`Template Created: ${data.template_id}`);
-            handleSnackbarOpen('success', `Template Created: ${data.template_id}`);
+            handleSnackbarOpen(`Template Created: ${data.template_id}`, "success")
         } catch (error) {
             setTemplateOutput(`Error: ${error.message}`);
-            handleSnackbarOpen('error', error.message);
+            handleSnackbarOpen(error.message, "error")
 
         }
     };
 
+    // Define placeholder processMessage function
     const processMessage = async (message) => {
         console.log("Processing message (TODO):", message);
-        handleSnackbarOpen('info', "Message processing not yet implemented.");
+        // TODO: Implement actual message processing logic, likely calling an API
+        handleSnackbarOpen("Message processing not yet implemented.", "info");
     };
 
+    // Handler for when an agent is selected in AgentSection
     const handleAgentSelect = (agentId) => {
         console.log("Agent selected in MyInterface:", agentId);
         setSelectedAgentId(agentId);
-        setSelectedStageId(null);
+        // Clear stage selection when agent changes
+        setSelectedStageId(null); 
     };
 
+    // Handler for when a stage is selected in StageSection
     const handleStageSelect = (stageId) => {
         console.log("Stage selected in MyInterface:", stageId);
         setSelectedStageId(stageId);
     };
 
-    const isConfigComplete = !!businessId && !!userId;
-
-    const fetchConversations = async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetchConversationHistory();
-            setConversations(response);
-        } catch (error) {
-            console.error('Error fetching conversations:', error);
-            handleSnackbarOpen('error', 'Failed to fetch conversations');
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchConversations();
-    }, []);
+    // Determine if configuration is complete (we check for businessId as a proxy)
+    const isConfigComplete = !!businessId && !!userId; // Check both IDs are present
 
     return (
         <div className="container">
@@ -183,6 +170,7 @@ function MyInterface() {
                     handleSnackbarOpen={handleSnackbarOpen}
                 />
             ) : (
+                // Render dashboard content only if config is complete
                 <>
                     <BusinessSection handleSnackbarOpen={handleSnackbarOpen} />
 
@@ -242,12 +230,14 @@ function MyInterface() {
                         apiKey={apiKey}
                         businessId={businessId} />
 
+                    {/* Render StageSection, passing selectedAgentId and selection handler */}
                     <StageSection 
                         selectedAgentId={selectedAgentId} 
                         handleSnackbarOpen={handleSnackbarOpen}
                         onStageSelect={handleStageSelect}
                     />
 
+                    {/* Conditionally render StageDetailView only when a stage is selected */}
                     {selectedStageId && (
                         <StageDetailView 
                             selectedStageId={selectedStageId} 
@@ -255,25 +245,12 @@ function MyInterface() {
                         />
                     )}
 
-                    <MessagePortal 
-                        conversations={conversations}
-                        isLoading={isLoading}
-                        handleSnackbarOpen={handleSnackbarOpen}
-                    />
-
-                    <SendMessage 
-                        handleSnackbarOpen={handleSnackbarOpen}
-                        onMessageSent={fetchConversations}
-                    />
+                    <SendMessage processMessage={processMessage} handleSnackbarOpen={handleSnackbarOpen} />
                 </>
             )}
 
-            <Snackbar 
-                open={snackbarOpen} 
-                autoHideDuration={6000} 
-                onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-            >
+            {/* Snackbar for notifications */}
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
                 <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </Alert>

@@ -1,6 +1,6 @@
 # Environment Variables Documentation
 
-> Note: Test environment variables setup is currently in progress as part of the testing improvements. Major runtime and import errors (including get_db_connection import in tests/conftest.py) have been resolved as of 2025-05-12.
+> Note: Test environment variables setup is currently in progress as part of the testing improvements. Major runtime and import errors (including get_db_connection import in tests/conftest.py) have been resolved as of 2025-05-12. Stubs for error handling (ErrorUtils, template_system) have also been added, and the test environment is ready for further development.
 
 ## Overview
 This document outlines all environment variables used in the ICMP Backend service. These variables control various aspects of the application's behavior, including database connections, API configurations, and security settings.
@@ -357,4 +357,5 @@ Last Updated: 2025-05-12
 ---
 **Update:**
 - The get_db_connection import error in tests/conftest.py was fixed by updating the import to backend.database.db.
+- New error handling stubs (ErrorConfig, ErrorMonitor, ErrorLogger, ErrorResponse, ErrorValidator, ErrorRecovery) were added to backend/error_handling/errors.py for test compatibility on 2025-05-12.
 

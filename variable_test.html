@@ -140,19 +140,11 @@
             <h2>Authentication</h2>
             <div class="form-group">
                 <label for="businessId">Business ID</label>
-                <input type="text" id="businessId" placeholder="Enter Business ID">
+                <input type="text" id="businessId" placeholder="Enter Business ID" value="bc7e1824-49b4-4056-aabe-b045a1f79e3b">
             </div>
             <div class="form-group">
-                <label for="apiKey">API Key</label>
-                <input type="password" id="apiKey" placeholder="Enter API Key">
-            </div>
-            <div class="form-group">
-                <label for="ownerId">Owner ID</label>
-                <input type="text" id="ownerId" placeholder="Enter Owner ID">
-            </div>
-            <div class="form-group">
-                <label for="userId">User ID</label>
-                <input type="text" id="userId" placeholder="Enter User ID">
+                <label for="apiKey">Master API Key</label>
+                <input type="password" id="apiKey" placeholder="Enter Master API Key" value="cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6">
             </div>
             <button onclick="authenticate()">Authenticate</button>
             <button onclick="clearAuth()" style="background-color: var(--error-color);">Clear Auth</button>
@@ -215,9 +207,15 @@
         const config = {
             baseUrl: 'http://localhost:5000',
             businessId: '',
-            apiKey: '',
-            ownerId: '',
-            userId: ''
+            apiKey: ''
+        };
+
+        // Common headers for all requests
+        const commonHeaders = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-API-Key': config.apiKey,
+            'businessapikey': config.apiKey
         };
 
         // Show status message
@@ -231,112 +229,97 @@
         function clearAuth() {
             localStorage.removeItem('businessId');
             localStorage.removeItem('apiKey');
-            localStorage.removeItem('ownerId');
-            localStorage.removeItem('userId');
             
             document.getElementById('businessId').value = '';
             document.getElementById('apiKey').value = '';
-            document.getElementById('ownerId').value = '';
-            document.getElementById('userId').value = '';
             
             config.businessId = '';
             config.apiKey = '';
-            config.ownerId = '';
-            config.userId = '';
             
             document.getElementById('variablesSection').classList.add('hidden');
             showStatus('Authentication cleared', 'success');
+        }
+
+        // Handle CORS error
+        function handleCorsError(error) {
+            console.error('CORS Error:', error);
+            showStatus('CORS Error: Please ensure the API server is running and CORS is enabled.', 'error');
         }
 
         // Authenticate user
         async function authenticate() {
             const businessId = document.getElementById('businessId').value.trim();
             const apiKey = document.getElementById('apiKey').value.trim();
-            const ownerId = document.getElementById('ownerId').value.trim();
-            const userId = document.getElementById('userId').value.trim();
 
-            if (!businessId || !apiKey || !ownerId || !userId) {
-                showStatus('Please fill in all authentication fields', 'error');
+            if (!businessId || !apiKey) {
+                showStatus('Please enter both Business ID and API Key', 'error');
                 return;
             }
 
             try {
-                // Test authentication with both business and owner verification
-                const response = await fetch(`${config.baseUrl}/api/verify-owner`, {
+                const response = await fetch(`${config.baseUrl}/api/validate-credentials`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Accept': 'application/json',
+                        ...commonHeaders,
+                        'X-API-Key': apiKey,
                         'businessapikey': apiKey
                     },
                     body: JSON.stringify({
-                        userId: ownerId,
-                        businessId: businessId,
-                        businessApiKey: apiKey
+                        business_id: businessId,
+                        api_key: apiKey
                     }),
-                    credentials: 'include',
-                    mode: 'cors'
+                    mode: 'cors',
+                    credentials: 'include'
                 });
 
-                if (!response.ok) {
-                    throw new Error('Authentication failed');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.valid || data.status === 'success') {
+                        config.businessId = businessId;
+                        config.apiKey = apiKey;
+
+                        // Store in localStorage
+                        localStorage.setItem('businessId', businessId);
+                        localStorage.setItem('apiKey', apiKey);
+
+                        document.getElementById('variablesSection').classList.remove('hidden');
+                        showStatus('Authentication successful', 'success');
+                        loadVariables();
+                    } else {
+                        showStatus(`Authentication failed: ${data.message || 'Invalid credentials'}`, 'error');
+                    }
+                } else {
+                    const error = await response.json();
+                    showStatus(`Authentication failed: ${error.message || 'Unknown error'}`, 'error');
                 }
-
-                const authResult = await response.json();
-                if (!authResult.success) {
-                    throw new Error(authResult.message || 'Authentication failed');
-                }
-
-                // Store credentials in config and localStorage
-                config.businessId = businessId;
-                config.apiKey = apiKey;
-                config.ownerId = ownerId;
-                config.userId = userId;
-
-                localStorage.setItem('businessId', businessId);
-                localStorage.setItem('apiKey', apiKey);
-                localStorage.setItem('ownerId', ownerId);
-                localStorage.setItem('userId', userId);
-
-                // Show variables section
-                document.getElementById('variablesSection').classList.remove('hidden');
-                showStatus('Authentication successful', 'success');
-
-                // Load variables
-                loadVariables();
-
             } catch (error) {
-                showStatus(`Authentication failed: ${error.message}`, 'error');
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    handleCorsError(error);
+                } else {
+                    showStatus(`Error during authentication: ${error.message}`, 'error');
+                }
             }
         }
 
-        // Load variables from database
+        // Load variables
         async function loadVariables() {
             try {
-                const response = await fetch(`${config.baseUrl}/api/variables/?business_id=${config.businessId}&owner_id=${config.ownerId}`, {
+                const response = await fetch(`${config.baseUrl}/api/variables`, {
                     headers: {
-                        'Authorization': `Bearer ${config.apiKey}`,
-                        'Accept': 'application/json',
-                        'businessapikey': config.apiKey
+                        ...commonHeaders,
+                        'Authorization': `Bearer ${config.apiKey}`
                     },
-                    credentials: 'include',
-                    mode: 'cors'
+                    mode: 'cors',
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
                     throw new Error('Failed to load variables');
                 }
 
-                const data = await response.json();
-                const variables = data.variables || data; // Handle both array and object with variables property
+                const variables = await response.json();
                 const variablesList = document.getElementById('variablesList');
                 
-                if (!Array.isArray(variables) || variables.length === 0) {
-                    variablesList.innerHTML = '<p>No variables found</p>';
-                    return;
-                }
-
                 let html = '';
                 variables.forEach(variable => {
                     const name = variable.variable_name || variable.name || 'Unnamed';
@@ -356,7 +339,11 @@
                 variablesList.innerHTML = html;
 
             } catch (error) {
-                showStatus(`Error loading variables: ${error.message}`, 'error');
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    handleCorsError(error);
+                } else {
+                    showStatus(`Error loading variables: ${error.message}`, 'error');
+                }
             }
         }
 
@@ -369,85 +356,80 @@
             }
 
             try {
-                const response = await fetch(`${config.baseUrl}/api/variables/test-substitution/`, {
+                const response = await fetch(`${config.baseUrl}/api/test-substitution`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${config.apiKey}`,
-                        'Accept': 'application/json',
-                        'businessapikey': config.apiKey
+                        ...commonHeaders,
+                        'Authorization': `Bearer ${config.apiKey}`
                     },
                     body: JSON.stringify({
                         business_id: config.businessId,
-                        owner_id: config.ownerId,
-                        user_id: config.userId,
                         template: template
                     }),
-                    credentials: 'include',
-                    mode: 'cors'
+                    mode: 'cors',
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
-                    throw new Error('Substitution test failed');
+                    throw new Error('Failed to test substitution');
                 }
 
                 const result = await response.json();
-                
-                const resultDiv = document.getElementById('substitutionResult');
                 const resultContent = document.getElementById('resultContent');
+                const substitutionResult = document.getElementById('substitutionResult');
                 
-                resultDiv.classList.remove('hidden');
                 resultContent.textContent = JSON.stringify(result, null, 2);
-                
+                substitutionResult.classList.remove('hidden');
                 showStatus('Substitution test completed', 'success');
 
             } catch (error) {
-                showStatus(`Error testing substitution: ${error.message}`, 'error');
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    handleCorsError(error);
+                } else {
+                    showStatus(`Error testing substitution: ${error.message}`, 'error');
+                }
             }
         }
 
         // Add new variable
         async function addVariable() {
-            const variableName = document.getElementById('variableName').value.trim();
+            const name = document.getElementById('variableName').value.trim();
             const description = document.getElementById('variableDescription').value.trim();
             const category = document.getElementById('variableCategory').value.trim();
             const defaultValue = document.getElementById('defaultValue').value.trim();
             const isDynamic = document.getElementById('isDynamic').checked;
 
-            if (!variableName || !description || !category) {
-                showStatus('Please fill in all required fields', 'error');
+            if (!name) {
+                showStatus('Please enter a variable name', 'error');
                 return;
             }
 
             try {
-                const response = await fetch(`${config.baseUrl}/api/variables/?business_id=${config.businessId}`, {
+                const response = await fetch(`${config.baseUrl}/api/variables`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${config.apiKey}`,
-                        'Accept': 'application/json',
-                        'businessapikey': config.apiKey
+                        ...commonHeaders,
+                        'Authorization': `Bearer ${config.apiKey}`
                     },
                     body: JSON.stringify({
                         business_id: config.businessId,
-                        name: variableName,
+                        variable_name: name,
                         description: description,
                         category: category,
                         default_value: defaultValue,
                         is_dynamic: isDynamic
                     }),
-                    credentials: 'include',
-                    mode: 'cors'
+                    mode: 'cors',
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to add variable');
+                    throw new Error('Failed to add variable');
                 }
 
-                const result = await response.json();
                 showStatus('Variable added successfully', 'success');
-
+                loadVariables();
+                
                 // Clear form
                 document.getElementById('variableName').value = '';
                 document.getElementById('variableDescription').value = '';
@@ -455,32 +437,35 @@
                 document.getElementById('defaultValue').value = '';
                 document.getElementById('isDynamic').checked = false;
 
-                // Reload variables list
-                loadVariables();
-
             } catch (error) {
-                showStatus(`Error adding variable: ${error.message}`, 'error');
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    handleCorsError(error);
+                } else {
+                    showStatus(`Error adding variable: ${error.message}`, 'error');
+                }
             }
         }
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check for stored credentials
-            const storedBusinessId = localStorage.getItem('businessId');
-            const storedApiKey = localStorage.getItem('apiKey');
-            const storedOwnerId = localStorage.getItem('ownerId');
-            const storedUserId = localStorage.getItem('userId');
-
-            if (storedBusinessId && storedApiKey && storedOwnerId && storedUserId) {
-                document.getElementById('businessId').value = storedBusinessId;
-                document.getElementById('apiKey').value = storedApiKey;
-                document.getElementById('ownerId').value = storedOwnerId;
-                document.getElementById('userId').value = storedUserId;
-                
-                // Auto authenticate if we have stored credentials
-                authenticate();
+        // Load saved credentials on page load
+        window.onload = function() {
+            const savedBusinessId = localStorage.getItem('businessId');
+            const savedApiKey = localStorage.getItem('apiKey');
+            
+            if (savedBusinessId && savedApiKey) {
+                document.getElementById('businessId').value = savedBusinessId;
+                document.getElementById('apiKey').value = savedApiKey;
+                config.businessId = savedBusinessId;
+                config.apiKey = savedApiKey;
+                document.getElementById('variablesSection').classList.remove('hidden');
+                loadVariables();
+            } else {
+                // Set default values if no saved credentials
+                document.getElementById('businessId').value = 'bc7e1824-49b4-4056-aabe-b045a1f79e3b';
+                document.getElementById('apiKey').value = 'cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6';
+                config.businessId = 'bc7e1824-49b4-4056-aabe-b045a1f79e3b';
+                config.apiKey = 'cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6';
             }
-        });
+        };
     </script>
 </body>
 </html> 

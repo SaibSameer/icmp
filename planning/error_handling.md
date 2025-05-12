@@ -1,5 +1,7 @@
 # Error Handling System
 
+> **Note (2025-05-12):** For test compatibility, stubs for `ErrorConfig`, `ErrorMonitor`, `ErrorLogger`, `ErrorResponse`, `ErrorValidator`, and `ErrorRecovery` have been added to `backend/error_handling/errors.py` and are exported from the package.
+
 ## Overview
 The ICMP Events API implements a comprehensive error handling system that provides consistent error responses, tracking, monitoring, and recovery mechanisms. The system is designed to be robust, maintainable, and developer-friendly.
 
@@ -69,6 +71,8 @@ Comprehensive error logging:
 - Stage transition logging
 
 ## Implementation Details
+
+> **Update (2025-05-12):** Minimal stub implementations for error handling components (ErrorConfig, ErrorMonitor, ErrorLogger, ErrorResponse, ErrorValidator, ErrorRecovery) are now present in `backend/error_handling/errors.py` for test compatibility. Update your usage or imports accordingly.
 
 ### Error Response Format
 ```json

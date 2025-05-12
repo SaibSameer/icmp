@@ -18,13 +18,61 @@ Lines: 9
 
 
 ================================================================================
+File: agents.json
+Path: .\backend\schemas\agents.json
+Size: 981
+Modified: 2025-05-06T15:37:23.606514
+Created: 2025-05-06T15:37:21.249316
+Hash: c5c550b18d662c6702c6ec6c8cdaee9fc7f37974a9565ec52a020a93bd59f56b
+Lines: 38
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent",
+  "description": "Represents an agent in the system.",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the agent."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Name of the agent."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the agent was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the agent was last updated."
+    }
+  },
+  "required": [
+    "agent_id",
+    "business_id",
+    "agent_name"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
 File: businesses.json
 Path: .\backend\schemas\businesses.json
-Size: 1203
-Modified: 2025-03-26T14:07:05.841719
+Size: 1260
+Modified: 2025-05-06T15:36:52.893252
 Created: 2025-03-26T14:07:05.300864
-Hash: 1b9284416de2614577229571d147d8571f91d760c27fd5e0f5b5e6a3f9927a2f
-Lines: 43
+Hash: 9bc029af27c3b3b268787231a5c905bee426446207fddebc5615910da0004630
+Lines: 39
 ================================================================================
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -32,22 +80,18 @@ Lines: 43
   "properties": {
     "business_id": { "type": "string", "format": "uuid" },
     "api_key": { "type": "string" },
-    "created_at": { "type": "string", "format": "date-time" },
+    "internal_api_key": { "type": "string" },
     "owner_id": { "type": "string", "format": "uuid" },
-    "business_information": {
-      "type": "object",
-      "properties": {
-        "business_name": { "type": "string" },
-        "business_description": { "type": "string" },
-        "address": { "type": "string" },
-        "phone_number": { "type": "string" },
-        "website": { "type": "string", "format": "uri" }
-      },
-      "required": [
-        "business_name"
-      ],
-      "additionalProperties": true
-    },
+    "business_name": { "type": "string" },
+    "business_description": { "type": "string" },
+    "address": { "type": "string" },
+    "phone_number": { "type": "string" },
+    "website": { "type": "string", "format": "uri" },
+    "first_stage_id": { "type": "string", "format": "uuid" },
+    "facebook_page_id": { "type": "string" },
+    "business_information": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
     "agent_list": {
       "type": "array",
       "items": { "type": "string", "format": "uuid" }
@@ -65,7 +109,7 @@ Lines: 43
     "business_id",
     "api_key",
     "owner_id",
-    "business_information"
+    "business_name"
   ],
   "additionalProperties": false
 }
@@ -320,18 +364,174 @@ Lines: 153
 }
 
 ================================================================================
-File: events.json
-Path: .\backend\schemas\events.json
-Size: 4502
-Modified: 2025-03-26T14:29:57.499258
-Created: 2025-03-26T14:29:57.005088
-Hash: 6e4d260576b397daf4cd2ffd461bae96100b3f751559c9792caed0d51bd10bf0
-Lines: 147
+File: conversations.json
+Path: .\backend\schemas\conversations.json
+Size: 2243
+Modified: 2025-05-06T15:37:34.046789
+Created: 2025-05-06T15:37:32.077777
+Hash: 8428ed66d2ce4c6f2c8566714b019340bb08f8bca34cc5f5308cdef77dbe4084
+Lines: 77
 ================================================================================
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Analytics/Event",
-  "description": "Represents an analytics event within the ICMP.",
+  "title": "Conversation",
+  "description": "Represents a conversation between a user and an agent.",
+  "type": "object",
+  "properties": {
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the conversation."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the user."
+    },
+    "agent_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the agent."
+    },
+    "stage_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the current stage."
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Session identifier for the conversation."
+    },
+    "start_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the conversation started."
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the conversation was last updated."
+    },
+    "status": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Current status of the conversation.",
+      "default": "active"
+    },
+    "conversation_summary": {
+      "type": "string",
+      "description": "Summary of the conversation."
+    },
+    "message_history": {
+      "type": "object",
+      "description": "JSON object containing the message history."
+    },
+    "llm_call_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the last LLM call."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the conversation was last updated."
+    }
+  },
+  "required": [
+    "conversation_id",
+    "business_id",
+    "user_id"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
+File: error_logs.json
+Path: .\backend\schemas\error_logs.json
+Size: 1550
+Modified: 2025-05-06T15:39:20.283823
+Created: 2025-05-06T15:39:17.784887
+Hash: e1300431ca5cc06ac38f0ff033b32c5f8bbec7b28a547862935348456d172a7c
+Lines: 59
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Error Log",
+  "description": "Represents an error log entry in the system.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the error log."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the error occurred."
+    },
+    "error_type": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Type of the error."
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message."
+    },
+    "stack_trace": {
+      "type": "string",
+      "description": "Stack trace of the error."
+    },
+    "user_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the user."
+    },
+    "conversation_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the conversation."
+    },
+    "endpoint": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Endpoint where the error occurred."
+    },
+    "stage": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Stage where the error occurred."
+    },
+    "processing_time": {
+      "type": "number",
+      "description": "Processing time in seconds."
+    }
+  },
+  "required": [
+    "id",
+    "timestamp"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
+File: events.json
+Path: .\backend\schemas\events.json
+Size: 3309
+Modified: 2025-05-06T15:39:08.962109
+Created: 2025-03-26T14:29:57.005088
+Hash: 9a1e66d481b2b40f535d7929896776df2c2b0c4568f4d7844f8665582be869d9
+Lines: 121
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Event",
+  "description": "Represents an event in the system.",
   "type": "object",
   "properties": {
     "event_id": {
@@ -342,128 +542,102 @@ Lines: 147
     "user_id": {
       "type": "string",
       "format": "uuid",
-      "description": "ID of the user associated with the event."
+      "description": "Globally unique identifier for the user."
     },
     "business_id": {
       "type": "string",
       "format": "uuid",
-      "description": "ID of the business associated with the event."
+      "description": "Globally unique identifier for the business."
     },
     "session_id": {
       "type": "string",
-      "description": "ID of the user session."
+      "description": "Session identifier for the event."
     },
     "event_type": {
       "type": "string",
-      "description": "Type of event (e.g., 'message_sent', 'stage_entered')."
+      "description": "Type of the event."
     },
     "event_timestamp": {
       "type": "string",
       "format": "date-time",
-      "description": "Timestamp of the event."
+      "description": "Timestamp when the event occurred."
     },
     "agent_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "ID of the agent involved (if applicable)."
+      "description": "Globally unique identifier for the agent."
     },
     "stage_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "ID of the stage involved (if applicable)."
+      "description": "Globally unique identifier for the stage."
     },
     "product_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "ID of the product involved (if applicable)."
+      "description": "Globally unique identifier for the product."
     },
     "order_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "ID of the order involved (if applicable)."
+      "description": "Globally unique identifier for the order."
     },
     "message_text": {
       "type": "string",
-      "description": "Content of the message (if applicable)."
+      "description": "Text content of the event."
     },
     "response_time": {
       "type": "number",
-      "description": "Time taken to generate a response (ms)."
+      "description": "Response time for the event."
     },
     "llm_cost": {
       "type": "number",
-      "description": "Cost of using the LLM for this event."
+      "description": "Cost of LLM usage for the event."
     },
     "satisfaction_score": {
-      "type": ["integer", "null"],
-      "description": "User satisfaction score (if available)."
+      "type": "integer",
+      "description": "Satisfaction score for the event."
     },
-       "sentiment_score": {
-      "type": ["number", "null"],
-      "description": "sentiment score of the user"
+    "sentiment_score": {
+      "type": "number",
+      "description": "Sentiment score for the event."
     },
-     "intent_confidence": {
-      "type": ["number", "null"],
-      "description": "confidence score"
+    "intent_confidence": {
+      "type": "number",
+      "description": "Confidence score for intent detection."
     },
-      "turn_count": {
-      "type": ["integer", "null"],
-      "description": "count turn "
+    "turn_count": {
+      "type": "integer",
+      "description": "Number of turns in the conversation."
     },
-       "custom_event_properties": {
+    "custom_event_properties": {
       "type": "object",
-      "description": "Store custom data (JSONB).",
-      "note": "Validate against a schema defined by the business."
+      "description": "Custom properties for the event."
     },
-        "goal_achieved": {
+    "goal_achieved": {
       "type": "boolean",
-      "description": "true of a goal is archieved"
+      "description": "Whether the goal was achieved."
     },
-        "geographic_data": {
-            "type": "object",
-            "description": "Describing the geographic info",
-            "properties": {
-                "longitude": {
-                    "type": "string",
-                    "description": "Describe the longitude"
-                },
-                "latitude": {
-                    "type": "string",
-                    "description": "Describe the latitude"
-                }
-            },
-             "additionalProperties": false
-        },
-      "error_tracking": {
-            "type": "object",
-            "description": "Describing the errors",
-            "properties": {
-                "error_type": {
-                    "type": "string",
-                    "description": "Describe the error"
-                },
-                "error_details": {
-                    "type": "string",
-                    "description": "Describe the error details"
-                }
-            },
-             "additionalProperties": false
-        },
-          "ab_testing_results": {
-            "type": "object",
-            "description": "Describing the AB Testting",
-            "properties": {
-                "test_id": {
-                    "type": "string",
-                    "description": "Describe the test_ID"
-                },
-                "group": {
-                    "type": "string",
-                    "description": "Describe the group A or B"
-                }
-            },
-             "additionalProperties": false
-        }
+    "longitude": {
+      "type": "string",
+      "description": "Longitude coordinate."
+    },
+    "latitude": {
+      "type": "string",
+      "description": "Latitude coordinate."
+    },
+    "error_tracking": {
+      "type": "object",
+      "description": "Error tracking information."
+    },
+    "ab_testing_results": {
+      "type": "object",
+      "description": "A/B testing results."
+    },
+    "schema_name": {
+      "type": "string",
+      "description": "Name of the schema."
+    }
   },
   "required": [
     "event_id",
@@ -477,13 +651,203 @@ Lines: 147
 }
 
 ================================================================================
+File: extracted_data.json
+Path: .\backend\schemas\extracted_data.json
+Size: 1214
+Modified: 2025-05-06T15:39:30.224980
+Created: 2025-05-06T15:39:28.025747
+Hash: fbda3d4e2c9568fb608f148fc671d32c69ad0e07054de697e718cda876fc7c6d
+Lines: 46
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Extracted Data",
+  "description": "Represents extracted data from a conversation.",
+  "type": "object",
+  "properties": {
+    "extraction_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the extraction."
+    },
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the conversation."
+    },
+    "stage_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the stage."
+    },
+    "data_type": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Type of the extracted data."
+    },
+    "extracted_data": {
+      "type": "object",
+      "description": "The extracted data."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the data was extracted."
+    }
+  },
+  "required": [
+    "extraction_id",
+    "conversation_id",
+    "stage_id",
+    "data_type",
+    "extracted_data",
+    "created_at"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
+File: extraction_results.json
+Path: .\backend\schemas\extraction_results.json
+Size: 1593
+Modified: 2025-05-06T15:39:41.359610
+Created: 2025-05-06T15:39:38.660370
+Hash: 6fcab8125d0330173addaae6acfa6a4ffa30d411f07752ba54c8e59083beaea2
+Lines: 55
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Extraction Result",
+  "description": "Represents a result from data extraction.",
+  "type": "object",
+  "properties": {
+    "extraction_id": {
+      "type": "integer",
+      "description": "Unique identifier for the extraction result."
+    },
+    "template_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the template."
+    },
+    "cluster_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the cluster."
+    },
+    "business_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "conversation_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the conversation."
+    },
+    "message_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the message."
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the extraction was performed."
+    },
+    "success": {
+      "type": "boolean",
+      "description": "Whether the extraction was successful."
+    },
+    "extracted_data": {
+      "type": "object",
+      "description": "The extracted data."
+    }
+  },
+  "required": [
+    "extraction_id",
+    "timestamp"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
+File: llm_calls.json
+Path: .\backend\schemas\llm_calls.json
+Size: 1601
+Modified: 2025-05-06T15:37:54.409400
+Created: 2025-05-06T15:37:52.215551
+Hash: 8d8f6ae8448a163c262eef7a284939b240652e415c7b7925ae8f129cf722742d
+Lines: 59
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LLM Call",
+  "description": "Represents a call to a Language Learning Model.",
+  "type": "object",
+  "properties": {
+    "call_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the LLM call."
+    },
+    "message_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the associated message."
+    },
+    "response": {
+      "type": "string",
+      "description": "Response from the LLM."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the call was created."
+    },
+    "completion_time": {
+      "type": "number",
+      "description": "Time taken to complete the call in seconds."
+    },
+    "tokens_used": {
+      "type": "integer",
+      "description": "Number of tokens used in the call."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "input_text": {
+      "type": "string",
+      "description": "Input text sent to the LLM."
+    },
+    "system_prompt": {
+      "type": "string",
+      "description": "System prompt used for the call."
+    },
+    "call_type": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Type of the LLM call."
+    }
+  },
+  "required": [
+    "call_id",
+    "business_id",
+    "input_text"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
 File: message.json
 Path: .\backend\schemas\message.json
-Size: 422
-Modified: 2025-04-08T16:49:29.647790
+Size: 529
+Modified: 2025-05-02T00:27:07.862390
 Created: 2025-03-26T22:26:06.324991
-Hash: 18f7159cd2f9098d1852229bbbb4458a708f023d9eae9173f86df845b191ebd5
-Lines: 12
+Hash: 72d0afbff2c12fd731c1052bd4977b94cd0808656ab8fab36b20a20b99ca2afd
+Lines: 16
 ================================================================================
 {
   "type": "object",
@@ -493,24 +857,98 @@ Lines: 12
     "message": {"type": "string"},
     "conversation_id": {"type": "string", "format": "uuid"},
     "stage_id": {"type": "string", "format": "uuid"},
-    "agent_id": {"type": "string", "format": "uuid"}
+    "agent_id": {"type": "string", "format": "uuid"},
+    "sender_type": {
+      "type": "string",
+      "enum": ["user", "assistant", "ai", "staff"]
+    }
   },
   "required": ["business_id", "user_id", "message"]
 }
 
 ================================================================================
+File: messages.json
+Path: .\backend\schemas\messages.json
+Size: 1651
+Modified: 2025-05-06T15:37:43.844233
+Created: 2025-05-06T15:37:41.340169
+Hash: 92c39e734adc0e5277fa5ca4f8a08aef7c7abbb538956ebeef0e070c149fcd1a
+Lines: 60
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Message",
+  "description": "Represents a message in a conversation.",
+  "type": "object",
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the message."
+    },
+    "user_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the user."
+    },
+    "content": {
+      "type": "string",
+      "description": "Content of the message."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the message was created."
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the message was processed."
+    },
+    "status": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Current status of the message."
+    },
+    "message_content": {
+      "type": "string",
+      "description": "Content of the message."
+    },
+    "sender_type": {
+      "type": "string",
+      "maxLength": 10,
+      "description": "Type of the sender (e.g., user, agent)."
+    },
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the conversation."
+    },
+    "stage_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the stage."
+    }
+  },
+  "required": [
+    "message_id"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
 File: orders.json
 Path: .\backend\schemas\orders.json
-Size: 5676
-Modified: 2025-03-26T14:24:52.280900
+Size: 3134
+Modified: 2025-05-06T15:38:55.121147
 Created: 2025-03-26T14:24:51.749158
-Hash: 34b657553c984d3cd6283606dc38a9f5bd75a51994c35183eb8883aecd0a9403
-Lines: 198
+Hash: 026a716175dd989b344280733f87b477f830727cc07a37ae2c20005d2a8e8b84
+Lines: 115
 ================================================================================
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Order",
-  "description": "Represents a customer order.",
+  "description": "Represents an order in the system.",
   "type": "object",
   "properties": {
     "order_id": {
@@ -521,17 +959,17 @@ Lines: 198
     "user_id": {
       "type": "string",
       "format": "uuid",
-      "description": "ID of the user who placed the order."
+      "description": "Globally unique identifier for the user."
     },
     "business_id": {
       "type": "string",
       "format": "uuid",
-      "description": "ID of the business that owns the order."
+      "description": "Globally unique identifier for the business."
     },
     "order_date": {
       "type": "string",
       "format": "date-time",
-      "description": "Date and time the order was placed."
+      "description": "Date and time when the order was placed."
     },
     "order_total": {
       "type": "number",
@@ -550,126 +988,61 @@ Lines: 198
       "description": "Payment method used for the order."
     },
     "items": {
-      "type": "array",
-      "description": "List of items in the order.",
-      "items": {
-        "type": "object",
-        "properties": {
-          "product_id": {
-            "type": "string",
-            "format": "uuid",
-            "description": "ID of the product."
-          },
-          "quantity": {
-            "type": "integer",
-            "description": "Quantity of the product ordered."
-          }
-        },
-        "required": ["product_id", "quantity"],
-        "additionalProperties": false
-      }
+      "type": "object",
+      "description": "Items in the order."
     },
     "status": {
       "type": "string",
-      "enum": ["pending", "processing", "shipped", "delivered", "cancelled"],
       "description": "Current status of the order."
     },
     "tracking_number": {
       "type": "string",
-      "description": "Tracking number for the shipment."
+      "description": "Tracking number for the order."
     },
     "shipping_carrier": {
       "type": "string",
-      "description": "Shipping carrier used for the order."
+      "description": "Shipping carrier for the order."
     },
     "discounts": {
-      "type": "array",
-      "description": "List of discounts applied to the order.",
-      "items": {
-        "type": "object",
-        "properties": {
-          "discount_code": {
-            "type": "string",
-            "description": "Code of the discount applied."
-          },
-          "discount_amount": {
-            "type": "number",
-            "description": "Amount of the discount."
-          }
-        },
-        "required": ["discount_code", "discount_amount"],
-        "additionalProperties": false
-      }
+      "type": "object",
+      "description": "Discounts applied to the order."
     },
     "tax_information": {
       "type": "object",
-      "description": "Tax information for the order.",
-      "properties": {
-        "tax_amount": {
-          "type": "number",
-          "description": "Total tax amount for the order."
-        },
-        "tax_rate": {
-          "type": "number",
-          "description": "Tax rate applied to the order."
-        }
-      },
-      "required": ["tax_amount", "tax_rate"],
-      "additionalProperties": false
+      "description": "Tax information for the order."
     },
     "order_notes": {
       "type": "string",
-      "description": "Notes about the order for internal use."
+      "description": "Notes for the order."
     },
     "returns_refunds": {
-      "type": "array",
-      "description": "Links to related return/refund records.",
-      "items": {
-        "type": "string",
-        "format": "uuid"
-      }
+      "type": "object",
+      "description": "Returns and refunds information."
     },
     "fulfillment_details": {
       "type": "object",
-      "description": "Details about order fulfillment.",
-      "properties": {
-        "fulfillment_location": {
-          "type": "string",
-          "description": "Location where the order was fulfilled."
-        },
-        "packaging_type": {
-          "type": "string",
-          "description": "Type of packaging used for the order."
-        }
-      },
-      "additionalProperties": false
+      "description": "Fulfillment details for the order."
     },
     "customer_rating": {
       "type": "integer",
-      "description": "Customer's rating of the order (e.g., 1-5 stars)."
+      "description": "Customer rating for the order."
     },
     "customer_review": {
       "type": "string",
-      "description": "Customer's review text for the order."
+      "description": "Customer review for the order."
     },
     "survey_url": {
       "type": "string",
-      "format": "uri",
-      "description": "Link to an external satisfaction survey."
+      "description": "URL for the customer survey."
     },
-       "satisfaction_status": {
-          "type": "string",
-          "enum": ["good", "needs_improvement", "escalated"],
-          "description": "status for customer satisifaction"
-        },
     "agent_id": {
-      "type": "string",
+      "type": ["string", "null"],
       "format": "uuid",
-      "description": "ID of the agent who handled the order."
+      "description": "Globally unique identifier for the agent."
     },
     "cancellation_reason": {
       "type": "string",
-      "description": "Reason for order cancellation (if applicable)."
+      "description": "Reason for order cancellation."
     },
     "fraud_score": {
       "type": "number",
@@ -677,237 +1050,216 @@ Lines: 198
     },
     "gift_options": {
       "type": "object",
-      "description": "Options for gift orders.",
-      "properties": {
-        "is_gift": {
-          "type": "boolean",
-          "description": "Indicates if the order is a gift."
-        },
-        "gift_message": {
-          "type": "string",
-          "description": "Gift message for the order."
-        }
-      },
-      "additionalProperties": false
+      "description": "Gift options for the order."
     }
   },
   "required": [
     "order_id",
     "user_id",
-    "business_id",
-    "order_date",
-    "order_total",
-    "shipping_address",
-    "billing_address",
-    "payment_method",
-    "items",
-    "status"
+    "business_id"
   ],
   "additionalProperties": false
 }
 
 ================================================================================
-File: products.json
-Path: .\backend\schemas\products.json
-Size: 5959
-Modified: 2025-03-26T14:26:09.058428
-Created: 2025-03-26T14:26:08.539418
-Hash: 8dad40099ef85edea70a22fa6a269cb2c678094da4ae1b6a137453f9d8c3c171
-Lines: 196
+File: owners.json
+Path: .\backend\schemas\owners.json
+Size: 1007
+Modified: 2025-05-06T15:38:32.081119
+Created: 2025-05-06T15:38:29.699820
+Hash: ccd93e2fecb2a694a6e6f2154cd3bd36e1b5bdd967a75f472af4eff8bb5dec09
+Lines: 42
 ================================================================================
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Product/Service",
-  "description": "Represents a product or service offered by a business.",
+  "title": "Owner",
+  "description": "Represents an owner of a business.",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the owner."
+    },
+    "first_name": {
+      "type": "string",
+      "description": "Owner's first name."
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Owner's last name."
+    },
+    "email": {
+      "type": "string",
+      "description": "Owner's email address."
+    },
+    "phone_number": {
+      "type": "string",
+      "description": "Owner's phone number."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the owner was created."
+    }
+  },
+  "required": [
+    "owner_id",
+    "first_name",
+    "last_name",
+    "email",
+    "created_at"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
+File: pattern_data.json
+Path: .\backend\schemas\pattern_data.json
+Size: 879
+Modified: 2025-05-06T15:39:51.661796
+Created: 2025-05-06T15:39:49.354228
+Hash: e3acfe85ab99374729da3750b457e0e050dfac97cd8c1345c21fa77c64958775
+Lines: 35
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pattern Data",
+  "description": "Represents pattern data in the system.",
+  "type": "object",
+  "properties": {
+    "cluster_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the cluster."
+    },
+    "field": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Field name."
+    },
+    "usage_count": {
+      "type": "integer",
+      "description": "Number of times the pattern was used."
+    },
+    "success_rate": {
+      "type": "number",
+      "description": "Success rate of the pattern."
+    },
+    "pattern_type": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Type of the pattern."
+    }
+  },
+  "required": [
+    "cluster_id"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
+File: processing_stages.json
+Path: .\backend\schemas\processing_stages.json
+Size: 1178
+Modified: 2025-05-06T15:40:01.120088
+Created: 2025-05-06T15:39:58.476739
+Hash: ebb5dff1eb8c5c3a09e193b5db9381bd534b63e0bb808e714b9a0ab06997032e
+Lines: 44
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Processing Stage",
+  "description": "Represents a processing stage in the system.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the processing stage."
+    },
+    "extraction_id": {
+      "type": ["integer", "null"],
+      "description": "ID of the extraction."
+    },
+    "stage": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Name of the stage."
+    },
+    "success": {
+      "type": "boolean",
+      "description": "Whether the stage was successful."
+    },
+    "processing_time": {
+      "type": "number",
+      "description": "Time taken to process the stage in seconds."
+    },
+    "business_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the stage was created."
+    }
+  },
+  "required": [
+    "id",
+    "created_at"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
+File: products.json
+Path: .\backend\schemas\products.json
+Size: 1067
+Modified: 2025-05-06T15:38:41.977501
+Created: 2025-03-26T14:26:08.539418
+Hash: 13146926c06ffdab933f7fce8da7ee56a6c2669d8375974f05e32a1dbd4c6c35
+Lines: 42
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Product",
+  "description": "Represents a product in the system.",
   "type": "object",
   "properties": {
     "product_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Globally unique identifier."
+      "description": "Globally unique identifier for the product."
     },
     "business_id": {
       "type": "string",
       "format": "uuid",
-      "description": "ID of the business offering the product/service."
+      "description": "Globally unique identifier for the business."
     },
     "product_name": {
       "type": "string",
-      "description": "Name of the product/service."
+      "description": "Name of the product."
     },
-    "product_description": {
+    "description": {
       "type": "string",
-      "description": "Detailed description."
+      "description": "Description of the product."
     },
-    "product_price": {
+    "price": {
       "type": "number",
-      "description": "Price of the product/service."
+      "description": "Price of the product."
     },
-     "pricing_options": {
-        "type": "object",
-        "description": "Details about different pricing models.",
-        "properties": {
-          "type": {
-            "type": "string",
-            "enum": ["one_time", "tiered", "subscription"],
-            "description": "Type of pricing (e.g., one-time purchase, tiered pricing, subscription)."
-          },
-          "tiers": {
-            "type": "array",
-            "description": "Tiered pricing details.",
-            "items": {
-              "type": "object",
-              "properties": {
-                "quantity_min": { "type": "integer" },
-                "quantity_max": { "type": "integer" },
-                "price": { "type": "number" }
-              },
-              "required": ["quantity_min", "quantity_max", "price"],
-              "additionalProperties": false
-            }
-          },
-          "subscription_interval": {
-            "type": "string",
-            "enum": ["monthly", "yearly"],
-            "description": "Subscription billing interval."
-          }
-        },
-        "additionalProperties": false
-      },
-    "product_category": {
+    "created_at": {
       "type": "string",
-      "description": "Category of the product/service."
-    },
-    "product_images": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "format": "uri"
-      },
-      "description": "Array of URLs for product/service images."
-    },
-    "product_specifications": {
-      "type": "object",
-      "description": "Detailed specifications (JSONB)."
-    },
-      "service_duration": {
-      "type": "string",
-      "description": "Typical duration of the service (if applicable)."
-    },
-    "service_delivery_method": {
-      "type": "string",
-      "enum": ["in-person", "online", "remote"],
-      "description": "How the service is delivered (if applicable)."
-    },
-     "availability": {
-      "type": "boolean",
-      "description": "Service is available or not (if applicable)."
-    },
-    "slots_per_week": {
-      "type": "integer",
-      "description": "Number of available time slots per week (if applicable)."
-    },
-    "quantity_in_stock": {
-      "type": "integer",
-      "description": "Quantity currently in stock (if applicable)."
-    },
-    "weight": {
-      "type": "number",
-      "description": "Weight of the product (if applicable)."
-    },
-    "dimensions": {
-      "type": "string",
-      "description": "Dimensions of the product (if applicable)."
-    },
-    "related_products_services": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "format": "uuid"
-      },
-      "description": "IDs of related products/services (upsells, cross-sells)."
-    },
-      "requires_review": {
-      "type": "boolean",
-      "description": "Whether the product/service requires a review after purchase."
-    },
-    "digital_asset_links": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "format": "uri"
-      },
-      "description": "Links to digital assets (manuals, demos)."
-    },
-    "terms_of_service_url": {
-      "type": "string",
-      "format": "uri",
-      "description": "Link to the terms of service."
-    },
-     "date_of_production": {
-      "type": "string",
-      "format": "date",
-      "description": "Date of Manifacturing."
-    },
-      "service_start_date": {
-      "type": "string",
-      "format": "date",
-      "description": "service start date"
-    },
-    "prerequisites": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Required licenses, certifications, etc."
-    },
-    "tags": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Keywords for searching and filtering."
-    },
-    "search_vector": {
-      "type": "string",
-      "description": "(PostgreSQL) Search vector for text search.",
-      "note": "This field is automatically generated and managed by PostgreSQL."
-    },
-      "target_customer": {
-      "type": "string",
-      "description": "ideal customer for marketing."
-    },
-      "approval_status": {
-      "type": "string",
-      "enum": ["draft", "pending_approval", "approved", "rejected"],
-      "description": "Status of the product/service listing."
-    },
-      "date_first_available": {
-      "type": "string",
-      "format": "date",
-      "description": "Date when the product/service was first offered."
-    },
-      "discontinued_date": {
-      "type": "string",
-      "format": "date",
-      "description": "Date when the product/service was discontinued."
-    },
-    "warranty_information": {
-      "type": "string",
-      "description": "Warranty details (if applicable)."
-    },
-    "custom_attributes": {
-      "type": "object",
-      "description": "custom atributes (JSONB)."
+      "format": "date-time",
+      "description": "Timestamp when the product was created."
     }
   },
   "required": [
     "product_id",
     "business_id",
     "product_name",
-    "product_description",
-    "product_price",
-    "product_category"
+    "created_at"
   ],
   "additionalProperties": false
 }
@@ -992,11 +1344,11 @@ Lines: 67
 ================================================================================
 File: stages.json
 Path: .\backend\schemas\stages.json
-Size: 2650
-Modified: 2025-04-03T19:33:03.970366
+Size: 2131
+Modified: 2025-05-06T15:37:14.574507
 Created: 2025-03-26T14:10:11.793276
-Hash: e8692951edadd0980b26b2e01414f7c45e9e483846af1d5dac00ba9e358b71f4
-Lines: 71
+Hash: 8684fde4ec97049e41e312a4b706c313d53429d78d1db21b1c245559d19c8bab
+Lines: 72
 ================================================================================
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1004,80 +1356,260 @@ Lines: 71
   "description": "Represents a stage in a conversation flow.",
   "type": "object",
   "properties": {
-    "business_id": {
-      "type": "string",
-      "format": "uuid",
-      "description": "Globally unique identifier for the business.",
-      "note": "Used for multi-tenancy. All data associated with a business is partitioned by this ID. Ensures data isolation."
-    },
-    "stage_id":{
+    "stage_id": {
       "type": "string",
       "format": "uuid",
       "description": "Globally unique identifier for the stage."
     },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
     "agent_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "Globally unique identifier for the agent. Null if applicable to all agents.",
-      "note": "Allows associating a stage with a specific agent. If null, the stage is a general stage applicable to all agents."
+      "description": "Globally unique identifier for the agent. Null if applicable to all agents."
     },
     "stage_name": {
       "type": "string",
-      "description": "Human-readable name for the stage.",
-      "note": "Provides a clear label for identifying and managing the stage."
+      "description": "Human-readable name for the stage."
     },
     "stage_description": {
       "type": "string",
-      "description": "Detailed description of the stage's purpose.",
-      "note": "Explains the stage's function and role within the conversation flow."
+      "description": "Detailed description of the stage's purpose."
     },
     "stage_type": {
       "type": "string",
-      "description": "Category of the stage (e.g., information, transactional, support).",
-      "note": "Allows grouping and filtering stages based on their general function."
+      "maxLength": 50,
+      "description": "Category of the stage (e.g., information, transactional, support)."
     },
     "stage_selection_template_id": {
       "type": "string",
+      "format": "uuid",
       "description": "Template ID for the stage selection prompt."
     },
     "data_extraction_template_id": {
       "type": "string",
+      "format": "uuid",
       "description": "Template ID for the data extraction prompt."
     },
     "response_generation_template_id": {
       "type": "string",
+      "format": "uuid",
       "description": "Template ID for the response generation prompt."
     },
-    "data_retrieval_config": {
-        "type": "object",
-        "description": "Configuration for data retrieval actions within the stage.",
-        "properties": {
-            "method": {"type": "string", "enum": ["prompt_user", "database_query", "api_call", "none"]},
-            "config": {"type": "object", "additionalProperties": true}
-        },
-        "required": ["method"]
+    "is_active": {
+      "type": "boolean",
+      "description": "Whether the stage is currently active.",
+      "default": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the stage was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the stage was last updated."
     }
   },
   "required": [
+    "stage_id",
     "business_id",
-    "stage_name",
-    "stage_description",
-    "stage_type",
-    "stage_selection_template_id",
-    "data_extraction_template_id",
-    "response_generation_template_id"
+    "stage_name"
   ],
   "additionalProperties": false
 }
 
 ================================================================================
+File: templates.json
+Path: .\backend\schemas\templates.json
+Size: 1544
+Modified: 2025-05-06T15:38:03.814157
+Created: 2025-05-06T15:38:01.897676
+Hash: eb84d2afc53c692131331aed3d8e66efb622add0cae71afaf1edf778519c21e5
+Lines: 58
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Template",
+  "description": "Represents a template for various purposes.",
+  "type": "object",
+  "properties": {
+    "template_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the template."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "template_name": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Name of the template."
+    },
+    "template_type": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Type of the template."
+    },
+    "content": {
+      "type": "string",
+      "description": "Content of the template."
+    },
+    "system_prompt": {
+      "type": "string",
+      "description": "System prompt for the template."
+    },
+    "is_default": {
+      "type": "boolean",
+      "description": "Whether this is a default template.",
+      "default": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the template was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the template was last updated."
+    }
+  },
+  "required": [
+    "template_id",
+    "business_id",
+    "template_name",
+    "template_type"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
+File: template_variables.json
+Path: .\backend\schemas\template_variables.json
+Size: 1524
+Modified: 2025-05-06T15:38:13.612291
+Created: 2025-05-06T15:38:11.164306
+Hash: 9df133225f069ab550e54afaa395d3e273db9baecc65c92ca163c5d07549d15f
+Lines: 57
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Template Variable",
+  "description": "Represents a variable that can be used in templates.",
+  "type": "object",
+  "properties": {
+    "variable_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the variable."
+    },
+    "variable_name": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Name of the variable."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the variable."
+    },
+    "default_value": {
+      "type": "string",
+      "description": "Default value for the variable."
+    },
+    "example_value": {
+      "type": "string",
+      "description": "Example value for the variable."
+    },
+    "category": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Category of the variable."
+    },
+    "is_dynamic": {
+      "type": "boolean",
+      "description": "Whether the variable is dynamic.",
+      "default": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the variable was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the variable was last updated."
+    }
+  },
+  "required": [
+    "variable_id",
+    "variable_name",
+    "description",
+    "category"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
+File: template_variable_usage.json
+Path: .\backend\schemas\template_variable_usage.json
+Size: 916
+Modified: 2025-05-06T15:38:22.353887
+Created: 2025-05-06T15:38:20.002617
+Hash: 5838806d25093bddc9ce39ae12dae5bc5060f359213e7064b1d802b3ca75a3cc
+Lines: 34
+================================================================================
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Template Variable Usage",
+  "description": "Represents the usage of a variable in a template.",
+  "type": "object",
+  "properties": {
+    "usage_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the usage."
+    },
+    "template_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the template."
+    },
+    "variable_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the variable."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the usage was created."
+    }
+  },
+  "required": [
+    "usage_id",
+    "template_id",
+    "variable_id"
+  ],
+  "additionalProperties": false
+} 
+
+================================================================================
 File: users.json
 Path: .\backend\schemas\users.json
-Size: 3809
-Modified: 2025-03-26T14:17:58.908705
+Size: 4350
+Modified: 2025-05-06T15:37:03.908156
 Created: 2025-03-26T14:17:58.377174
-Hash: 220337fc1562cde9f35dadcc170f7167a355a6f62497a9e5b51d9ce5e17fc049
-Lines: 141
+Hash: 701ece7824c208066ba8f4c6b2e3b82d6a8fcae5ed29bec1fb47a416a336a81d
+Lines: 160
 ================================================================================
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1090,18 +1622,40 @@ Lines: 141
       "format": "uuid",
       "description": "Globally unique identifier for the user."
     },
-    "name": {
+    "first_name": {
       "type": "string",
-      "description": "User's full name."
+      "maxLength": 100,
+      "description": "User's first name."
+    },
+    "last_name": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "User's last name."
     },
     "email": {
       "type": "string",
       "format": "email",
+      "maxLength": 255,
       "description": "User's email address."
     },
     "phone": {
       "type": "string",
+      "maxLength": 50,
       "description": "User's phone number."
+    },
+    "address": {
+      "type": "string",
+      "description": "User's address."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the user was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the user was last updated."
     },
     "language": {
       "type": "string",
@@ -1171,7 +1725,7 @@ Lines: 141
       },
       "description": "List of business IDs the user manages."
     },
-      "segmentation_tags": {
+    "segmentation_tags": {
       "type": "array",
       "items": {
         "type": "string"
@@ -1185,7 +1739,7 @@ Lines: 141
         "type": "string"
       }
     },
-     "verification_status": {
+    "verification_status": {
       "type": "object",
       "description": "Verification status of email and phone.",
       "properties": {
@@ -1200,7 +1754,7 @@ Lines: 141
       },
       "additionalProperties": false
     },
-      "privacy_settings": {
+    "privacy_settings": {
       "type": "object",
       "description": "User's privacy settings.",
       "properties": {
@@ -1213,10 +1767,7 @@ Lines: 141
     }
   },
   "required": [
-    "user_id",
-    "name",
-    "email",
-    "phone"
+    "user_id"
   ],
   "additionalProperties": false
 }
@@ -1224,40 +1775,40 @@ Lines: 141
 ================================================================================
 File: package.json
 Path: .\front-end\package.json
-Size: 1566
-Modified: 2025-04-26T10:48:40.795439
-Created: 2025-03-28T18:55:58.457887
-Hash: 2b3d518ac939c318c686f37307d99f4fa9594e173509e8dc105415acd58224a2
-Lines: 61
+Size: 1225
+Modified: 2025-05-10T15:20:22.616827
+Created: 2025-05-09T18:24:33.652912
+Hash: afafdd19f38b9bf489a7d524e0a0461d6c10a44aecd40dc86c38f2ae7b9cce05
+Lines: 50
 ================================================================================
 {
-  "name": "icmp-ui",
+  "name": "icmp-events-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@emotion/react": "^11.11.4",
+    "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
-    "@mui/icons-material": "^5.15.11",
-    "@mui/material": "^5.15.11",
+    "@mui/icons-material": "^5.17.1",
+    "@mui/material": "^5.13.0",
+    "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "ajv": "^8.12.0",
-    "ajv-keywords": "^5.1.0",
-    "axios": "^1.8.4",
-    "date-fns": "^4.1.0",
+    "axios": "^1.4.0",
+    "crypto-js": "^4.2.0",
+    "date-fns": "^2.30.0",
+    "http-proxy-middleware": "^3.0.5",
+    "notistack": "^3.0.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.30.0",
+    "react-router-dom": "^6.11.1",
     "react-scripts": "5.0.1",
-    "serve": "^14.2.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "serve": "serve -s build -l ${PORT:-3000}"
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -1277,73 +1828,27 @@ Lines: 61
       "last 1 safari version"
     ]
   },
-  "devDependencies": {
-    "@babel/core": "^7.26.10",
-    "@babel/plugin-transform-runtime": "^7.26.10",
-    "@babel/preset-env": "^7.26.9",
-    "@babel/preset-react": "^7.26.3",
-    "@testing-library/jest-dom": "^6.6.3",
-    "babel-jest": "^29.7.0",
-    "eslint": "^8.57.1",
-    "identity-obj-proxy": "^3.0.0",
-    "jest-canvas-mock": "^2.5.2",
-    "jest-environment-jsdom": "^29.7.0"
-  }
+  "proxy": "http://localhost:5000"
 }
 
-
-================================================================================
-File: asset-manifest.json
-Path: .\front-end\build\asset-manifest.json
-Size: 517
-Modified: 2025-04-19T15:46:53.331010
-Created: 2025-04-19T15:46:53.331010
-Hash: 06a80bf0af8d1a26f5ae086680bd56439a2a5d45e9a6ce2028d7334b4fc51b14
-Lines: 15
-================================================================================
-{
-  "files": {
-    "main.css": "/static/css/main.5f21f8ef.css",
-    "main.js": "/static/js/main.b08dd1c0.js",
-    "static/js/453.d6cecd2f.chunk.js": "/static/js/453.d6cecd2f.chunk.js",
-    "index.html": "/index.html",
-    "main.5f21f8ef.css.map": "/static/css/main.5f21f8ef.css.map",
-    "main.b08dd1c0.js.map": "/static/js/main.b08dd1c0.js.map",
-    "453.d6cecd2f.chunk.js.map": "/static/js/453.d6cecd2f.chunk.js.map"
-  },
-  "entrypoints": [
-    "static/css/main.5f21f8ef.css",
-    "static/js/main.b08dd1c0.js"
-  ]
-}
 
 ================================================================================
 File: manifest.json
-Path: .\front-end\build\manifest.json
-Size: 520
-Modified: 2025-04-01T23:46:25.727637
-Created: 2025-04-19T15:27:02.834761
-Hash: 12971dbeb25273ec3c0d777fabd9329aa32a0d40625f2c2fed6901d9c1388013
-Lines: 25
+Path: .\front-end\public\manifest.json
+Size: 328
+Modified: 2025-05-09T14:17:12.831249
+Created: 2025-05-09T18:24:32.518997
+Hash: f0cc2cf685338e18812362eb79b98d694f591832bfe42ef1008b8e1d95fce8c9
+Lines: 15
 ================================================================================
 {
   "short_name": "ICMP Events",
-  "name": "ICMP Events API Dashboard",
+  "name": "ICMP Events Management System",
   "icons": [
     {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
     }
   ],
   "start_url": ".",

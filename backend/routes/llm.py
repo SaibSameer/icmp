@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from backend.db import get_db_connection, release_db_connection
 from backend.auth import require_internal_key
-from backend.openai_helper import call_openai
+from backend.ai.openai_helper import call_openai
 
 log = logging.getLogger(__name__)
 
@@ -104,10 +104,10 @@ def get_recent_llm_calls():
         # Fetch recent calls using business_id from context
         cursor.execute(
             """
-            SELECT call_id, business_id, input_text, response, system_prompt, call_type, timestamp
+            SELECT call_id, business_id, input_text, response, system_prompt, call_type, created_at
             FROM llm_calls
             WHERE business_id = %s
-            ORDER BY timestamp DESC
+            ORDER BY created_at DESC
             LIMIT %s;
             """, (business_id, limit)
         )
@@ -119,7 +119,7 @@ def get_recent_llm_calls():
             # Format dates and UUIDs
             call_data['call_id'] = str(call_data['call_id'])
             call_data['business_id'] = str(call_data['business_id'])
-            call_data['timestamp'] = call_data['timestamp'].isoformat() if call_data['timestamp'] else None
+            call_data['timestamp'] = call_data['created_at'].isoformat() if call_data['created_at'] else None
             calls.append(call_data)
         
         return jsonify(calls)

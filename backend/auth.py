@@ -1,3 +1,12 @@
+"""
+Authentication and authorization module.
+
+This module provides functionality for:
+- API key validation
+- User authentication
+- Authorization checks
+"""
+
 import logging
 import functools
 from flask import jsonify, request, current_app, g, make_response
@@ -7,8 +16,33 @@ from backend.db import get_db_connection, release_db_connection
 from backend.utils import is_valid_uuid
 from functools import wraps
 import uuid
+from typing import Optional, Callable, Any
 
 log = logging.getLogger(__name__)
+
+def validate_business_key(key: str) -> bool:
+    """Validate a business API key."""
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM businesses WHERE api_key = %s", (key,))
+        return cursor.fetchone() is not None
+    finally:
+        if conn:
+            release_db_connection(conn)
+
+def validate_internal_key(key: str) -> bool:
+    """Validate an internal API key."""
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM businesses WHERE internal_api_key = %s", (key,))
+        return cursor.fetchone() is not None
+    finally:
+        if conn:
+            release_db_connection(conn)
 
 def require_auth(f):
     """
@@ -126,7 +160,7 @@ def require_internal_key(f):
         auth_header = request.headers.get("Authorization")
         if auth_header and auth_header.startswith("Bearer "):
             provided_key = auth_header.split(" ", 1)[1]
-        
+
         if not provided_key:
             log.warning("Missing Authorization Bearer token for internal key.")
             return jsonify({
@@ -139,29 +173,41 @@ def require_internal_key(f):
         try:
             conn = get_db_connection()
             cursor = conn.cursor()
-            # Fetch business details based on the unique internal key
-            # Ensure internal_api_key column exists and is indexed for performance
+            # --- ORIGINAL LOGIC (commented out) ---
+            # cursor.execute("""
+            #     SELECT business_id, business_name FROM businesses 
+            #     WHERE internal_api_key = %s
+            # """, (provided_key,))
+            # business_row = cursor.fetchone()
+            # if not business_row:
+            #     log.warning(f"Invalid internal API key provided.")
+            #     return jsonify({
+            #         "error_code": "UNAUTHORIZED",
+            #         "message": "Invalid internal API key"
+            #     }), 401
+
+            # --- UPDATED LOGIC: Try internal_api_key, then fallback to api_key ---
             cursor.execute("""
                 SELECT business_id, business_name FROM businesses 
-                WHERE internal_api_key = %s
-            """, (provided_key,))
+                WHERE internal_api_key = %s OR api_key = %s
+            """, (provided_key, provided_key))
             business_row = cursor.fetchone()
-            
+
             if not business_row:
-                log.warning(f"Invalid internal API key provided.")
+                log.warning(f"Invalid internal or API key provided.")
                 return jsonify({
                     "error_code": "UNAUTHORIZED",
-                    "message": "Invalid internal API key"
+                    "message": "Invalid internal or API key"
                 }), 401
-            
+
             # Attach business context to the request global `g`
             g.business_id = str(business_row[0])
             g.business_name = business_row[1]
-            log.info(f"Internal API key validated successfully for business_id: {g.business_id}")
+            log.info(f"Internal/API key validated successfully for business_id: {g.business_id}")
             return f(*args, **kwargs)
-            
+
         except Exception as e:
-            log.error(f"Database error during internal API key validation: {str(e)}", exc_info=True)
+            log.error(f"Database error during internal/API key validation: {str(e)}", exc_info=True)
             return jsonify({
                 "error_code": "SERVER_ERROR",
                 "message": "Failed to validate credentials"

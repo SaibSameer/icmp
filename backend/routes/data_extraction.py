@@ -10,7 +10,10 @@ from typing import Dict, Any, List, Optional
 import traceback # For detailed error logging
 
 from backend.db import get_db_connection, release_db_connection
-from backend.message_processing.data_extraction_service import DataExtractionService
+from backend.message_processing.services.data_extraction_service import DataExtractionService
+from backend.message_processing.data_extraction.extractor import DataExtractor
+from backend.message_processing.data_extraction.rule_validator import ExtractionRuleValidator
+from backend.message_processing.data_extraction.processor import DataProcessor
 from backend.auth import require_internal_key
 
 log = logging.getLogger(__name__)

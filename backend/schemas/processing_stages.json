@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Processing Stage",
+  "description": "Represents a processing stage in the system.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the processing stage."
+    },
+    "extraction_id": {
+      "type": ["integer", "null"],
+      "description": "ID of the extraction."
+    },
+    "stage": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Name of the stage."
+    },
+    "success": {
+      "type": "boolean",
+      "description": "Whether the stage was successful."
+    },
+    "processing_time": {
+      "type": "number",
+      "description": "Time taken to process the stage in seconds."
+    },
+    "business_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the stage was created."
+    }
+  },
+  "required": [
+    "id",
+    "created_at"
+  ],
+  "additionalProperties": false
+} 

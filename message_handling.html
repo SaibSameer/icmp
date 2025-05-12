@@ -401,6 +401,257 @@
                 margin: 5px 0;
             }
         }
+
+        .debug-window {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .debug-controls {
+            margin-bottom: 10px;
+        }
+
+        .debug-controls button {
+            margin-right: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .debug-controls button:hover {
+            background-color: #0056b3;
+        }
+
+        .debug-content {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .debug-section {
+            margin-bottom: 15px;
+        }
+
+        .debug-section h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        .debug-section pre {
+            margin: 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .call-details {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .call-details h4 {
+            margin: 10px 0 5px 0;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        .call-details pre {
+            margin: 5px 0 15px 0;
+            padding: 8px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .metadata-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .metadata-value {
+            color: #007bff;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 1200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px 0;
+        }
+
+        .debug-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .call-details {
+            margin: 10px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .call-details h4 {
+            margin: 10px 0 5px 0;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        .call-details pre {
+            margin: 5px 0 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .metadata-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .metadata-value {
+            color: #007bff;
+        }
+
+        /* Responsive styles for modal */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10px auto;
+                padding: 15px;
+            }
+
+            .call-details pre {
+                max-height: 200px;
+            }
+        }
+
+        .show-details {
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 12px;
+            background-color: #6c757d;
+        }
+
+        .show-details:hover {
+            background-color: #5a6268;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .status-info {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #0050b3;
+        }
+        
+        .status-success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        
+        .status-error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #f5222d;
+        }
     </style>
 </head>
 <body>
@@ -419,6 +670,7 @@
                 <label for="ownerId">Owner ID</label>
                 <input id="ownerId" type="text" placeholder="Enter Owner ID">
                 <button onclick="lookupOwner()">Look Up Owner</button>
+                <button onclick="createOwner()">Create New Owner</button>
             </div>
             
             <div class="form-group">
@@ -426,8 +678,14 @@
                 <input id="apiKey" type="password" placeholder="Enter API Key">
             </div>
             
+            <div class="form-group">
+                <label for="businessName">Business Name</label>
+                <input id="businessName" type="text" placeholder="Enter Business Name">
+            </div>
+            
             <div class="button-group">
                 <button id="loginButton" onclick="login()">Login</button>
+                <button id="createBusinessButton" onclick="createBusiness()">Create Business</button>
                 <span id="loginStatus" class="logged-out">Not logged in</span>
             </div>
         </div>
@@ -438,9 +696,15 @@
         <h2>Send Message</h2>
         <div class="message-section">
             <div class="form-group">
-                <label for="userId">Message Sender ID (different user)</label>
+                <label for="userId">Message Sender ID (User)</label>
                 <input id="userId" type="text" placeholder="Enter User ID or generate new">
                 <button onclick="document.getElementById('userId').value = generateUUID()">Generate New</button>
+                <button onclick="createUser()">Create User</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="conversationId">Conversation ID (Optional)</label>
+                <input id="conversationId" type="text" placeholder="Enter Conversation ID or leave empty for new conversation">
             </div>
             
             <div class="form-group">
@@ -449,11 +713,16 @@
             </div>
             
             <div class="button-group">
-                <button id="sendButton" onclick="sendMessageAndDebug()">Send & Debug</button>
+                <button id="sendButton" onclick="sendMessage()">Send Message</button>
             </div>
             
             <div id="responseArea">
                 <div class="text-muted">Send a message to see the response</div>
+            </div>
+            <!-- New section to display stages -->
+            <div id="stagesArea" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; background-color: white;">
+                <h4>Available Stages</h4>
+                <div id="stagesList" class="text-muted">No stages available yet</div>
             </div>
         </div>
         
@@ -471,10 +740,92 @@
         
         <hr class="section-divider">
         
+        <!-- Template Variables Test Section -->
+        <h2>Template Variables Test</h2>
+        <div class="template-variables-section">
+            <div class="form-group">
+                <label for="templateContent">Template Content</label>
+                <textarea id="templateContent" placeholder="Enter template with variables (e.g. Hello {{user_name}}, welcome to {{business_name}}!)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="testVariables">Test Variables (JSON)</label>
+                <textarea id="testVariables" placeholder='{"user_name": "John", "business_name": "Test Business"}'></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="testTemplateButton" onclick="testTemplate()">Test Template</button>
+            </div>
+            
+            <div id="templateTestResult" class="response-box">
+                <div class="text-muted">Test result will appear here</div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
         <!-- Processing Details Section -->
         <h2>Processing Details</h2>
         <div id="processLogArea" class="process-log">
             <div class="no-logs">No processing data available yet</div>
+        </div>
+        
+        <!-- LLM Calls Debug Section -->
+        <h2>LLM Calls Debug</h2>
+        <div class="debug-controls">
+            <button onclick="showLLMDebug()" id="showLLMDebug">Show LLM Calls</button>
+            <button onclick="clearLLMDebug()" id="clearLLMDebug">Clear Debug</button>
+        </div>
+
+        <!-- Modal Window for LLM Debug -->
+        <div id="llmDebugModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>LLM Calls Debug</h2>
+                    <span class="close" onclick="closeLLMDebug()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="debug-section">
+                        <h3>Stage Selection Call</h3>
+                        <div class="call-details">
+                            <h4>Input</h4>
+                            <pre id="stageSelectionInput"></pre>
+                            <h4>System Prompt</h4>
+                            <pre id="stageSelectionSystemPrompt"></pre>
+                            <h4>Response</h4>
+                            <pre id="stageSelectionResponse"></pre>
+                            <h4>Metadata</h4>
+                            <pre id="stageSelectionMetadata"></pre>
+                        </div>
+                    </div>
+                    <div class="debug-section">
+                        <h3>Data Extraction Call</h3>
+                        <div class="call-details">
+                            <h4>Input</h4>
+                            <pre id="dataExtractionInput"></pre>
+                            <h4>System Prompt</h4>
+                            <pre id="dataExtractionSystemPrompt"></pre>
+                            <h4>Response</h4>
+                            <pre id="dataExtractionResponse"></pre>
+                            <h4>Metadata</h4>
+                            <pre id="dataExtractionMetadata"></pre>
+                        </div>
+                    </div>
+                    <div class="debug-section">
+                        <h3>Response Generation Call</h3>
+                        <div class="call-details">
+                            <h4>Input</h4>
+                            <pre id="responseGenerationInput"></pre>
+                            <h4>System Prompt</h4>
+                            <pre id="responseGenerationSystemPrompt"></pre>
+                            <h4>Response</h4>
+                            <pre id="responseGenerationResponse"></pre>
+                            <h4>Metadata</h4>
+                            <pre id="responseGenerationMetadata"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- Variable Substitution Section (New) -->
@@ -534,6 +885,10 @@
         
         <!-- Recent Logs Section -->
         <h2>Recent Process Logs</h2>
+         <div class="form-group">
+             <label for="logsBusinessId">Business ID for Logs</label>
+             <input id="logsBusinessId" type="text" placeholder="Enter Business ID to fetch logs for">
+        </div>
         <div class="button-group">
             <button onclick="fetchRecentLogs()">Refresh Logs</button>
         </div>
@@ -553,81 +908,65 @@
             <div class="process-step">
                 <div class="step-header">Stage 1: Intent Detection</div>
                 <div class="step-content">
-                    <div class="prompt-box" id="intentPrompt"></div>
-                    <div class="response-box" id="intentResponse"></div>
+                    <div class="prompt-box" id="stageSelectionInput"></div>
+                    <div class="response-box" id="stageSelectionResponse"></div>
+                    <button onclick="showLLMDebug('Stage Selection')" class="show-details">Show Details</button>
                 </div>
             </div>
             
             <div class="process-step">
                 <div class="step-header">Stage 2: Data Extraction</div>
                 <div class="step-content">
-                    <div class="prompt-box" id="extractionPrompt"></div>
-                    <div class="response-box" id="extractionResponse"></div>
+                    <div class="prompt-box" id="dataExtractionInput"></div>
+                    <div class="response-box" id="dataExtractionResponse"></div>
+                    <button onclick="showLLMDebug('Data Extraction')" class="show-details">Show Details</button>
                 </div>
             </div>
             
             <div class="process-step">
                 <div class="step-header">Stage 3: Response Generation</div>
                 <div class="step-content">
-                    <div class="prompt-box" id="responsePrompt"></div>
-                    <div class="response-box" id="responseResponse"></div>
+                    <div class="prompt-box" id="responseGenerationInput"></div>
+                    <div class="response-box" id="responseGenerationResponse"></div>
+                    <button onclick="showLLMDebug('Response Generation')" class="show-details">Show Details</button>
                 </div>
             </div>
         </div>
     </div>
     
     <script>
+        // Configuration for local development
         const API_BASE_URL = 'http://127.0.0.1:5000';
-        const DEFAULT_BUSINESS_ID = '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
-        const DEFAULT_API_KEY = 'da828cae6a3e46228aa09d65ba9066e3';
+        const MASTER_API_KEY = 'cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6';
         
         // State management
         let isLoggedIn = false;
-        let currentLogId = null;
-        let lastRequestData = null;
-        let lastResponseData = null;
         
         // Initialize the app
         function init() {
+            // Pre-fill the business ID, owner ID, and API key
+            document.getElementById('businessId').value = 'bc7e1824-49b4-4056-aabe-b045a1f79e3b';
+            document.getElementById('ownerId').value = '4c38fa55-ff8c-421a-878f-c09ecdb78c7b';
+            document.getElementById('apiKey').value = 'cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6';
+            
             // Check if we're already logged in
             const savedApiKey = localStorage.getItem('businessApiKey');
             if (savedApiKey) {
-                // Pre-fill the form with the saved values
                 document.getElementById('apiKey').value = savedApiKey;
                 
                 const savedBusinessId = localStorage.getItem('businessId');
-                const savedOwnerId = localStorage.getItem('ownerId');
-                
                 if (savedBusinessId) {
                     document.getElementById('businessId').value = savedBusinessId;
-                }
-                
-                if (savedOwnerId) {
-                    document.getElementById('ownerId').value = savedOwnerId;
-                }
-                
-                // Assume we're logged in if we have all the values
-                if (savedApiKey && savedBusinessId && savedOwnerId) {
                     isLoggedIn = true;
-                    document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                    document.getElementById('loginStatus').textContent = 'Logged in';
                     document.getElementById('loginStatus').className = 'logged-in';
-                    document.getElementById('loginButton').textContent = 'Logged In';
-                    document.getElementById('loginButton').disabled = true;
                 }
-            }
-            
-            // Set default values if not already set
-            if (!document.getElementById('businessId').value) {
-                document.getElementById('businessId').value = DEFAULT_BUSINESS_ID;
             }
             
             // Generate a UUID for user_id if not already set
             if (!document.getElementById('userId').value) {
                 document.getElementById('userId').value = generateUUID();
             }
-            
-            // Initialize flow diagram
-            resetFlowDiagram();
         }
         
         // Call init when the page loads
@@ -642,6 +981,51 @@
             });
         }
         
+        // Show success message
+        function showSuccess(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.textContent = message;
+            responseArea.classList.remove('error');
+            responseArea.classList.add('success');
+            
+            // Also update status
+            updateStatus(message, 'success');
+        }
+        
+        // Show error message
+        function showError(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.textContent = message;
+            responseArea.classList.remove('success');
+            responseArea.classList.add('error');
+            
+            // Also update status
+            updateStatus('ERROR: ' + message, 'error');
+        }
+        
+        // Update status display
+        function updateStatus(message, type = 'info') {
+            const statusElem = document.getElementById('networkStatus');
+            statusElem.textContent = message;
+            
+            // Remove all status classes
+            statusElem.classList.remove('status-info', 'status-success', 'status-error');
+            
+            // Add appropriate status class
+            statusElem.classList.add('status', `status-${type}`);
+            
+            // Clear status after 5 seconds if it's not an error
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (statusElem.textContent === message) {
+                        statusElem.textContent = 'No network activity';
+                        statusElem.classList.remove('status-info', 'status-success', 'status-error');
+                        statusElem.classList.add('status');
+                    }
+                }, 5000);
+            }
+        }
+        
         // Login function
         async function login() {
             const businessId = document.getElementById('businessId').value.trim();
@@ -653,85 +1037,174 @@
                 return;
             }
             
-            // Prepare login data
+            updateStatus('Verifying owner...', 'info');
+            
+            // Prepare login data for POST body
             const loginData = {
                 userId: ownerId,
                 businessId: businessId,
                 businessApiKey: apiKey
             };
             
-            updateStatus('Logging in...');
-            
             try {
-                const url = `${API_BASE_URL}/api/verify-owner`;
-                console.log('Verifying business owner with URL:', url);
-                
-                fetch(url, {
-                    method: 'POST',
+                const response = await fetch(`${API_BASE_URL}/api/verify-owner`, {
+                    method: 'POST', 
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
                     },
                     body: JSON.stringify(loginData),
-                    credentials: 'include', // Include cookies
-                    mode: 'cors'
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        // Check response content type to determine how to parse it
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json().then(errorData => {
-                                throw new Error(`Login failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
-                            });
-                        } else {
-                            return response.text().then(text => {
-                                throw new Error(`Login failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
-                            });
-                        }
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        isLoggedIn = true;
-                        showSuccess('Login successful! Owner verification confirmed.');
-                        document.getElementById('loginStatus').textContent = 'Logged in as Owner';
-                        document.getElementById('loginStatus').className = 'logged-in';
-                        document.getElementById('loginButton').textContent = 'Logged In';
-                        document.getElementById('loginButton').disabled = true;
-                        
-                        // Store credentials for subsequent requests
-                        localStorage.setItem('businessApiKey', apiKey);
-                        localStorage.setItem('businessId', businessId);
-                        localStorage.setItem('ownerId', ownerId);
-                        
-                        // Fetch recent logs after successful login
-                        fetchRecentLogs();
-                    } else {
-                        isLoggedIn = false;
-                        throw new Error(data.error || 'Login failed: Not a business owner');
-                    }
-                })
-                .catch(error => {
-                    console.error('Login error:', error);
-                    isLoggedIn = false;
-                    showError(`Login failed: ${error.message}`);
-                    document.getElementById('loginStatus').textContent = 'Not logged in';
-                    document.getElementById('loginStatus').className = 'logged-out';
+                    mode: 'cors',
+                    credentials: 'include'
                 });
                 
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) { 
+                    throw new Error(data.error || 'Owner verification failed');
+                }
+                
+                // Store credentials if verification succeeds
+                localStorage.setItem('businessApiKey', apiKey);
+                localStorage.setItem('businessId', businessId);
+                localStorage.setItem('ownerId', ownerId);
+                
+                isLoggedIn = true;
+                showSuccess('Login successful! Owner verification confirmed.');
+                document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                document.getElementById('loginStatus').className = 'logged-in';
+                document.getElementById('loginButton').textContent = 'Logged In';
+                document.getElementById('loginButton').disabled = true;
+
             } catch (error) {
                 console.error('Login error:', error);
                 isLoggedIn = false;
                 showError(`Login failed: ${error.message}`);
                 document.getElementById('loginStatus').textContent = 'Not logged in';
                 document.getElementById('loginStatus').className = 'logged-out';
+                localStorage.removeItem('businessApiKey');
+                localStorage.removeItem('businessId');
+                localStorage.removeItem('ownerId');
+                document.getElementById('loginButton').textContent = 'Login';
+                document.getElementById('loginButton').disabled = false;
             }
         }
         
-        // Send message and debug function
-        async function sendMessageAndDebug() {
+        // Function to show LLM debug modal
+        function showLLMDebug(stepType = null) {
+            const modal = document.getElementById('llmDebugModal');
+            modal.style.display = 'block';
+
+            // If a specific step type is provided, scroll to that section
+            if (stepType) {
+                const sections = document.querySelectorAll('.debug-section h3');
+                for (const section of sections) {
+                    if (section.textContent.toLowerCase().includes(stepType.toLowerCase())) {
+                        section.scrollIntoView({ behavior: 'smooth' });
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Function to close LLM debug modal
+        function closeLLMDebug() {
+            const modal = document.getElementById('llmDebugModal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('llmDebugModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Function to update LLM debug information
+        function updateLLMDebug(data) {
+            if (!data.processing_steps) return;
+
+            // Process each step
+            data.processing_steps.forEach(step => {
+                let stepPrefix;
+                switch(step.step) {
+                    case 'intent_detection':
+                        stepPrefix = 'stageSelection';
+                        break;
+                    case 'data_extraction':
+                        stepPrefix = 'dataExtraction';
+                        break;
+                    case 'response_generation':
+                        stepPrefix = 'responseGeneration';
+                        break;
+                    default:
+                        return;
+                }
+
+                const inputId = `${stepPrefix}Input`;
+                const systemPromptId = `${stepPrefix}SystemPrompt`;
+                const responseId = `${stepPrefix}Response`;
+                const metadataId = `${stepPrefix}Metadata`;
+
+                // Update input
+                if (document.getElementById(inputId)) {
+                    document.getElementById(inputId).textContent = step.prompt || 'No input available';
+                }
+
+                // Update system prompt
+                if (document.getElementById(systemPromptId)) {
+                    document.getElementById(systemPromptId).textContent = step.system_prompt || 'No system prompt available';
+                }
+
+                // Update response
+                if (document.getElementById(responseId)) {
+                    document.getElementById(responseId).textContent = step.response || 'No response available';
+                }
+
+                // Update metadata
+                if (document.getElementById(metadataId)) {
+                    const metadata = {
+                        'Template ID': step.template_id || 'N/A',
+                        'Template Name': step.template_name || 'N/A',
+                        'Timestamp': step.timestamp || 'N/A'
+                    };
+
+                    let metadataHtml = '';
+                    for (const [key, value] of Object.entries(metadata)) {
+                        metadataHtml += `
+                            <div class="metadata-item">
+                                <span class="metadata-label">${key}:</span>
+                                <span class="metadata-value">${value}</span>
+                            </div>
+                        `;
+                    }
+                    document.getElementById(metadataId).innerHTML = metadataHtml;
+                }
+            });
+
+            // Show the modal if there's data
+            showLLMDebug();
+        }
+
+        // Function to clear LLM debug
+        function clearLLMDebug() {
+            const elements = [
+                'stageSelectionInput', 'stageSelectionSystemPrompt', 'stageSelectionResponse', 'stageSelectionMetadata',
+                'dataExtractionInput', 'dataExtractionSystemPrompt', 'dataExtractionResponse', 'dataExtractionMetadata',
+                'responseGenerationInput', 'responseGenerationSystemPrompt', 'responseGenerationResponse', 'responseGenerationMetadata'
+            ];
+
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = 'No data available';
+                }
+            });
+        }
+
+        // Send message function
+        async function sendMessage() {
             if (!isLoggedIn) {
                 showError('You must login first before sending messages');
                 return;
@@ -739,6 +1212,7 @@
             
             const businessId = document.getElementById('businessId').value.trim();
             const userId = document.getElementById('userId').value.trim();
+            const conversationId = document.getElementById('conversationId').value.trim() || null;
             const apiKey = document.getElementById('apiKey').value.trim();
             const message = document.getElementById('messageContent').value.trim();
             
@@ -749,498 +1223,140 @@
             
             // Prepare message data
             const messageData = {
+                message: message,
                 business_id: businessId,
                 user_id: userId,
-                message: message
+                conversation_id: conversationId
             };
             
-            // Store request data for API inspector
-            lastRequestData = messageData;
-            document.getElementById('apiRequest').textContent = JSON.stringify(messageData, null, 2);
-            
-            // Reset flow diagram
-            resetFlowDiagram();
-            
-            updateStatus('Sending message...');
+            updateStatus('Sending message...', 'info');
+            document.getElementById('sendButton').disabled = true;
             
             try {
-                const url = `${API_BASE_URL}/api/message`;
-                console.log('Sending message to URL:', url);
-                
-                const startTime = performance.now();
-                
-                const response = await fetch(url, {
+                const response = await fetch(`${API_BASE_URL}/api/message`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'businessapikey': apiKey // Header for authentication
+                        'Authorization': `Bearer ${apiKey}`,
+                        'businessapikey': apiKey
                     },
                     body: JSON.stringify(messageData),
-                    credentials: 'include', // Include cookies
-                    mode: 'cors'
+                    credentials: 'include'
                 });
                 
                 if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        errorText = errorData.error || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                    }
-                    
-                    throw new Error(`Message failed! status: ${response.status}, message: ${errorText}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server responded with status: ${response.status}`);
                 }
                 
                 const data = await response.json();
                 
-                // Store response data for API inspector
-                lastResponseData = data;
-                document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
-                document.getElementById('resendButton').disabled = false;
+                // Update response area with formatted JSON
+                const responseArea = document.getElementById('responseArea');
+                responseArea.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                responseArea.classList.remove('error');
                 
-                // Calculate performance metrics
-                const endTime = performance.now();
-                const totalTime = Math.round(endTime - startTime);
-                document.getElementById('totalProcessingTime').textContent = totalTime;
-                
-                // Estimate token usage (this is a placeholder - actual implementation would need to parse the response)
-                const estimatedTokens = Math.round(message.length / 4) + Math.round((data.response || '').length / 4);
-                document.getElementById('tokenUsage').textContent = estimatedTokens;
-                
-                // Estimate cost (this is a placeholder - actual implementation would need to use real pricing)
-                const estimatedCost = (estimatedTokens / 1000) * 0.002; // $0.002 per 1K tokens
-                document.getElementById('estimatedCost').textContent = estimatedCost.toFixed(4);
-                
-                if (data.success) {
-                    showSuccess('Message sent successfully!');
-                    
-                    const responseArea = document.getElementById('responseArea');
-                    if (data.chat_window) {
-                        const { user_message, ai_response } = data.chat_window;
-                        responseArea.innerHTML = `
-                            <div class="process-step">
-                                <div class="step-header">User Message:</div>
-                                <div class="prompt-box">${user_message.content}</div>
-                            </div>
-                            <div class="process-step">
-                                <div class="step-header">AI Response:</div>
-                                <div class="response-box">${data.response}</div>
-                            </div>
-                        `;
-                    } else {
-                        responseArea.innerHTML = `
-                            <div class="response-box">${data.response}</div>
-                        `;
-                    }
-                    
-                    if (data.process_log_id) {
-                        currentLogId = data.process_log_id;
-                        setTimeout(() => fetchProcessLog(data.process_log_id), 500);
-                    } else {
-                        showError('No process log ID returned. Detailed debugging not available.');
-                    }
-                    
-                    // If processing steps are included directly in the response, update the view
-                    if (data.processing_steps && Array.isArray(data.processing_steps)) {
-                        console.log('Processing steps found in response, updating view');
-                        updateProcessingSteps(data);
-                    }
-                    
-                    setTimeout(fetchRecentLogs, 1000);
-                } else {
-                    showError(data.error || 'Unknown error sending message');
+                // Save the conversationId if one was returned and none was provided
+                if (data.conversation_id && !conversationId) {
+                    document.getElementById('conversationId').value = data.conversation_id;
                 }
                 
+                // Update processing details
+                updateProcessingDetails(data);
+                
+                // Update LLM debug information
+                updateLLMDebug(data);
+                
+                // Update performance metrics
+                updatePerformanceMetrics(data);
+                
+                // Update variable substitution
+                updateVariableSubstitution(data);
+                
+                // Update API inspector
+                updateApiInspector(messageData, data);
+                
+                // Update stages display
+                updateStagesDisplay(data);
+                
+                updateStatus('Message sent successfully!', 'success');
             } catch (error) {
-                console.error('Message error:', error);
+                console.error('Send message error:', error);
                 showError(`Failed to send message: ${error.message}`);
+            } finally {
+                document.getElementById('sendButton').disabled = false;
             }
         }
-        
-        // Fetch process log details
-        async function fetchProcessLog(logId) {
-            if (!isLoggedIn) {
-                showError('You must login first before fetching logs');
-                return;
-            }
-            
-            const businessId = document.getElementById('businessId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            if (!businessId || !apiKey || !logId) {
-                showError('Business ID, API Key, and Log ID are required to fetch processing details');
-                return;
-            }
-            
-            updateStatus('Fetching process log...');
-            
-            try {
-                const url = `${API_BASE_URL}/api/message/logs/${logId}?business_id=${encodeURIComponent(businessId)}`;
-                console.log('Fetching process log from URL:', url);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'businessapikey': apiKey // Header for authentication
-                    },
-                    credentials: 'include', // Include cookies
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        errorText = errorData.error || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                    }
-                    
-                    throw new Error(`Failed to fetch process log! status: ${response.status}, message: ${errorText}`);
-                }
-                
-                const logData = await response.json();
-                console.log('Process log data received:', logData);
-                
-                // Display the process log
-                displayProcessLog(logData);
-                
-                // Update flow diagram based on processing steps
-                updateFlowDiagram(logData);
-                
-                // Display variable substitution if available
-                displayVariableSubstitution(logData);
-                
-                // Also update the simple view stages
-                updateProcessingSteps(logData);
-                
-            } catch (error) {
-                console.error('Error fetching process log:', error);
-                showError(`Failed to fetch process log: ${error.message}`);
-            }
-        }
-        
-        // Fetch recent process logs
-        async function fetchRecentLogs() {
-            if (!isLoggedIn) {
-                showError('You must login first before fetching logs');
-                return;
-            }
-            
-            const businessId = document.getElementById('businessId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            if (!businessId || !apiKey) {
-                showError('Business ID and API Key are required to fetch recent logs');
-                return;
-            }
-            
-            updateStatus('Fetching recent logs...');
-            
-            try {
-                const url = `${API_BASE_URL}/api/message/logs/recent?business_id=${encodeURIComponent(businessId)}&limit=10`;
-                console.log('Fetching recent logs from URL:', url);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'businessapikey': apiKey // Header for authentication
-                    },
-                    credentials: 'include', // Include cookies
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        errorText = errorData.error || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                    }
-                    
-                    throw new Error(`Failed to fetch recent logs! status: ${response.status}, message: ${errorText}`);
-                }
-                
-                const logs = await response.json();
-                
-                // Display the recent logs
-                displayRecentLogs(logs);
-                
-                showSuccess('Recent logs fetched successfully!');
-                
-            } catch (error) {
-                console.error('Error fetching recent logs:', error);
-                showError(`Failed to fetch recent logs: ${error.message}`);
-            }
-        }
-        
-        // Display process log details
-        function displayProcessLog(log) {
+
+        // Function to update processing details
+        function updateProcessingDetails(data) {
             const processLogArea = document.getElementById('processLogArea');
-            
-            if (!log) {
-                processLogArea.innerHTML = '<div class="no-logs">No processing data available</div>';
-                return;
-            }
-            
-            let html = `
-                <h3>Process Log Details</h3>
-                <div class="process-step">
-                    <div class="step-header">Original Message</div>
-                    <div class="prompt-box">${log.original_message || 'N/A'}</div>
-                    <div class="text-muted">
-                        Log ID: ${log.log_id || 'N/A'}<br>
-                        Conversation ID: ${log.conversation_id || 'N/A'}<br>
-                        Time: ${formatDateTime(log.start_time) || 'N/A'}
-                    </div>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-header">Current Stage Information</div>
-                    <div class="step-content">
-                        <div><strong>Stage ID:</strong> ${log.stage_id || 'No specific stage'}</div>
-                        <div><strong>Stage Name:</strong> ${log.current_stage_name || 'Default'}</div>
-                        ${log.agent_id ? `<div><strong>Agent ID:</strong> ${log.agent_id}</div>` : ''}
-                    </div>
-                </div>
-            `;
-            
-            // Process each step
-            if (log.processing_steps && log.processing_steps.length > 0) {
-                html += `<h3>Processing Steps</h3>`;
-                
-                log.processing_steps.forEach((step, index) => {
-                    html += `
-                        <div class="process-step">
-                            <div class="step-header">${formatStepName(step.step)} (Step ${index + 1})</div>
-                            
-                            <div class="step-content">
-                                <div class="template-info">
-                                    <strong>Template:</strong> ${step.template_name || 'Unknown Template'} (${step.template_id || 'N/A'})<br>
-                                    <strong>Time:</strong> ${formatDateTime(step.timestamp) || 'N/A'}
-                                </div>
-                                
-                                ${step.system_prompt ? `
-                                <div class="system-prompt-container">
-                                    <strong>System Prompt:</strong>
-                                    <div class="system-prompt">${step.system_prompt}</div>
-                                </div>
-                                ` : ''}
-                                
-                                <div class="prompt-container">
-                                    <strong>Prompt:</strong>
-                                    <div class="prompt-box" style="white-space: pre-wrap;">${step.prompt || 'N/A'}</div>
-                                </div>
-                                
-                                <div class="response-container">
-                                    <strong>Response:</strong>
-                                    <div class="response-box" style="white-space: pre-wrap;">${step.response || 'N/A'}</div>
-                                </div>
-                            </div>
+            if (!data.processing_steps) return;
+
+            let logHtml = '<div class="log-list">';
+            data.processing_steps.forEach(step => {
+                logHtml += `
+                    <div class="log-item">
+                        <div class="step-header">${step.step}</div>
+                        <div class="step-content">
+                            <div class="prompt-box">${step.prompt || 'No prompt available'}</div>
+                            <div class="response-box">${step.response || 'No response available'}</div>
                         </div>
-                    `;
-                });
-            } else {
-                html += '<div class="no-logs">No processing steps recorded</div>';
-            }
-            
-            // Final response
-            html += `
-                <h3>Final Result</h3>
-                <div class="process-step">
-                    <div class="step-header">Final Response</div>
-                    <div class="response-box" style="white-space: pre-wrap;">${
-                        log.processing_steps
-                            .find(step => step.step === 'response_generation')?.response || 'N/A'
-                    }</div>
-                </div>
-            `;
-            
-            processLogArea.innerHTML = html;
-        }
-        
-        // Display recent logs list
-        function displayRecentLogs(logs) {
-            const recentLogsArea = document.getElementById('recentLogsArea');
-            
-            if (!logs || logs.length === 0) {
-                recentLogsArea.innerHTML = '<div class="no-logs">No recent logs available</div>';
-                return;
-            }
-            
-            let html = '<ul class="log-list">';
-            
-            logs.forEach(log => {
-                html += `
-                    <li class="log-item" onclick="fetchProcessLog('${log.log_id}')">
-                        <strong>Message:</strong> ${truncateText(log.original_message, 50)}<br>
-                        <strong>Time:</strong> ${formatDateTime(log.start_time)}<br>
-                        <span class="text-muted">Log ID: ${log.log_id}</span>
-                    </li>
+                    </div>
                 `;
             });
-            
-            html += '</ul>';
-            
-            recentLogsArea.innerHTML = html;
+            logHtml += '</div>';
+            processLogArea.innerHTML = logHtml;
         }
-        
-        // Display variable substitution
-        function displayVariableSubstitution(log) {
-            if (!log || !log.processing_steps || log.processing_steps.length === 0) {
-                document.getElementById('originalTemplate').textContent = 'No template data available';
-                document.getElementById('contextData').textContent = 'No context data available';
-                document.getElementById('substitutedTemplate').textContent = 'No substituted template available';
-                return;
-            }
-            
-            // Find the first step with template data
-            const step = log.processing_steps[0];
-            
-            if (step.template_content) {
-                // Extract variables from template (simple regex for demonstration)
-                const variables = step.template_content.match(/\{\{([^}]+)\}\}/g) || [];
-                let highlightedTemplate = step.template_content;
-                
-                // Highlight variables
-                variables.forEach(variable => {
-                    highlightedTemplate = highlightedTemplate.replace(
-                        variable, 
-                        `<span class="variable-highlight">${variable}</span>`
-                    );
+
+        // Function to update performance metrics
+        function updatePerformanceMetrics(data) {
+            if (!data.metrics) return;
+
+            const metrics = data.metrics;
+            document.getElementById('totalProcessingTime').textContent = metrics.total_processing_time || '-';
+            document.getElementById('tokenUsage').textContent = metrics.token_usage || '-';
+            document.getElementById('estimatedCost').textContent = metrics.estimated_cost || '-';
+        }
+
+        // Function to update variable substitution
+        function updateVariableSubstitution(data) {
+            if (!data.template_data) return;
+
+            const templateData = data.template_data;
+            document.getElementById('originalTemplate').textContent = templateData.original_template || 'No template available';
+            document.getElementById('contextData').textContent = JSON.stringify(templateData.context_data || {}, null, 2);
+            document.getElementById('substitutedTemplate').textContent = templateData.substituted_template || 'No substituted template available';
+        }
+
+        // Function to update API inspector
+        function updateApiInspector(requestData, responseData) {
+            document.getElementById('apiRequest').textContent = JSON.stringify(requestData, null, 2);
+            document.getElementById('apiResponse').textContent = JSON.stringify(responseData, null, 2);
+        }
+
+        // Function to update stages display
+        function updateStagesDisplay(data) {
+            const stagesList = document.getElementById('stagesList');
+            if (data.agent_stages && Array.isArray(data.agent_stages) && data.agent_stages.length > 0) {
+                let stagesHtml = '<ul>';
+                data.agent_stages.forEach(stage => {
+                    stagesHtml += `<li>${stage.stage_name} (${stage.stage_id})</li>`;
                 });
-                
-                document.getElementById('originalTemplate').innerHTML = highlightedTemplate;
+                stagesHtml += '</ul>';
+                stagesList.innerHTML = stagesHtml;
             } else {
-                document.getElementById('originalTemplate').textContent = 'No template content available';
-            }
-            
-            // Display context data if available
-            if (step.context) {
-                document.getElementById('contextData').textContent = JSON.stringify(step.context, null, 2);
-            } else {
-                document.getElementById('contextData').textContent = 'No context data available';
-            }
-            
-            // Display substituted template if available
-            if (step.substituted_template) {
-                document.getElementById('substitutedTemplate').textContent = step.substituted_template;
-            } else if (step.prompt) {
-                document.getElementById('substitutedTemplate').textContent = step.prompt;
-            } else {
-                document.getElementById('substitutedTemplate').textContent = 'No substituted template available';
+                stagesList.textContent = 'No stages available';
             }
         }
-        
-        // Reset flow diagram
-        function resetFlowDiagram() {
-            const nodes = document.querySelectorAll('.stage-node');
-            nodes.forEach(node => {
-                node.classList.remove('active', 'completed');
-            });
+
+        // Function to resend request
+        async function resendRequest() {
+            const requestData = JSON.parse(document.getElementById('apiRequest').textContent);
+            await sendMessage();
         }
-        
-        // Update flow diagram based on processing steps
-        function updateFlowDiagram(log) {
-            if (!log || !log.processing_steps || log.processing_steps.length === 0) {
-                return;
-            }
-            
-            // Reset the diagram
-            resetFlowDiagram();
-            
-            // Mark completed steps
-            const completedSteps = new Set();
-            log.processing_steps.forEach(step => {
-                completedSteps.add(step.step);
-            });
-            
-            // Update nodes based on completed steps
-            if (completedSteps.has('stage_selection')) {
-                document.getElementById('stage-selection-node').classList.add('completed');
-            }
-            
-            if (completedSteps.has('data_extraction')) {
-                document.getElementById('data-extraction-node').classList.add('completed');
-            }
-            
-            if (completedSteps.has('response_generation')) {
-                document.getElementById('response-generation-node').classList.add('completed');
-            }
-            
-            // Mark the current active step (last step in the list)
-            const lastStep = log.processing_steps[log.processing_steps.length - 1];
-            if (lastStep) {
-                const activeNode = document.getElementById(`${lastStep.step}-node`);
-                if (activeNode) {
-                    activeNode.classList.add('active');
-                }
-            }
-        }
-        
-        // Resend request function
-        function resendRequest() {
-            if (!lastRequestData) {
-                showError('No request data available to resend');
-                return;
-            }
-            
-            // Reuse the sendMessageAndDebug function with the stored request data
-            document.getElementById('messageContent').value = lastRequestData.message;
-            sendMessageAndDebug();
-        }
-        
-        // Helper functions
-        function formatStepName(stepName) {
-            if (!stepName) return 'Unknown Step';
-            
-            const names = {
-                'stage_selection': 'Stage Selection (Determining Conversation Flow)',
-                'data_extraction': 'Data Extraction (Extracting Key Information)',
-                'response_generation': 'Response Generation (Creating Final Response)'
-            };
-            
-            return names[stepName] || stepName;
-        }
-        
-        function formatDateTime(dateStr) {
-            if (!dateStr) return 'Unknown';
-            
-            try {
-                const date = new Date(dateStr);
-                return date.toLocaleString();
-            } catch (e) {
-                return dateStr;
-            }
-        }
-        
-        function truncateText(text, maxLength) {
-            if (!text) return 'N/A';
-            if (text.length <= maxLength) return text;
-            return text.substring(0, maxLength) + '...';
-        }
-        
-        function showError(message) {
-            const responseArea = document.getElementById('responseArea');
-            responseArea.innerHTML = `<div class="error">${message}</div>`;
-            updateStatus(`Error: ${message}`, true);
-        }
-        
-        function showSuccess(message) {
-            updateStatus(message, false);
-        }
-        
-        function updateStatus(message, isError = false) {
-            const statusElement = document.getElementById('networkStatus');
-            statusElement.textContent = message;
-            statusElement.className = isError ? 'error' : 'success';
-        }
-        
+
         // Look up owner ID function
         async function lookupOwner() {
             const businessId = document.getElementById('businessId').value.trim();
@@ -1257,7 +1373,7 @@
                 businessApiKey: apiKey
             };
             
-            updateStatus('Looking up owner...');
+            updateStatus('Looking up owner...', 'info');
             
             try {
                 const url = `${API_BASE_URL}/api/lookup-owner`;
@@ -1270,7 +1386,7 @@
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(lookupData),
-                    credentials: 'include', // Include cookies
+                    credentials: 'include',
                     mode: 'cors'
                 });
                 
@@ -1299,316 +1415,173 @@
                 showError(`Failed to look up owner ID: ${error.message}`);
             }
         }
-        
-        // Add this function to save LLM calls to localStorage
-        function saveLLMCallToStorage(prompt, response) {
-            try {
-                const STORAGE_KEY = 'icmp_llm_calls';
-                
-                // Get existing calls
-                let calls = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-                
-                // Add new call
-                calls.unshift({
-                    timestamp: new Date().toISOString(),
-                    prompt: prompt,
-                    response: response
-                });
-                
-                // Keep only the last 20 calls
-                if (calls.length > 20) {
-                    calls = calls.slice(0, 20);
-                }
-                
-                // Save back to localStorage
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(calls));
-                
-                console.log('LLM call saved to localStorage');
-            } catch (error) {
-                console.error('Error saving LLM call to storage:', error);
-            }
-        }
-        
-        // Find the function that makes the LLM call and add the saveLLMCallToStorage call
-        // This is a generic example - you'll need to adapt it to your specific code
-        
-        // Example: If you have a function like this:
-        async function makeLLMCall(prompt) {
-            const businessId = document.getElementById('businessId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
+
+        // Create business function
+        async function createBusiness() {
+            const ownerId = document.getElementById('ownerId').value.trim();
+            const businessName = document.getElementById('businessName').value.trim();
             
-            if (!businessId || !apiKey) {
-                showError('Business ID and API Key are required');
+            if (!ownerId || !businessName) {
+                showError('Owner ID and Business Name are required to create a business');
                 return;
             }
             
+            updateStatus('Creating business...', 'info');
+            document.getElementById('createBusinessButton').disabled = true;
+            
             try {
-                const url = `${API_BASE_URL}/api/llm/generate`;
-                console.log('Making LLM call to URL:', url);
-                
-                const response = await fetch(url, {
+                const response = await fetch(`${API_BASE_URL}/businesses`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'businessapikey': apiKey
+                        'Authorization': `Bearer ${MASTER_API_KEY}`
                     },
                     body: JSON.stringify({
-                        business_id: businessId,
-                        input_text: prompt,
-                        call_type: 'message_handling'
-                    }),
-                    mode: 'cors',
-                    credentials: 'include'
+                        owner_id: ownerId,
+                        business_information: {
+                            business_name: businessName
+                        }
+                    })
                 });
                 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to make LLM call');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Server responded with status: ${response.status}`);
                 }
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    // Save to localStorage
-                    saveLLMCallToStorage(prompt, data.response);
-                    
-                    // Display the response
-                    const responseArea = document.getElementById('responseArea');
-                    responseArea.innerHTML = `
-                        <div class="llm-call">
-                            <div class="call-header">LLM Response</div>
-                            <div class="response-box">${data.response}</div>
-                        </div>
-                    `;
-                    
-                    showSuccess('LLM call successful!');
-                    return data.response;
-                } else {
-                    throw new Error(data.error || 'Unknown error making LLM call');
-                }
+                // Update the business ID field with the new ID
+                document.getElementById('businessId').value = data.business_id;
                 
+                // Update the API key field with the new key
+                document.getElementById('apiKey').value = data.api_key;
+                
+                showSuccess(`Business created successfully! Business ID: ${data.business_id}`);
+                updateStatus('Business created successfully!', 'success');
             } catch (error) {
-                console.error('LLM call error:', error);
-                showError(`Failed to make LLM call: ${error.message}`);
-                return null;
+                console.error('Create business error:', error);
+                showError(`Failed to create business: ${error.message}`);
+            } finally {
+                document.getElementById('createBusinessButton').disabled = false;
             }
         }
-        
-        // Display debug info on processing steps
-        function updateProcessingSteps(log) {
-            if (!log || !log.processing_steps || !Array.isArray(log.processing_steps)) {
-                console.log('No processing steps found in log data');
+
+        // Create owner function
+        async function createOwner() {
+            updateStatus('Creating owner...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/create-owner`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${MASTER_API_KEY}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Server responded with status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update the owner ID field with the new ID
+                document.getElementById('ownerId').value = data.owner_id;
+                
+                showSuccess(`Owner created successfully! Owner ID: ${data.owner_id}`);
+                updateStatus('Owner created successfully!', 'success');
+            } catch (error) {
+                console.error('Create owner error:', error);
+                showError(`Failed to create owner: ${error.message}`);
+            }
+        }
+
+        // Create user function
+        async function createUser() {
+            const userId = document.getElementById('userId').value.trim();
+            
+            if (!userId) {
+                showError('User ID is required');
                 return;
             }
             
-            console.log('Updating simple view with processing steps:', log.processing_steps);
-            
-            // Find each step
-            const intentStep = log.processing_steps.find(step => 
-                step.step === 'intent_detection' || step.step === 'stage_selection');
-            
-            const extractionStep = log.processing_steps.find(step => 
-                step.step === 'data_extraction');
-            
-            const responseStep = log.processing_steps.find(step => 
-                step.step === 'response_generation');
-            
-            // Update intent detection section
-            if (intentStep) {
-                console.log('Intent step found:', intentStep);
-                document.getElementById('intentPrompt').textContent = intentStep.prompt || 'No prompt data';
-                document.getElementById('intentResponse').textContent = intentStep.response || 'No response data';
-            }
-            
-            // Update data extraction section (with detailed debugging)
-            if (extractionStep) {
-                console.log('Data extraction step found:', extractionStep);
-                
-                // Display template info if available
-                let templateInfo = '';
-                if (extractionStep.template_name) {
-                    templateInfo = `Template: ${extractionStep.template_name} (${extractionStep.template_id || 'No ID'})`;
-                    
-                    // Add template info to the data extraction section header
-                    const extractionHeader = document.querySelector('.process-step:nth-child(2) .step-header');
-                    if (extractionHeader) {
-                        extractionHeader.innerHTML = `Stage 2: Data Extraction <span style="font-size: 0.8em; color: #666;">${templateInfo}</span>`;
-                    }
-                }
-                
-                // Prioritize data within extracted_data if it exists
-                let promptContent = '';
-                let responseContent = '';
-                let foundInData = false;
-                
-                if (extractionStep.extracted_data && typeof extractionStep.extracted_data === 'object') {
-                    console.log('Checking for prompt/response in extracted_data:', extractionStep.extracted_data);
-                    
-                    promptContent = extractionStep.extracted_data.prompt || '';
-                    responseContent = extractionStep.extracted_data.response || extractionStep.extracted_data.raw_extraction || '';
-                    
-                    if (promptContent || responseContent) {
-                        foundInData = true;
-                        console.log('Found prompt/response in extracted_data:', promptContent, responseContent);
-                    } else {
-                         // Fallback if extracted_data exists but has no prompt/response
-                        console.log('extracted_data exists but no prompt/response found within it. Trying top-level.');
-                        promptContent = extractionStep.prompt || '';
-                        responseContent = extractionStep.response || '';
-                        // Use entire extracted_data as fallback response if top-level response is empty
-                        if ((!responseContent || responseContent === 'N/A') && typeof extractionStep.extracted_data === 'object') {
-                             const displayData = {...extractionStep.extracted_data};
-                             delete displayData._template_info; // Don't show internal metadata
-                             responseContent = JSON.stringify(displayData, null, 2);
-                             console.log('Using cleaned extracted_data object as fallback response.');
-                        }
-                    }
-                } else {
-                    // Fallback to top-level prompt/response if extracted_data is missing
-                    console.log('extracted_data missing or not an object. Using top-level prompt/response.');
-                    promptContent = extractionStep.prompt || '';
-                    responseContent = extractionStep.response || '';
-                }
-                
-                // Clean the response content before displaying
-                const cleanedResponse = cleanExtractionResponse(responseContent);
-                
-                // Display the content we found/derived
-                document.getElementById('extractionPrompt').textContent = promptContent || "No prompt data available";
-                document.getElementById('extractionResponse').textContent = cleanedResponse || "No response data available";
-
-                // Handle UI feedback (warnings/success messages)
-                const extractionContent = document.querySelector('.process-step:nth-child(2) .step-content');
-                if (extractionContent) {
-                    // Remove any existing status messages first
-                    const existingMessages = extractionContent.querySelectorAll('.feedback-message');
-                    existingMessages.forEach(msg => msg.remove());
-
-                    if (promptContent && cleanedResponse && cleanedResponse !== 'No response data available') {
-                        // Add success message if we successfully displayed data
-                        const successDiv = document.createElement('div');
-                        successDiv.className = 'feedback-message'; // Add class for easier removal
-                        successDiv.style.color = '#28a745';
-                        successDiv.style.fontWeight = 'bold';
-                        successDiv.style.marginBottom = '10px';
-                        successDiv.innerHTML = `<p>✅ Data extraction details displayed successfully.</p>`;
-                        if (extractionContent.firstChild) {
-                            extractionContent.insertBefore(successDiv, extractionContent.firstChild);
-                        } else {
-                            extractionContent.appendChild(successDiv);
-                        }
-                    } else {
-                        // Add warning if data seems missing or incomplete
-                        const warningDiv = document.createElement('div');
-                        warningDiv.className = 'feedback-message'; // Add class for easier removal
-                        warningDiv.style.color = '#dc3545';
-                        warningDiv.style.fontWeight = 'bold';
-                        warningDiv.style.marginBottom = '10px';
-                        warningDiv.innerHTML = `<p>⚠️ WARNING: Could not display complete data extraction details.</p>
-                            <p>Check the following:</p>
-                            <ul>
-                                <li>Review the raw 'processing_steps' data in the browser console.</li>
-                                <li>Verify the data extraction template (ID: ${extractionStep.template_id || 'None'}) is configured correctly.</li>
-                                <li>Ensure the backend service ('data_extraction_service.py' or similar) returns data in the expected format.</li>
-                            </ul>`;
-                        if (extractionContent.firstChild) {
-                            extractionContent.insertBefore(warningDiv, extractionContent.firstChild);
-                        } else {
-                            extractionContent.appendChild(warningDiv);
-                        }
-                    }
-                }
-            }
-            
-            // Update response generation section
-            if (responseStep) {
-                console.log('Response step found:', responseStep);
-                document.getElementById('responsePrompt').textContent = responseStep.prompt || 'No prompt data';
-                document.getElementById('responseResponse').textContent = responseStep.response || 'No response data';
-            }
+            updateStatus('User will be created automatically when sending first message', 'info');
+            showSuccess(`User ID ${userId} will be created automatically when sending first message`);
         }
-        
-        // Display message response
-        function displayMessageResponse(data) {
-            if (data.success) {
-                // Check if processing_steps exists before trying to access it
-                if (data.processing_steps && Array.isArray(data.processing_steps)) {
-                    // Display Stage 1: Intent Detection
-                    const intentStep = data.processing_steps.find(step => step.step === 'intent_detection');
-                    document.getElementById('intentPrompt').textContent = intentStep?.prompt || '';
-                    document.getElementById('intentResponse').textContent = intentStep?.response || '';
-                    
-                    // Display Stage 2: Data Extraction
-                    const extractionStep = data.processing_steps.find(step => step.step === 'data_extraction');
-                    document.getElementById('extractionPrompt').textContent = extractionStep?.prompt || '';
-                    document.getElementById('extractionResponse').textContent = cleanExtractionResponse(extractionStep?.response || '');
-                    
-                    // Display Stage 3: Response Generation
-                    const responseStep = data.processing_steps.find(step => step.step === 'response_generation');
-                    document.getElementById('responsePrompt').textContent = responseStep?.prompt || '';
-                    document.getElementById('responseResponse').textContent = responseStep?.response || '';
-                } else {
-                    // If no processing steps, display a message
-                    document.getElementById('intentPrompt').textContent = 'No processing steps available';
-                    document.getElementById('intentResponse').textContent = '';
-                    document.getElementById('extractionPrompt').textContent = 'No processing steps available';
-                    document.getElementById('extractionResponse').textContent = '';
-                    document.getElementById('responsePrompt').textContent = 'No processing steps available';
-                    document.getElementById('responseResponse').textContent = '';
-                }
-                
-                // Update chat window
-                if (data.chat_window) {
-                    updateChatWindow(data.chat_window);
-                }
-            } else {
-                document.getElementById('responseArea').textContent = 'Error: ' + data.error;
-                document.getElementById('responseArea').classList.add('error');
+
+        // Test template function
+        async function testTemplate() {
+            if (!isLoggedIn) {
+                showError('You must login first before testing templates');
+                return;
             }
-        }
-        
-        // Helper function to clean up extraction responses
-        function cleanExtractionResponse(response) {
-            if (!response) return '';
             
+            const templateContent = document.getElementById('templateContent').value.trim();
+            const testVariables = document.getElementById('testVariables').value.trim();
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!templateContent) {
+                showError('Template content is required');
+                return;
+            }
+            
+            let variables = {};
             try {
-                // If it's a JSON string, try to parse it
-                if (typeof response === 'string' && 
-                    (response.trim().startsWith('{') || response.trim().startsWith('['))) {
-                    
-                    const parsed = JSON.parse(response);
-                    
-                    // If it contains basic_info and contact_info, focus on those
-                    if (parsed.basic_info || parsed.contact_info) {
-                        // Create a clean object with just the extracted data
-                        const cleanData = {};
-                        if (parsed.basic_info) cleanData.basic_info = parsed.basic_info;
-                        if (parsed.contact_info) cleanData.contact_info = parsed.contact_info;
-                        
-                        return JSON.stringify(cleanData, null, 2);
-                    }
-                    
-                    // Remove metadata fields if present
-                    if (typeof parsed === 'object') {
-                        const cleanData = {...parsed};
-                        delete cleanData._template_info;
-                        delete cleanData.prompt;
-                        delete cleanData.processed_content;
-                        delete cleanData.processed_system_prompt;
-                        
-                        return JSON.stringify(cleanData, null, 2);
-                    }
-                    
-                    // Otherwise, just return the formatted JSON
-                    return JSON.stringify(parsed, null, 2);
+                if (testVariables) {
+                    variables = JSON.parse(testVariables);
                 }
             } catch (e) {
-                console.log('Error cleaning extraction response:', e);
+                showError('Invalid JSON in test variables');
+                return;
             }
             
-            // Return the original response if not JSON or if parsing fails
-            return response;
+            updateStatus('Testing template...', 'info');
+            document.getElementById('testTemplateButton').disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/templates/test-template`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${MASTER_API_KEY}`,
+                        'businessapikey': apiKey
+                    },
+                    body: JSON.stringify({
+                        template: templateContent,
+                        variables: variables,
+                        business_id: businessId
+                    }),
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update template test result
+                const resultArea = document.getElementById('templateTestResult');
+                resultArea.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                resultArea.classList.remove('error');
+                
+                updateStatus('Template test completed successfully!', 'success');
+            } catch (error) {
+                console.error('Template test error:', error);
+                const resultArea = document.getElementById('templateTestResult');
+                resultArea.textContent = `Error: ${error.message}`;
+                resultArea.classList.add('error');
+                updateStatus('Template test failed!', 'error');
+            } finally {
+                document.getElementById('testTemplateButton').disabled = false;
+            }
         }
     </script>
 </body>

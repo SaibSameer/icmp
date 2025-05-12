@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Message",
+  "description": "Represents a message in a conversation.",
+  "type": "object",
+  "properties": {
+    "message_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the message."
+    },
+    "user_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the user."
+    },
+    "content": {
+      "type": "string",
+      "description": "Content of the message."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the message was created."
+    },
+    "processed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the message was processed."
+    },
+    "status": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Current status of the message."
+    },
+    "message_content": {
+      "type": "string",
+      "description": "Content of the message."
+    },
+    "sender_type": {
+      "type": "string",
+      "maxLength": 10,
+      "description": "Type of the sender (e.g., user, agent)."
+    },
+    "conversation_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the conversation."
+    },
+    "stage_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the stage."
+    }
+  },
+  "required": [
+    "message_id"
+  ],
+  "additionalProperties": false
+} 

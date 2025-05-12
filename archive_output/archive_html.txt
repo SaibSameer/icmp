@@ -2039,11 +2039,11 @@ Lines: 450
 ================================================================================
 File: message_handling.html
 Path: .\message_handling.html
-Size: 68025
-Modified: 2025-04-18T14:01:13.343683
+Size: 58831
+Modified: 2025-05-04T16:08:06.180082
 Created: 2025-04-11T15:15:10.708002
-Hash: a192fb935e96e5f7ee217f9c8647dd540d6d95c675e6010b5815bad9c9fa53fa
-Lines: 1616
+Hash: f329f5156846fbef12d0ff213f1fc0219575384a168b5b317e4872892f1a64cd
+Lines: 1589
 ================================================================================
 <!DOCTYPE html>
 <html lang="en">
@@ -2448,6 +2448,257 @@ Lines: 1616
                 margin: 5px 0;
             }
         }
+
+        .debug-window {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .debug-controls {
+            margin-bottom: 10px;
+        }
+
+        .debug-controls button {
+            margin-right: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .debug-controls button:hover {
+            background-color: #0056b3;
+        }
+
+        .debug-content {
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .debug-section {
+            margin-bottom: 15px;
+        }
+
+        .debug-section h3 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+
+        .debug-section pre {
+            margin: 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .call-details {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .call-details h4 {
+            margin: 10px 0 5px 0;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        .call-details pre {
+            margin: 5px 0 15px 0;
+            padding: 8px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .metadata-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .metadata-value {
+            color: #007bff;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%;
+            max-width: 1200px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            padding: 20px 0;
+        }
+
+        .debug-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .call-details {
+            margin: 10px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .call-details h4 {
+            margin: 10px 0 5px 0;
+            color: #495057;
+            font-size: 0.9em;
+        }
+
+        .call-details pre {
+            margin: 5px 0 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .metadata-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .metadata-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .metadata-value {
+            color: #007bff;
+        }
+
+        /* Responsive styles for modal */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10px auto;
+                padding: 15px;
+            }
+
+            .call-details pre {
+                max-height: 200px;
+            }
+        }
+
+        .show-details {
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 12px;
+            background-color: #6c757d;
+        }
+
+        .show-details:hover {
+            background-color: #5a6268;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .status-info {
+            background-color: #e6f7ff;
+            border: 1px solid #91d5ff;
+            color: #0050b3;
+        }
+        
+        .status-success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        
+        .status-error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #f5222d;
+        }
     </style>
 </head>
 <body>
@@ -2466,6 +2717,7 @@ Lines: 1616
                 <label for="ownerId">Owner ID</label>
                 <input id="ownerId" type="text" placeholder="Enter Owner ID">
                 <button onclick="lookupOwner()">Look Up Owner</button>
+                <button onclick="createOwner()">Create New Owner</button>
             </div>
             
             <div class="form-group">
@@ -2473,8 +2725,14 @@ Lines: 1616
                 <input id="apiKey" type="password" placeholder="Enter API Key">
             </div>
             
+            <div class="form-group">
+                <label for="businessName">Business Name</label>
+                <input id="businessName" type="text" placeholder="Enter Business Name">
+            </div>
+            
             <div class="button-group">
                 <button id="loginButton" onclick="login()">Login</button>
+                <button id="createBusinessButton" onclick="createBusiness()">Create Business</button>
                 <span id="loginStatus" class="logged-out">Not logged in</span>
             </div>
         </div>
@@ -2485,9 +2743,15 @@ Lines: 1616
         <h2>Send Message</h2>
         <div class="message-section">
             <div class="form-group">
-                <label for="userId">Message Sender ID (different user)</label>
+                <label for="userId">Message Sender ID (User)</label>
                 <input id="userId" type="text" placeholder="Enter User ID or generate new">
                 <button onclick="document.getElementById('userId').value = generateUUID()">Generate New</button>
+                <button onclick="createUser()">Create User</button>
+            </div>
+            
+            <div class="form-group">
+                <label for="conversationId">Conversation ID (Optional)</label>
+                <input id="conversationId" type="text" placeholder="Enter Conversation ID or leave empty for new conversation">
             </div>
             
             <div class="form-group">
@@ -2496,11 +2760,16 @@ Lines: 1616
             </div>
             
             <div class="button-group">
-                <button id="sendButton" onclick="sendMessageAndDebug()">Send & Debug</button>
+                <button id="sendButton" onclick="sendMessage()">Send Message</button>
             </div>
             
             <div id="responseArea">
                 <div class="text-muted">Send a message to see the response</div>
+            </div>
+            <!-- New section to display stages -->
+            <div id="stagesArea" style="margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 4px; background-color: white;">
+                <h4>Available Stages</h4>
+                <div id="stagesList" class="text-muted">No stages available yet</div>
             </div>
         </div>
         
@@ -2518,10 +2787,92 @@ Lines: 1616
         
         <hr class="section-divider">
         
+        <!-- Template Variables Test Section -->
+        <h2>Template Variables Test</h2>
+        <div class="template-variables-section">
+            <div class="form-group">
+                <label for="templateContent">Template Content</label>
+                <textarea id="templateContent" placeholder="Enter template with variables (e.g. Hello {{user_name}}, welcome to {{business_name}}!)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="testVariables">Test Variables (JSON)</label>
+                <textarea id="testVariables" placeholder='{"user_name": "John", "business_name": "Test Business"}'></textarea>
+            </div>
+            
+            <div class="button-group">
+                <button id="testTemplateButton" onclick="testTemplate()">Test Template</button>
+            </div>
+            
+            <div id="templateTestResult" class="response-box">
+                <div class="text-muted">Test result will appear here</div>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+        
         <!-- Processing Details Section -->
         <h2>Processing Details</h2>
         <div id="processLogArea" class="process-log">
             <div class="no-logs">No processing data available yet</div>
+        </div>
+        
+        <!-- LLM Calls Debug Section -->
+        <h2>LLM Calls Debug</h2>
+        <div class="debug-controls">
+            <button onclick="showLLMDebug()" id="showLLMDebug">Show LLM Calls</button>
+            <button onclick="clearLLMDebug()" id="clearLLMDebug">Clear Debug</button>
+        </div>
+
+        <!-- Modal Window for LLM Debug -->
+        <div id="llmDebugModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>LLM Calls Debug</h2>
+                    <span class="close" onclick="closeLLMDebug()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="debug-section">
+                        <h3>Stage Selection Call</h3>
+                        <div class="call-details">
+                            <h4>Input</h4>
+                            <pre id="stageSelectionInput"></pre>
+                            <h4>System Prompt</h4>
+                            <pre id="stageSelectionSystemPrompt"></pre>
+                            <h4>Response</h4>
+                            <pre id="stageSelectionResponse"></pre>
+                            <h4>Metadata</h4>
+                            <pre id="stageSelectionMetadata"></pre>
+                        </div>
+                    </div>
+                    <div class="debug-section">
+                        <h3>Data Extraction Call</h3>
+                        <div class="call-details">
+                            <h4>Input</h4>
+                            <pre id="dataExtractionInput"></pre>
+                            <h4>System Prompt</h4>
+                            <pre id="dataExtractionSystemPrompt"></pre>
+                            <h4>Response</h4>
+                            <pre id="dataExtractionResponse"></pre>
+                            <h4>Metadata</h4>
+                            <pre id="dataExtractionMetadata"></pre>
+                        </div>
+                    </div>
+                    <div class="debug-section">
+                        <h3>Response Generation Call</h3>
+                        <div class="call-details">
+                            <h4>Input</h4>
+                            <pre id="responseGenerationInput"></pre>
+                            <h4>System Prompt</h4>
+                            <pre id="responseGenerationSystemPrompt"></pre>
+                            <h4>Response</h4>
+                            <pre id="responseGenerationResponse"></pre>
+                            <h4>Metadata</h4>
+                            <pre id="responseGenerationMetadata"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <!-- Variable Substitution Section (New) -->
@@ -2581,6 +2932,10 @@ Lines: 1616
         
         <!-- Recent Logs Section -->
         <h2>Recent Process Logs</h2>
+         <div class="form-group">
+             <label for="logsBusinessId">Business ID for Logs</label>
+             <input id="logsBusinessId" type="text" placeholder="Enter Business ID to fetch logs for">
+        </div>
         <div class="button-group">
             <button onclick="fetchRecentLogs()">Refresh Logs</button>
         </div>
@@ -2600,81 +2955,65 @@ Lines: 1616
             <div class="process-step">
                 <div class="step-header">Stage 1: Intent Detection</div>
                 <div class="step-content">
-                    <div class="prompt-box" id="intentPrompt"></div>
-                    <div class="response-box" id="intentResponse"></div>
+                    <div class="prompt-box" id="stageSelectionInput"></div>
+                    <div class="response-box" id="stageSelectionResponse"></div>
+                    <button onclick="showLLMDebug('Stage Selection')" class="show-details">Show Details</button>
                 </div>
             </div>
             
             <div class="process-step">
                 <div class="step-header">Stage 2: Data Extraction</div>
                 <div class="step-content">
-                    <div class="prompt-box" id="extractionPrompt"></div>
-                    <div class="response-box" id="extractionResponse"></div>
+                    <div class="prompt-box" id="dataExtractionInput"></div>
+                    <div class="response-box" id="dataExtractionResponse"></div>
+                    <button onclick="showLLMDebug('Data Extraction')" class="show-details">Show Details</button>
                 </div>
             </div>
             
             <div class="process-step">
                 <div class="step-header">Stage 3: Response Generation</div>
                 <div class="step-content">
-                    <div class="prompt-box" id="responsePrompt"></div>
-                    <div class="response-box" id="responseResponse"></div>
+                    <div class="prompt-box" id="responseGenerationInput"></div>
+                    <div class="response-box" id="responseGenerationResponse"></div>
+                    <button onclick="showLLMDebug('Response Generation')" class="show-details">Show Details</button>
                 </div>
             </div>
         </div>
     </div>
     
     <script>
+        // Configuration for local development
         const API_BASE_URL = 'http://127.0.0.1:5000';
-        const DEFAULT_BUSINESS_ID = '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
-        const DEFAULT_API_KEY = 'da828cae6a3e46228aa09d65ba9066e3';
+        const MASTER_API_KEY = 'cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6';
         
         // State management
         let isLoggedIn = false;
-        let currentLogId = null;
-        let lastRequestData = null;
-        let lastResponseData = null;
         
         // Initialize the app
         function init() {
+            // Pre-fill the business ID, owner ID, and API key
+            document.getElementById('businessId').value = 'bc7e1824-49b4-4056-aabe-b045a1f79e3b';
+            document.getElementById('ownerId').value = '4c38fa55-ff8c-421a-878f-c09ecdb78c7b';
+            document.getElementById('apiKey').value = 'cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6';
+            
             // Check if we're already logged in
             const savedApiKey = localStorage.getItem('businessApiKey');
             if (savedApiKey) {
-                // Pre-fill the form with the saved values
                 document.getElementById('apiKey').value = savedApiKey;
                 
                 const savedBusinessId = localStorage.getItem('businessId');
-                const savedOwnerId = localStorage.getItem('ownerId');
-                
                 if (savedBusinessId) {
                     document.getElementById('businessId').value = savedBusinessId;
-                }
-                
-                if (savedOwnerId) {
-                    document.getElementById('ownerId').value = savedOwnerId;
-                }
-                
-                // Assume we're logged in if we have all the values
-                if (savedApiKey && savedBusinessId && savedOwnerId) {
                     isLoggedIn = true;
-                    document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                    document.getElementById('loginStatus').textContent = 'Logged in';
                     document.getElementById('loginStatus').className = 'logged-in';
-                    document.getElementById('loginButton').textContent = 'Logged In';
-                    document.getElementById('loginButton').disabled = true;
                 }
-            }
-            
-            // Set default values if not already set
-            if (!document.getElementById('businessId').value) {
-                document.getElementById('businessId').value = DEFAULT_BUSINESS_ID;
             }
             
             // Generate a UUID for user_id if not already set
             if (!document.getElementById('userId').value) {
                 document.getElementById('userId').value = generateUUID();
             }
-            
-            // Initialize flow diagram
-            resetFlowDiagram();
         }
         
         // Call init when the page loads
@@ -2689,6 +3028,51 @@ Lines: 1616
             });
         }
         
+        // Show success message
+        function showSuccess(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.textContent = message;
+            responseArea.classList.remove('error');
+            responseArea.classList.add('success');
+            
+            // Also update status
+            updateStatus(message, 'success');
+        }
+        
+        // Show error message
+        function showError(message) {
+            const responseArea = document.getElementById('responseArea');
+            responseArea.textContent = message;
+            responseArea.classList.remove('success');
+            responseArea.classList.add('error');
+            
+            // Also update status
+            updateStatus('ERROR: ' + message, 'error');
+        }
+        
+        // Update status display
+        function updateStatus(message, type = 'info') {
+            const statusElem = document.getElementById('networkStatus');
+            statusElem.textContent = message;
+            
+            // Remove all status classes
+            statusElem.classList.remove('status-info', 'status-success', 'status-error');
+            
+            // Add appropriate status class
+            statusElem.classList.add('status', `status-${type}`);
+            
+            // Clear status after 5 seconds if it's not an error
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (statusElem.textContent === message) {
+                        statusElem.textContent = 'No network activity';
+                        statusElem.classList.remove('status-info', 'status-success', 'status-error');
+                        statusElem.classList.add('status');
+                    }
+                }, 5000);
+            }
+        }
+        
         // Login function
         async function login() {
             const businessId = document.getElementById('businessId').value.trim();
@@ -2700,85 +3084,174 @@ Lines: 1616
                 return;
             }
             
-            // Prepare login data
+            updateStatus('Verifying owner...', 'info');
+            
+            // Prepare login data for POST body
             const loginData = {
                 userId: ownerId,
                 businessId: businessId,
                 businessApiKey: apiKey
             };
             
-            updateStatus('Logging in...');
-            
             try {
-                const url = `${API_BASE_URL}/api/verify-owner`;
-                console.log('Verifying business owner with URL:', url);
-                
-                fetch(url, {
-                    method: 'POST',
+                const response = await fetch(`${API_BASE_URL}/api/verify-owner`, {
+                    method: 'POST', 
                     headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
                     },
                     body: JSON.stringify(loginData),
-                    credentials: 'include', // Include cookies
-                    mode: 'cors'
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        // Check response content type to determine how to parse it
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            return response.json().then(errorData => {
-                                throw new Error(`Login failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
-                            });
-                        } else {
-                            return response.text().then(text => {
-                                throw new Error(`Login failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
-                            });
-                        }
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.success) {
-                        isLoggedIn = true;
-                        showSuccess('Login successful! Owner verification confirmed.');
-                        document.getElementById('loginStatus').textContent = 'Logged in as Owner';
-                        document.getElementById('loginStatus').className = 'logged-in';
-                        document.getElementById('loginButton').textContent = 'Logged In';
-                        document.getElementById('loginButton').disabled = true;
-                        
-                        // Store credentials for subsequent requests
-                        localStorage.setItem('businessApiKey', apiKey);
-                        localStorage.setItem('businessId', businessId);
-                        localStorage.setItem('ownerId', ownerId);
-                        
-                        // Fetch recent logs after successful login
-                        fetchRecentLogs();
-                    } else {
-                        isLoggedIn = false;
-                        throw new Error(data.error || 'Login failed: Not a business owner');
-                    }
-                })
-                .catch(error => {
-                    console.error('Login error:', error);
-                    isLoggedIn = false;
-                    showError(`Login failed: ${error.message}`);
-                    document.getElementById('loginStatus').textContent = 'Not logged in';
-                    document.getElementById('loginStatus').className = 'logged-out';
+                    mode: 'cors',
+                    credentials: 'include'
                 });
                 
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) { 
+                    throw new Error(data.error || 'Owner verification failed');
+                }
+                
+                // Store credentials if verification succeeds
+                localStorage.setItem('businessApiKey', apiKey);
+                localStorage.setItem('businessId', businessId);
+                localStorage.setItem('ownerId', ownerId);
+                
+                isLoggedIn = true;
+                showSuccess('Login successful! Owner verification confirmed.');
+                document.getElementById('loginStatus').textContent = 'Logged in as Owner';
+                document.getElementById('loginStatus').className = 'logged-in';
+                document.getElementById('loginButton').textContent = 'Logged In';
+                document.getElementById('loginButton').disabled = true;
+
             } catch (error) {
                 console.error('Login error:', error);
                 isLoggedIn = false;
                 showError(`Login failed: ${error.message}`);
                 document.getElementById('loginStatus').textContent = 'Not logged in';
                 document.getElementById('loginStatus').className = 'logged-out';
+                localStorage.removeItem('businessApiKey');
+                localStorage.removeItem('businessId');
+                localStorage.removeItem('ownerId');
+                document.getElementById('loginButton').textContent = 'Login';
+                document.getElementById('loginButton').disabled = false;
             }
         }
         
-        // Send message and debug function
-        async function sendMessageAndDebug() {
+        // Function to show LLM debug modal
+        function showLLMDebug(stepType = null) {
+            const modal = document.getElementById('llmDebugModal');
+            modal.style.display = 'block';
+
+            // If a specific step type is provided, scroll to that section
+            if (stepType) {
+                const sections = document.querySelectorAll('.debug-section h3');
+                for (const section of sections) {
+                    if (section.textContent.toLowerCase().includes(stepType.toLowerCase())) {
+                        section.scrollIntoView({ behavior: 'smooth' });
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Function to close LLM debug modal
+        function closeLLMDebug() {
+            const modal = document.getElementById('llmDebugModal');
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('llmDebugModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Function to update LLM debug information
+        function updateLLMDebug(data) {
+            if (!data.processing_steps) return;
+
+            // Process each step
+            data.processing_steps.forEach(step => {
+                let stepPrefix;
+                switch(step.step) {
+                    case 'intent_detection':
+                        stepPrefix = 'stageSelection';
+                        break;
+                    case 'data_extraction':
+                        stepPrefix = 'dataExtraction';
+                        break;
+                    case 'response_generation':
+                        stepPrefix = 'responseGeneration';
+                        break;
+                    default:
+                        return;
+                }
+
+                const inputId = `${stepPrefix}Input`;
+                const systemPromptId = `${stepPrefix}SystemPrompt`;
+                const responseId = `${stepPrefix}Response`;
+                const metadataId = `${stepPrefix}Metadata`;
+
+                // Update input
+                if (document.getElementById(inputId)) {
+                    document.getElementById(inputId).textContent = step.prompt || 'No input available';
+                }
+
+                // Update system prompt
+                if (document.getElementById(systemPromptId)) {
+                    document.getElementById(systemPromptId).textContent = step.system_prompt || 'No system prompt available';
+                }
+
+                // Update response
+                if (document.getElementById(responseId)) {
+                    document.getElementById(responseId).textContent = step.response || 'No response available';
+                }
+
+                // Update metadata
+                if (document.getElementById(metadataId)) {
+                    const metadata = {
+                        'Template ID': step.template_id || 'N/A',
+                        'Template Name': step.template_name || 'N/A',
+                        'Timestamp': step.timestamp || 'N/A'
+                    };
+
+                    let metadataHtml = '';
+                    for (const [key, value] of Object.entries(metadata)) {
+                        metadataHtml += `
+                            <div class="metadata-item">
+                                <span class="metadata-label">${key}:</span>
+                                <span class="metadata-value">${value}</span>
+                            </div>
+                        `;
+                    }
+                    document.getElementById(metadataId).innerHTML = metadataHtml;
+                }
+            });
+
+            // Show the modal if there's data
+            showLLMDebug();
+        }
+
+        // Function to clear LLM debug
+        function clearLLMDebug() {
+            const elements = [
+                'stageSelectionInput', 'stageSelectionSystemPrompt', 'stageSelectionResponse', 'stageSelectionMetadata',
+                'dataExtractionInput', 'dataExtractionSystemPrompt', 'dataExtractionResponse', 'dataExtractionMetadata',
+                'responseGenerationInput', 'responseGenerationSystemPrompt', 'responseGenerationResponse', 'responseGenerationMetadata'
+            ];
+
+            elements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = 'No data available';
+                }
+            });
+        }
+
+        // Send message function
+        async function sendMessage() {
             if (!isLoggedIn) {
                 showError('You must login first before sending messages');
                 return;
@@ -2786,6 +3259,7 @@ Lines: 1616
             
             const businessId = document.getElementById('businessId').value.trim();
             const userId = document.getElementById('userId').value.trim();
+            const conversationId = document.getElementById('conversationId').value.trim() || null;
             const apiKey = document.getElementById('apiKey').value.trim();
             const message = document.getElementById('messageContent').value.trim();
             
@@ -2796,498 +3270,140 @@ Lines: 1616
             
             // Prepare message data
             const messageData = {
+                message: message,
                 business_id: businessId,
                 user_id: userId,
-                message: message
+                conversation_id: conversationId
             };
             
-            // Store request data for API inspector
-            lastRequestData = messageData;
-            document.getElementById('apiRequest').textContent = JSON.stringify(messageData, null, 2);
-            
-            // Reset flow diagram
-            resetFlowDiagram();
-            
-            updateStatus('Sending message...');
+            updateStatus('Sending message...', 'info');
+            document.getElementById('sendButton').disabled = true;
             
             try {
-                const url = `${API_BASE_URL}/api/message`;
-                console.log('Sending message to URL:', url);
-                
-                const startTime = performance.now();
-                
-                const response = await fetch(url, {
+                const response = await fetch(`${API_BASE_URL}/api/message`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'businessapikey': apiKey // Header for authentication
+                        'Authorization': `Bearer ${apiKey}`,
+                        'businessapikey': apiKey
                     },
                     body: JSON.stringify(messageData),
-                    credentials: 'include', // Include cookies
-                    mode: 'cors'
+                    credentials: 'include'
                 });
                 
                 if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        errorText = errorData.error || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                    }
-                    
-                    throw new Error(`Message failed! status: ${response.status}, message: ${errorText}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server responded with status: ${response.status}`);
                 }
                 
                 const data = await response.json();
                 
-                // Store response data for API inspector
-                lastResponseData = data;
-                document.getElementById('apiResponse').textContent = JSON.stringify(data, null, 2);
-                document.getElementById('resendButton').disabled = false;
+                // Update response area with formatted JSON
+                const responseArea = document.getElementById('responseArea');
+                responseArea.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                responseArea.classList.remove('error');
                 
-                // Calculate performance metrics
-                const endTime = performance.now();
-                const totalTime = Math.round(endTime - startTime);
-                document.getElementById('totalProcessingTime').textContent = totalTime;
-                
-                // Estimate token usage (this is a placeholder - actual implementation would need to parse the response)
-                const estimatedTokens = Math.round(message.length / 4) + Math.round((data.response || '').length / 4);
-                document.getElementById('tokenUsage').textContent = estimatedTokens;
-                
-                // Estimate cost (this is a placeholder - actual implementation would need to use real pricing)
-                const estimatedCost = (estimatedTokens / 1000) * 0.002; // $0.002 per 1K tokens
-                document.getElementById('estimatedCost').textContent = estimatedCost.toFixed(4);
-                
-                if (data.success) {
-                    showSuccess('Message sent successfully!');
-                    
-                    const responseArea = document.getElementById('responseArea');
-                    if (data.chat_window) {
-                        const { user_message, ai_response } = data.chat_window;
-                        responseArea.innerHTML = `
-                            <div class="process-step">
-                                <div class="step-header">User Message:</div>
-                                <div class="prompt-box">${user_message.content}</div>
-                            </div>
-                            <div class="process-step">
-                                <div class="step-header">AI Response:</div>
-                                <div class="response-box">${data.response}</div>
-                            </div>
-                        `;
-                    } else {
-                        responseArea.innerHTML = `
-                            <div class="response-box">${data.response}</div>
-                        `;
-                    }
-                    
-                    if (data.process_log_id) {
-                        currentLogId = data.process_log_id;
-                        setTimeout(() => fetchProcessLog(data.process_log_id), 500);
-                    } else {
-                        showError('No process log ID returned. Detailed debugging not available.');
-                    }
-                    
-                    // If processing steps are included directly in the response, update the view
-                    if (data.processing_steps && Array.isArray(data.processing_steps)) {
-                        console.log('Processing steps found in response, updating view');
-                        updateProcessingSteps(data);
-                    }
-                    
-                    setTimeout(fetchRecentLogs, 1000);
-                } else {
-                    showError(data.error || 'Unknown error sending message');
+                // Save the conversationId if one was returned and none was provided
+                if (data.conversation_id && !conversationId) {
+                    document.getElementById('conversationId').value = data.conversation_id;
                 }
                 
+                // Update processing details
+                updateProcessingDetails(data);
+                
+                // Update LLM debug information
+                updateLLMDebug(data);
+                
+                // Update performance metrics
+                updatePerformanceMetrics(data);
+                
+                // Update variable substitution
+                updateVariableSubstitution(data);
+                
+                // Update API inspector
+                updateApiInspector(messageData, data);
+                
+                // Update stages display
+                updateStagesDisplay(data);
+                
+                updateStatus('Message sent successfully!', 'success');
             } catch (error) {
-                console.error('Message error:', error);
+                console.error('Send message error:', error);
                 showError(`Failed to send message: ${error.message}`);
+            } finally {
+                document.getElementById('sendButton').disabled = false;
             }
         }
-        
-        // Fetch process log details
-        async function fetchProcessLog(logId) {
-            if (!isLoggedIn) {
-                showError('You must login first before fetching logs');
-                return;
-            }
-            
-            const businessId = document.getElementById('businessId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            if (!businessId || !apiKey || !logId) {
-                showError('Business ID, API Key, and Log ID are required to fetch processing details');
-                return;
-            }
-            
-            updateStatus('Fetching process log...');
-            
-            try {
-                const url = `${API_BASE_URL}/api/message/logs/${logId}?business_id=${encodeURIComponent(businessId)}`;
-                console.log('Fetching process log from URL:', url);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'businessapikey': apiKey // Header for authentication
-                    },
-                    credentials: 'include', // Include cookies
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        errorText = errorData.error || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                    }
-                    
-                    throw new Error(`Failed to fetch process log! status: ${response.status}, message: ${errorText}`);
-                }
-                
-                const logData = await response.json();
-                console.log('Process log data received:', logData);
-                
-                // Display the process log
-                displayProcessLog(logData);
-                
-                // Update flow diagram based on processing steps
-                updateFlowDiagram(logData);
-                
-                // Display variable substitution if available
-                displayVariableSubstitution(logData);
-                
-                // Also update the simple view stages
-                updateProcessingSteps(logData);
-                
-            } catch (error) {
-                console.error('Error fetching process log:', error);
-                showError(`Failed to fetch process log: ${error.message}`);
-            }
-        }
-        
-        // Fetch recent process logs
-        async function fetchRecentLogs() {
-            if (!isLoggedIn) {
-                showError('You must login first before fetching logs');
-                return;
-            }
-            
-            const businessId = document.getElementById('businessId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            if (!businessId || !apiKey) {
-                showError('Business ID and API Key are required to fetch recent logs');
-                return;
-            }
-            
-            updateStatus('Fetching recent logs...');
-            
-            try {
-                const url = `${API_BASE_URL}/api/message/logs/recent?business_id=${encodeURIComponent(businessId)}&limit=10`;
-                console.log('Fetching recent logs from URL:', url);
-                
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'businessapikey': apiKey // Header for authentication
-                    },
-                    credentials: 'include', // Include cookies
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        errorText = errorData.error || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                    }
-                    
-                    throw new Error(`Failed to fetch recent logs! status: ${response.status}, message: ${errorText}`);
-                }
-                
-                const logs = await response.json();
-                
-                // Display the recent logs
-                displayRecentLogs(logs);
-                
-                showSuccess('Recent logs fetched successfully!');
-                
-            } catch (error) {
-                console.error('Error fetching recent logs:', error);
-                showError(`Failed to fetch recent logs: ${error.message}`);
-            }
-        }
-        
-        // Display process log details
-        function displayProcessLog(log) {
+
+        // Function to update processing details
+        function updateProcessingDetails(data) {
             const processLogArea = document.getElementById('processLogArea');
-            
-            if (!log) {
-                processLogArea.innerHTML = '<div class="no-logs">No processing data available</div>';
-                return;
-            }
-            
-            let html = `
-                <h3>Process Log Details</h3>
-                <div class="process-step">
-                    <div class="step-header">Original Message</div>
-                    <div class="prompt-box">${log.original_message || 'N/A'}</div>
-                    <div class="text-muted">
-                        Log ID: ${log.log_id || 'N/A'}<br>
-                        Conversation ID: ${log.conversation_id || 'N/A'}<br>
-                        Time: ${formatDateTime(log.start_time) || 'N/A'}
-                    </div>
-                </div>
-                
-                <div class="process-step">
-                    <div class="step-header">Current Stage Information</div>
-                    <div class="step-content">
-                        <div><strong>Stage ID:</strong> ${log.stage_id || 'No specific stage'}</div>
-                        <div><strong>Stage Name:</strong> ${log.current_stage_name || 'Default'}</div>
-                        ${log.agent_id ? `<div><strong>Agent ID:</strong> ${log.agent_id}</div>` : ''}
-                    </div>
-                </div>
-            `;
-            
-            // Process each step
-            if (log.processing_steps && log.processing_steps.length > 0) {
-                html += `<h3>Processing Steps</h3>`;
-                
-                log.processing_steps.forEach((step, index) => {
-                    html += `
-                        <div class="process-step">
-                            <div class="step-header">${formatStepName(step.step)} (Step ${index + 1})</div>
-                            
-                            <div class="step-content">
-                                <div class="template-info">
-                                    <strong>Template:</strong> ${step.template_name || 'Unknown Template'} (${step.template_id || 'N/A'})<br>
-                                    <strong>Time:</strong> ${formatDateTime(step.timestamp) || 'N/A'}
-                                </div>
-                                
-                                ${step.system_prompt ? `
-                                <div class="system-prompt-container">
-                                    <strong>System Prompt:</strong>
-                                    <div class="system-prompt">${step.system_prompt}</div>
-                                </div>
-                                ` : ''}
-                                
-                                <div class="prompt-container">
-                                    <strong>Prompt:</strong>
-                                    <div class="prompt-box" style="white-space: pre-wrap;">${step.prompt || 'N/A'}</div>
-                                </div>
-                                
-                                <div class="response-container">
-                                    <strong>Response:</strong>
-                                    <div class="response-box" style="white-space: pre-wrap;">${step.response || 'N/A'}</div>
-                                </div>
-                            </div>
+            if (!data.processing_steps) return;
+
+            let logHtml = '<div class="log-list">';
+            data.processing_steps.forEach(step => {
+                logHtml += `
+                    <div class="log-item">
+                        <div class="step-header">${step.step}</div>
+                        <div class="step-content">
+                            <div class="prompt-box">${step.prompt || 'No prompt available'}</div>
+                            <div class="response-box">${step.response || 'No response available'}</div>
                         </div>
-                    `;
-                });
-            } else {
-                html += '<div class="no-logs">No processing steps recorded</div>';
-            }
-            
-            // Final response
-            html += `
-                <h3>Final Result</h3>
-                <div class="process-step">
-                    <div class="step-header">Final Response</div>
-                    <div class="response-box" style="white-space: pre-wrap;">${
-                        log.processing_steps
-                            .find(step => step.step === 'response_generation')?.response || 'N/A'
-                    }</div>
-                </div>
-            `;
-            
-            processLogArea.innerHTML = html;
-        }
-        
-        // Display recent logs list
-        function displayRecentLogs(logs) {
-            const recentLogsArea = document.getElementById('recentLogsArea');
-            
-            if (!logs || logs.length === 0) {
-                recentLogsArea.innerHTML = '<div class="no-logs">No recent logs available</div>';
-                return;
-            }
-            
-            let html = '<ul class="log-list">';
-            
-            logs.forEach(log => {
-                html += `
-                    <li class="log-item" onclick="fetchProcessLog('${log.log_id}')">
-                        <strong>Message:</strong> ${truncateText(log.original_message, 50)}<br>
-                        <strong>Time:</strong> ${formatDateTime(log.start_time)}<br>
-                        <span class="text-muted">Log ID: ${log.log_id}</span>
-                    </li>
+                    </div>
                 `;
             });
-            
-            html += '</ul>';
-            
-            recentLogsArea.innerHTML = html;
+            logHtml += '</div>';
+            processLogArea.innerHTML = logHtml;
         }
-        
-        // Display variable substitution
-        function displayVariableSubstitution(log) {
-            if (!log || !log.processing_steps || log.processing_steps.length === 0) {
-                document.getElementById('originalTemplate').textContent = 'No template data available';
-                document.getElementById('contextData').textContent = 'No context data available';
-                document.getElementById('substitutedTemplate').textContent = 'No substituted template available';
-                return;
-            }
-            
-            // Find the first step with template data
-            const step = log.processing_steps[0];
-            
-            if (step.template_content) {
-                // Extract variables from template (simple regex for demonstration)
-                const variables = step.template_content.match(/\{\{([^}]+)\}\}/g) || [];
-                let highlightedTemplate = step.template_content;
-                
-                // Highlight variables
-                variables.forEach(variable => {
-                    highlightedTemplate = highlightedTemplate.replace(
-                        variable, 
-                        `<span class="variable-highlight">${variable}</span>`
-                    );
+
+        // Function to update performance metrics
+        function updatePerformanceMetrics(data) {
+            if (!data.metrics) return;
+
+            const metrics = data.metrics;
+            document.getElementById('totalProcessingTime').textContent = metrics.total_processing_time || '-';
+            document.getElementById('tokenUsage').textContent = metrics.token_usage || '-';
+            document.getElementById('estimatedCost').textContent = metrics.estimated_cost || '-';
+        }
+
+        // Function to update variable substitution
+        function updateVariableSubstitution(data) {
+            if (!data.template_data) return;
+
+            const templateData = data.template_data;
+            document.getElementById('originalTemplate').textContent = templateData.original_template || 'No template available';
+            document.getElementById('contextData').textContent = JSON.stringify(templateData.context_data || {}, null, 2);
+            document.getElementById('substitutedTemplate').textContent = templateData.substituted_template || 'No substituted template available';
+        }
+
+        // Function to update API inspector
+        function updateApiInspector(requestData, responseData) {
+            document.getElementById('apiRequest').textContent = JSON.stringify(requestData, null, 2);
+            document.getElementById('apiResponse').textContent = JSON.stringify(responseData, null, 2);
+        }
+
+        // Function to update stages display
+        function updateStagesDisplay(data) {
+            const stagesList = document.getElementById('stagesList');
+            if (data.agent_stages && Array.isArray(data.agent_stages) && data.agent_stages.length > 0) {
+                let stagesHtml = '<ul>';
+                data.agent_stages.forEach(stage => {
+                    stagesHtml += `<li>${stage.stage_name} (${stage.stage_id})</li>`;
                 });
-                
-                document.getElementById('originalTemplate').innerHTML = highlightedTemplate;
+                stagesHtml += '</ul>';
+                stagesList.innerHTML = stagesHtml;
             } else {
-                document.getElementById('originalTemplate').textContent = 'No template content available';
-            }
-            
-            // Display context data if available
-            if (step.context) {
-                document.getElementById('contextData').textContent = JSON.stringify(step.context, null, 2);
-            } else {
-                document.getElementById('contextData').textContent = 'No context data available';
-            }
-            
-            // Display substituted template if available
-            if (step.substituted_template) {
-                document.getElementById('substitutedTemplate').textContent = step.substituted_template;
-            } else if (step.prompt) {
-                document.getElementById('substitutedTemplate').textContent = step.prompt;
-            } else {
-                document.getElementById('substitutedTemplate').textContent = 'No substituted template available';
+                stagesList.textContent = 'No stages available';
             }
         }
-        
-        // Reset flow diagram
-        function resetFlowDiagram() {
-            const nodes = document.querySelectorAll('.stage-node');
-            nodes.forEach(node => {
-                node.classList.remove('active', 'completed');
-            });
+
+        // Function to resend request
+        async function resendRequest() {
+            const requestData = JSON.parse(document.getElementById('apiRequest').textContent);
+            await sendMessage();
         }
-        
-        // Update flow diagram based on processing steps
-        function updateFlowDiagram(log) {
-            if (!log || !log.processing_steps || log.processing_steps.length === 0) {
-                return;
-            }
-            
-            // Reset the diagram
-            resetFlowDiagram();
-            
-            // Mark completed steps
-            const completedSteps = new Set();
-            log.processing_steps.forEach(step => {
-                completedSteps.add(step.step);
-            });
-            
-            // Update nodes based on completed steps
-            if (completedSteps.has('stage_selection')) {
-                document.getElementById('stage-selection-node').classList.add('completed');
-            }
-            
-            if (completedSteps.has('data_extraction')) {
-                document.getElementById('data-extraction-node').classList.add('completed');
-            }
-            
-            if (completedSteps.has('response_generation')) {
-                document.getElementById('response-generation-node').classList.add('completed');
-            }
-            
-            // Mark the current active step (last step in the list)
-            const lastStep = log.processing_steps[log.processing_steps.length - 1];
-            if (lastStep) {
-                const activeNode = document.getElementById(`${lastStep.step}-node`);
-                if (activeNode) {
-                    activeNode.classList.add('active');
-                }
-            }
-        }
-        
-        // Resend request function
-        function resendRequest() {
-            if (!lastRequestData) {
-                showError('No request data available to resend');
-                return;
-            }
-            
-            // Reuse the sendMessageAndDebug function with the stored request data
-            document.getElementById('messageContent').value = lastRequestData.message;
-            sendMessageAndDebug();
-        }
-        
-        // Helper functions
-        function formatStepName(stepName) {
-            if (!stepName) return 'Unknown Step';
-            
-            const names = {
-                'stage_selection': 'Stage Selection (Determining Conversation Flow)',
-                'data_extraction': 'Data Extraction (Extracting Key Information)',
-                'response_generation': 'Response Generation (Creating Final Response)'
-            };
-            
-            return names[stepName] || stepName;
-        }
-        
-        function formatDateTime(dateStr) {
-            if (!dateStr) return 'Unknown';
-            
-            try {
-                const date = new Date(dateStr);
-                return date.toLocaleString();
-            } catch (e) {
-                return dateStr;
-            }
-        }
-        
-        function truncateText(text, maxLength) {
-            if (!text) return 'N/A';
-            if (text.length <= maxLength) return text;
-            return text.substring(0, maxLength) + '...';
-        }
-        
-        function showError(message) {
-            const responseArea = document.getElementById('responseArea');
-            responseArea.innerHTML = `<div class="error">${message}</div>`;
-            updateStatus(`Error: ${message}`, true);
-        }
-        
-        function showSuccess(message) {
-            updateStatus(message, false);
-        }
-        
-        function updateStatus(message, isError = false) {
-            const statusElement = document.getElementById('networkStatus');
-            statusElement.textContent = message;
-            statusElement.className = isError ? 'error' : 'success';
-        }
-        
+
         // Look up owner ID function
         async function lookupOwner() {
             const businessId = document.getElementById('businessId').value.trim();
@@ -3304,7 +3420,7 @@ Lines: 1616
                 businessApiKey: apiKey
             };
             
-            updateStatus('Looking up owner...');
+            updateStatus('Looking up owner...', 'info');
             
             try {
                 const url = `${API_BASE_URL}/api/lookup-owner`;
@@ -3317,7 +3433,7 @@ Lines: 1616
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify(lookupData),
-                    credentials: 'include', // Include cookies
+                    credentials: 'include',
                     mode: 'cors'
                 });
                 
@@ -3346,316 +3462,173 @@ Lines: 1616
                 showError(`Failed to look up owner ID: ${error.message}`);
             }
         }
-        
-        // Add this function to save LLM calls to localStorage
-        function saveLLMCallToStorage(prompt, response) {
-            try {
-                const STORAGE_KEY = 'icmp_llm_calls';
-                
-                // Get existing calls
-                let calls = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-                
-                // Add new call
-                calls.unshift({
-                    timestamp: new Date().toISOString(),
-                    prompt: prompt,
-                    response: response
-                });
-                
-                // Keep only the last 20 calls
-                if (calls.length > 20) {
-                    calls = calls.slice(0, 20);
-                }
-                
-                // Save back to localStorage
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(calls));
-                
-                console.log('LLM call saved to localStorage');
-            } catch (error) {
-                console.error('Error saving LLM call to storage:', error);
-            }
-        }
-        
-        // Find the function that makes the LLM call and add the saveLLMCallToStorage call
-        // This is a generic example - you'll need to adapt it to your specific code
-        
-        // Example: If you have a function like this:
-        async function makeLLMCall(prompt) {
-            const businessId = document.getElementById('businessId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
+
+        // Create business function
+        async function createBusiness() {
+            const ownerId = document.getElementById('ownerId').value.trim();
+            const businessName = document.getElementById('businessName').value.trim();
             
-            if (!businessId || !apiKey) {
-                showError('Business ID and API Key are required');
+            if (!ownerId || !businessName) {
+                showError('Owner ID and Business Name are required to create a business');
                 return;
             }
             
+            updateStatus('Creating business...', 'info');
+            document.getElementById('createBusinessButton').disabled = true;
+            
             try {
-                const url = `${API_BASE_URL}/api/llm/generate`;
-                console.log('Making LLM call to URL:', url);
-                
-                const response = await fetch(url, {
+                const response = await fetch(`${API_BASE_URL}/businesses`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'businessapikey': apiKey
+                        'Authorization': `Bearer ${MASTER_API_KEY}`
                     },
                     body: JSON.stringify({
-                        business_id: businessId,
-                        input_text: prompt,
-                        call_type: 'message_handling'
-                    }),
-                    mode: 'cors',
-                    credentials: 'include'
+                        owner_id: ownerId,
+                        business_information: {
+                            business_name: businessName
+                        }
+                    })
                 });
                 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to make LLM call');
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Server responded with status: ${response.status}`);
                 }
                 
                 const data = await response.json();
                 
-                if (data.success) {
-                    // Save to localStorage
-                    saveLLMCallToStorage(prompt, data.response);
-                    
-                    // Display the response
-                    const responseArea = document.getElementById('responseArea');
-                    responseArea.innerHTML = `
-                        <div class="llm-call">
-                            <div class="call-header">LLM Response</div>
-                            <div class="response-box">${data.response}</div>
-                        </div>
-                    `;
-                    
-                    showSuccess('LLM call successful!');
-                    return data.response;
-                } else {
-                    throw new Error(data.error || 'Unknown error making LLM call');
-                }
+                // Update the business ID field with the new ID
+                document.getElementById('businessId').value = data.business_id;
                 
+                // Update the API key field with the new key
+                document.getElementById('apiKey').value = data.api_key;
+                
+                showSuccess(`Business created successfully! Business ID: ${data.business_id}`);
+                updateStatus('Business created successfully!', 'success');
             } catch (error) {
-                console.error('LLM call error:', error);
-                showError(`Failed to make LLM call: ${error.message}`);
-                return null;
+                console.error('Create business error:', error);
+                showError(`Failed to create business: ${error.message}`);
+            } finally {
+                document.getElementById('createBusinessButton').disabled = false;
             }
         }
-        
-        // Display debug info on processing steps
-        function updateProcessingSteps(log) {
-            if (!log || !log.processing_steps || !Array.isArray(log.processing_steps)) {
-                console.log('No processing steps found in log data');
+
+        // Create owner function
+        async function createOwner() {
+            updateStatus('Creating owner...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/create-owner`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${MASTER_API_KEY}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `Server responded with status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update the owner ID field with the new ID
+                document.getElementById('ownerId').value = data.owner_id;
+                
+                showSuccess(`Owner created successfully! Owner ID: ${data.owner_id}`);
+                updateStatus('Owner created successfully!', 'success');
+            } catch (error) {
+                console.error('Create owner error:', error);
+                showError(`Failed to create owner: ${error.message}`);
+            }
+        }
+
+        // Create user function
+        async function createUser() {
+            const userId = document.getElementById('userId').value.trim();
+            
+            if (!userId) {
+                showError('User ID is required');
                 return;
             }
             
-            console.log('Updating simple view with processing steps:', log.processing_steps);
-            
-            // Find each step
-            const intentStep = log.processing_steps.find(step => 
-                step.step === 'intent_detection' || step.step === 'stage_selection');
-            
-            const extractionStep = log.processing_steps.find(step => 
-                step.step === 'data_extraction');
-            
-            const responseStep = log.processing_steps.find(step => 
-                step.step === 'response_generation');
-            
-            // Update intent detection section
-            if (intentStep) {
-                console.log('Intent step found:', intentStep);
-                document.getElementById('intentPrompt').textContent = intentStep.prompt || 'No prompt data';
-                document.getElementById('intentResponse').textContent = intentStep.response || 'No response data';
-            }
-            
-            // Update data extraction section (with detailed debugging)
-            if (extractionStep) {
-                console.log('Data extraction step found:', extractionStep);
-                
-                // Display template info if available
-                let templateInfo = '';
-                if (extractionStep.template_name) {
-                    templateInfo = `Template: ${extractionStep.template_name} (${extractionStep.template_id || 'No ID'})`;
-                    
-                    // Add template info to the data extraction section header
-                    const extractionHeader = document.querySelector('.process-step:nth-child(2) .step-header');
-                    if (extractionHeader) {
-                        extractionHeader.innerHTML = `Stage 2: Data Extraction <span style="font-size: 0.8em; color: #666;">${templateInfo}</span>`;
-                    }
-                }
-                
-                // Prioritize data within extracted_data if it exists
-                let promptContent = '';
-                let responseContent = '';
-                let foundInData = false;
-                
-                if (extractionStep.extracted_data && typeof extractionStep.extracted_data === 'object') {
-                    console.log('Checking for prompt/response in extracted_data:', extractionStep.extracted_data);
-                    
-                    promptContent = extractionStep.extracted_data.prompt || '';
-                    responseContent = extractionStep.extracted_data.response || extractionStep.extracted_data.raw_extraction || '';
-                    
-                    if (promptContent || responseContent) {
-                        foundInData = true;
-                        console.log('Found prompt/response in extracted_data:', promptContent, responseContent);
-                    } else {
-                         // Fallback if extracted_data exists but has no prompt/response
-                        console.log('extracted_data exists but no prompt/response found within it. Trying top-level.');
-                        promptContent = extractionStep.prompt || '';
-                        responseContent = extractionStep.response || '';
-                        // Use entire extracted_data as fallback response if top-level response is empty
-                        if ((!responseContent || responseContent === 'N/A') && typeof extractionStep.extracted_data === 'object') {
-                             const displayData = {...extractionStep.extracted_data};
-                             delete displayData._template_info; // Don't show internal metadata
-                             responseContent = JSON.stringify(displayData, null, 2);
-                             console.log('Using cleaned extracted_data object as fallback response.');
-                        }
-                    }
-                } else {
-                    // Fallback to top-level prompt/response if extracted_data is missing
-                    console.log('extracted_data missing or not an object. Using top-level prompt/response.');
-                    promptContent = extractionStep.prompt || '';
-                    responseContent = extractionStep.response || '';
-                }
-                
-                // Clean the response content before displaying
-                const cleanedResponse = cleanExtractionResponse(responseContent);
-                
-                // Display the content we found/derived
-                document.getElementById('extractionPrompt').textContent = promptContent || "No prompt data available";
-                document.getElementById('extractionResponse').textContent = cleanedResponse || "No response data available";
-
-                // Handle UI feedback (warnings/success messages)
-                const extractionContent = document.querySelector('.process-step:nth-child(2) .step-content');
-                if (extractionContent) {
-                    // Remove any existing status messages first
-                    const existingMessages = extractionContent.querySelectorAll('.feedback-message');
-                    existingMessages.forEach(msg => msg.remove());
-
-                    if (promptContent && cleanedResponse && cleanedResponse !== 'No response data available') {
-                        // Add success message if we successfully displayed data
-                        const successDiv = document.createElement('div');
-                        successDiv.className = 'feedback-message'; // Add class for easier removal
-                        successDiv.style.color = '#28a745';
-                        successDiv.style.fontWeight = 'bold';
-                        successDiv.style.marginBottom = '10px';
-                        successDiv.innerHTML = `<p>✅ Data extraction details displayed successfully.</p>`;
-                        if (extractionContent.firstChild) {
-                            extractionContent.insertBefore(successDiv, extractionContent.firstChild);
-                        } else {
-                            extractionContent.appendChild(successDiv);
-                        }
-                    } else {
-                        // Add warning if data seems missing or incomplete
-                        const warningDiv = document.createElement('div');
-                        warningDiv.className = 'feedback-message'; // Add class for easier removal
-                        warningDiv.style.color = '#dc3545';
-                        warningDiv.style.fontWeight = 'bold';
-                        warningDiv.style.marginBottom = '10px';
-                        warningDiv.innerHTML = `<p>⚠️ WARNING: Could not display complete data extraction details.</p>
-                            <p>Check the following:</p>
-                            <ul>
-                                <li>Review the raw 'processing_steps' data in the browser console.</li>
-                                <li>Verify the data extraction template (ID: ${extractionStep.template_id || 'None'}) is configured correctly.</li>
-                                <li>Ensure the backend service ('data_extraction_service.py' or similar) returns data in the expected format.</li>
-                            </ul>`;
-                        if (extractionContent.firstChild) {
-                            extractionContent.insertBefore(warningDiv, extractionContent.firstChild);
-                        } else {
-                            extractionContent.appendChild(warningDiv);
-                        }
-                    }
-                }
-            }
-            
-            // Update response generation section
-            if (responseStep) {
-                console.log('Response step found:', responseStep);
-                document.getElementById('responsePrompt').textContent = responseStep.prompt || 'No prompt data';
-                document.getElementById('responseResponse').textContent = responseStep.response || 'No response data';
-            }
+            updateStatus('User will be created automatically when sending first message', 'info');
+            showSuccess(`User ID ${userId} will be created automatically when sending first message`);
         }
-        
-        // Display message response
-        function displayMessageResponse(data) {
-            if (data.success) {
-                // Check if processing_steps exists before trying to access it
-                if (data.processing_steps && Array.isArray(data.processing_steps)) {
-                    // Display Stage 1: Intent Detection
-                    const intentStep = data.processing_steps.find(step => step.step === 'intent_detection');
-                    document.getElementById('intentPrompt').textContent = intentStep?.prompt || '';
-                    document.getElementById('intentResponse').textContent = intentStep?.response || '';
-                    
-                    // Display Stage 2: Data Extraction
-                    const extractionStep = data.processing_steps.find(step => step.step === 'data_extraction');
-                    document.getElementById('extractionPrompt').textContent = extractionStep?.prompt || '';
-                    document.getElementById('extractionResponse').textContent = cleanExtractionResponse(extractionStep?.response || '');
-                    
-                    // Display Stage 3: Response Generation
-                    const responseStep = data.processing_steps.find(step => step.step === 'response_generation');
-                    document.getElementById('responsePrompt').textContent = responseStep?.prompt || '';
-                    document.getElementById('responseResponse').textContent = responseStep?.response || '';
-                } else {
-                    // If no processing steps, display a message
-                    document.getElementById('intentPrompt').textContent = 'No processing steps available';
-                    document.getElementById('intentResponse').textContent = '';
-                    document.getElementById('extractionPrompt').textContent = 'No processing steps available';
-                    document.getElementById('extractionResponse').textContent = '';
-                    document.getElementById('responsePrompt').textContent = 'No processing steps available';
-                    document.getElementById('responseResponse').textContent = '';
-                }
-                
-                // Update chat window
-                if (data.chat_window) {
-                    updateChatWindow(data.chat_window);
-                }
-            } else {
-                document.getElementById('responseArea').textContent = 'Error: ' + data.error;
-                document.getElementById('responseArea').classList.add('error');
+
+        // Test template function
+        async function testTemplate() {
+            if (!isLoggedIn) {
+                showError('You must login first before testing templates');
+                return;
             }
-        }
-        
-        // Helper function to clean up extraction responses
-        function cleanExtractionResponse(response) {
-            if (!response) return '';
             
+            const templateContent = document.getElementById('templateContent').value.trim();
+            const testVariables = document.getElementById('testVariables').value.trim();
+            const businessId = document.getElementById('businessId').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            
+            if (!templateContent) {
+                showError('Template content is required');
+                return;
+            }
+            
+            let variables = {};
             try {
-                // If it's a JSON string, try to parse it
-                if (typeof response === 'string' && 
-                    (response.trim().startsWith('{') || response.trim().startsWith('['))) {
-                    
-                    const parsed = JSON.parse(response);
-                    
-                    // If it contains basic_info and contact_info, focus on those
-                    if (parsed.basic_info || parsed.contact_info) {
-                        // Create a clean object with just the extracted data
-                        const cleanData = {};
-                        if (parsed.basic_info) cleanData.basic_info = parsed.basic_info;
-                        if (parsed.contact_info) cleanData.contact_info = parsed.contact_info;
-                        
-                        return JSON.stringify(cleanData, null, 2);
-                    }
-                    
-                    // Remove metadata fields if present
-                    if (typeof parsed === 'object') {
-                        const cleanData = {...parsed};
-                        delete cleanData._template_info;
-                        delete cleanData.prompt;
-                        delete cleanData.processed_content;
-                        delete cleanData.processed_system_prompt;
-                        
-                        return JSON.stringify(cleanData, null, 2);
-                    }
-                    
-                    // Otherwise, just return the formatted JSON
-                    return JSON.stringify(parsed, null, 2);
+                if (testVariables) {
+                    variables = JSON.parse(testVariables);
                 }
             } catch (e) {
-                console.log('Error cleaning extraction response:', e);
+                showError('Invalid JSON in test variables');
+                return;
             }
             
-            // Return the original response if not JSON or if parsing fails
-            return response;
+            updateStatus('Testing template...', 'info');
+            document.getElementById('testTemplateButton').disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/templates/test-template`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${MASTER_API_KEY}`,
+                        'businessapikey': apiKey
+                    },
+                    body: JSON.stringify({
+                        template: templateContent,
+                        variables: variables,
+                        business_id: businessId
+                    }),
+                    credentials: 'include'
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Update template test result
+                const resultArea = document.getElementById('templateTestResult');
+                resultArea.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                resultArea.classList.remove('error');
+                
+                updateStatus('Template test completed successfully!', 'success');
+            } catch (error) {
+                console.error('Template test error:', error);
+                const resultArea = document.getElementById('templateTestResult');
+                resultArea.textContent = `Error: ${error.message}`;
+                resultArea.classList.add('error');
+                updateStatus('Template test failed!', 'error');
+            } finally {
+                document.getElementById('testTemplateButton').disabled = false;
+            }
         }
     </script>
 </body>
@@ -7902,11 +7875,11 @@ Lines: 946
 ================================================================================
 File: variable_test.html
 Path: .\variable_test.html
-Size: 18680
-Modified: 2025-04-14T16:47:50.774981
+Size: 18099
+Modified: 2025-05-02T15:21:54.616300
 Created: 2025-04-14T16:17:12.912515
-Hash: 2ec0221fe932bd6aa918cf5fbfb36a7a0994466077e0acd0a82c3354ab3fe2c3
-Lines: 486
+Hash: 803cea82ae76d254a1865c5205891266d6cc44617dc81c6259f1e58d6138af65
+Lines: 471
 ================================================================================
 <!DOCTYPE html>
 <html lang="en">
@@ -8050,19 +8023,11 @@ Lines: 486
             <h2>Authentication</h2>
             <div class="form-group">
                 <label for="businessId">Business ID</label>
-                <input type="text" id="businessId" placeholder="Enter Business ID">
+                <input type="text" id="businessId" placeholder="Enter Business ID" value="bc7e1824-49b4-4056-aabe-b045a1f79e3b">
             </div>
             <div class="form-group">
-                <label for="apiKey">API Key</label>
-                <input type="password" id="apiKey" placeholder="Enter API Key">
-            </div>
-            <div class="form-group">
-                <label for="ownerId">Owner ID</label>
-                <input type="text" id="ownerId" placeholder="Enter Owner ID">
-            </div>
-            <div class="form-group">
-                <label for="userId">User ID</label>
-                <input type="text" id="userId" placeholder="Enter User ID">
+                <label for="apiKey">Master API Key</label>
+                <input type="password" id="apiKey" placeholder="Enter Master API Key" value="cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6">
             </div>
             <button onclick="authenticate()">Authenticate</button>
             <button onclick="clearAuth()" style="background-color: var(--error-color);">Clear Auth</button>
@@ -8125,9 +8090,15 @@ Lines: 486
         const config = {
             baseUrl: 'http://localhost:5000',
             businessId: '',
-            apiKey: '',
-            ownerId: '',
-            userId: ''
+            apiKey: ''
+        };
+
+        // Common headers for all requests
+        const commonHeaders = {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-API-Key': config.apiKey,
+            'businessapikey': config.apiKey
         };
 
         // Show status message
@@ -8141,112 +8112,97 @@ Lines: 486
         function clearAuth() {
             localStorage.removeItem('businessId');
             localStorage.removeItem('apiKey');
-            localStorage.removeItem('ownerId');
-            localStorage.removeItem('userId');
             
             document.getElementById('businessId').value = '';
             document.getElementById('apiKey').value = '';
-            document.getElementById('ownerId').value = '';
-            document.getElementById('userId').value = '';
             
             config.businessId = '';
             config.apiKey = '';
-            config.ownerId = '';
-            config.userId = '';
             
             document.getElementById('variablesSection').classList.add('hidden');
             showStatus('Authentication cleared', 'success');
+        }
+
+        // Handle CORS error
+        function handleCorsError(error) {
+            console.error('CORS Error:', error);
+            showStatus('CORS Error: Please ensure the API server is running and CORS is enabled.', 'error');
         }
 
         // Authenticate user
         async function authenticate() {
             const businessId = document.getElementById('businessId').value.trim();
             const apiKey = document.getElementById('apiKey').value.trim();
-            const ownerId = document.getElementById('ownerId').value.trim();
-            const userId = document.getElementById('userId').value.trim();
 
-            if (!businessId || !apiKey || !ownerId || !userId) {
-                showStatus('Please fill in all authentication fields', 'error');
+            if (!businessId || !apiKey) {
+                showStatus('Please enter both Business ID and API Key', 'error');
                 return;
             }
 
             try {
-                // Test authentication with both business and owner verification
-                const response = await fetch(`${config.baseUrl}/api/verify-owner`, {
+                const response = await fetch(`${config.baseUrl}/api/validate-credentials`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Accept': 'application/json',
+                        ...commonHeaders,
+                        'X-API-Key': apiKey,
                         'businessapikey': apiKey
                     },
                     body: JSON.stringify({
-                        userId: ownerId,
-                        businessId: businessId,
-                        businessApiKey: apiKey
+                        business_id: businessId,
+                        api_key: apiKey
                     }),
-                    credentials: 'include',
-                    mode: 'cors'
+                    mode: 'cors',
+                    credentials: 'include'
                 });
 
-                if (!response.ok) {
-                    throw new Error('Authentication failed');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.valid || data.status === 'success') {
+                        config.businessId = businessId;
+                        config.apiKey = apiKey;
+
+                        // Store in localStorage
+                        localStorage.setItem('businessId', businessId);
+                        localStorage.setItem('apiKey', apiKey);
+
+                        document.getElementById('variablesSection').classList.remove('hidden');
+                        showStatus('Authentication successful', 'success');
+                        loadVariables();
+                    } else {
+                        showStatus(`Authentication failed: ${data.message || 'Invalid credentials'}`, 'error');
+                    }
+                } else {
+                    const error = await response.json();
+                    showStatus(`Authentication failed: ${error.message || 'Unknown error'}`, 'error');
                 }
-
-                const authResult = await response.json();
-                if (!authResult.success) {
-                    throw new Error(authResult.message || 'Authentication failed');
-                }
-
-                // Store credentials in config and localStorage
-                config.businessId = businessId;
-                config.apiKey = apiKey;
-                config.ownerId = ownerId;
-                config.userId = userId;
-
-                localStorage.setItem('businessId', businessId);
-                localStorage.setItem('apiKey', apiKey);
-                localStorage.setItem('ownerId', ownerId);
-                localStorage.setItem('userId', userId);
-
-                // Show variables section
-                document.getElementById('variablesSection').classList.remove('hidden');
-                showStatus('Authentication successful', 'success');
-
-                // Load variables
-                loadVariables();
-
             } catch (error) {
-                showStatus(`Authentication failed: ${error.message}`, 'error');
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    handleCorsError(error);
+                } else {
+                    showStatus(`Error during authentication: ${error.message}`, 'error');
+                }
             }
         }
 
-        // Load variables from database
+        // Load variables
         async function loadVariables() {
             try {
-                const response = await fetch(`${config.baseUrl}/api/variables/?business_id=${config.businessId}&owner_id=${config.ownerId}`, {
+                const response = await fetch(`${config.baseUrl}/api/variables`, {
                     headers: {
-                        'Authorization': `Bearer ${config.apiKey}`,
-                        'Accept': 'application/json',
-                        'businessapikey': config.apiKey
+                        ...commonHeaders,
+                        'Authorization': `Bearer ${config.apiKey}`
                     },
-                    credentials: 'include',
-                    mode: 'cors'
+                    mode: 'cors',
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
                     throw new Error('Failed to load variables');
                 }
 
-                const data = await response.json();
-                const variables = data.variables || data; // Handle both array and object with variables property
+                const variables = await response.json();
                 const variablesList = document.getElementById('variablesList');
                 
-                if (!Array.isArray(variables) || variables.length === 0) {
-                    variablesList.innerHTML = '<p>No variables found</p>';
-                    return;
-                }
-
                 let html = '';
                 variables.forEach(variable => {
                     const name = variable.variable_name || variable.name || 'Unnamed';
@@ -8266,7 +8222,11 @@ Lines: 486
                 variablesList.innerHTML = html;
 
             } catch (error) {
-                showStatus(`Error loading variables: ${error.message}`, 'error');
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    handleCorsError(error);
+                } else {
+                    showStatus(`Error loading variables: ${error.message}`, 'error');
+                }
             }
         }
 
@@ -8279,85 +8239,80 @@ Lines: 486
             }
 
             try {
-                const response = await fetch(`${config.baseUrl}/api/variables/test-substitution/`, {
+                const response = await fetch(`${config.baseUrl}/api/test-substitution`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${config.apiKey}`,
-                        'Accept': 'application/json',
-                        'businessapikey': config.apiKey
+                        ...commonHeaders,
+                        'Authorization': `Bearer ${config.apiKey}`
                     },
                     body: JSON.stringify({
                         business_id: config.businessId,
-                        owner_id: config.ownerId,
-                        user_id: config.userId,
                         template: template
                     }),
-                    credentials: 'include',
-                    mode: 'cors'
+                    mode: 'cors',
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
-                    throw new Error('Substitution test failed');
+                    throw new Error('Failed to test substitution');
                 }
 
                 const result = await response.json();
-                
-                const resultDiv = document.getElementById('substitutionResult');
                 const resultContent = document.getElementById('resultContent');
+                const substitutionResult = document.getElementById('substitutionResult');
                 
-                resultDiv.classList.remove('hidden');
                 resultContent.textContent = JSON.stringify(result, null, 2);
-                
+                substitutionResult.classList.remove('hidden');
                 showStatus('Substitution test completed', 'success');
 
             } catch (error) {
-                showStatus(`Error testing substitution: ${error.message}`, 'error');
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    handleCorsError(error);
+                } else {
+                    showStatus(`Error testing substitution: ${error.message}`, 'error');
+                }
             }
         }
 
         // Add new variable
         async function addVariable() {
-            const variableName = document.getElementById('variableName').value.trim();
+            const name = document.getElementById('variableName').value.trim();
             const description = document.getElementById('variableDescription').value.trim();
             const category = document.getElementById('variableCategory').value.trim();
             const defaultValue = document.getElementById('defaultValue').value.trim();
             const isDynamic = document.getElementById('isDynamic').checked;
 
-            if (!variableName || !description || !category) {
-                showStatus('Please fill in all required fields', 'error');
+            if (!name) {
+                showStatus('Please enter a variable name', 'error');
                 return;
             }
 
             try {
-                const response = await fetch(`${config.baseUrl}/api/variables/?business_id=${config.businessId}`, {
+                const response = await fetch(`${config.baseUrl}/api/variables`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${config.apiKey}`,
-                        'Accept': 'application/json',
-                        'businessapikey': config.apiKey
+                        ...commonHeaders,
+                        'Authorization': `Bearer ${config.apiKey}`
                     },
                     body: JSON.stringify({
                         business_id: config.businessId,
-                        name: variableName,
+                        variable_name: name,
                         description: description,
                         category: category,
                         default_value: defaultValue,
                         is_dynamic: isDynamic
                     }),
-                    credentials: 'include',
-                    mode: 'cors'
+                    mode: 'cors',
+                    credentials: 'include'
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to add variable');
+                    throw new Error('Failed to add variable');
                 }
 
-                const result = await response.json();
                 showStatus('Variable added successfully', 'success');
-
+                loadVariables();
+                
                 // Clear form
                 document.getElementById('variableName').value = '';
                 document.getElementById('variableDescription').value = '';
@@ -8365,32 +8320,35 @@ Lines: 486
                 document.getElementById('defaultValue').value = '';
                 document.getElementById('isDynamic').checked = false;
 
-                // Reload variables list
-                loadVariables();
-
             } catch (error) {
-                showStatus(`Error adding variable: ${error.message}`, 'error');
+                if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                    handleCorsError(error);
+                } else {
+                    showStatus(`Error adding variable: ${error.message}`, 'error');
+                }
             }
         }
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', () => {
-            // Check for stored credentials
-            const storedBusinessId = localStorage.getItem('businessId');
-            const storedApiKey = localStorage.getItem('apiKey');
-            const storedOwnerId = localStorage.getItem('ownerId');
-            const storedUserId = localStorage.getItem('userId');
-
-            if (storedBusinessId && storedApiKey && storedOwnerId && storedUserId) {
-                document.getElementById('businessId').value = storedBusinessId;
-                document.getElementById('apiKey').value = storedApiKey;
-                document.getElementById('ownerId').value = storedOwnerId;
-                document.getElementById('userId').value = storedUserId;
-                
-                // Auto authenticate if we have stored credentials
-                authenticate();
+        // Load saved credentials on page load
+        window.onload = function() {
+            const savedBusinessId = localStorage.getItem('businessId');
+            const savedApiKey = localStorage.getItem('apiKey');
+            
+            if (savedBusinessId && savedApiKey) {
+                document.getElementById('businessId').value = savedBusinessId;
+                document.getElementById('apiKey').value = savedApiKey;
+                config.businessId = savedBusinessId;
+                config.apiKey = savedApiKey;
+                document.getElementById('variablesSection').classList.remove('hidden');
+                loadVariables();
+            } else {
+                // Set default values if no saved credentials
+                document.getElementById('businessId').value = 'bc7e1824-49b4-4056-aabe-b045a1f79e3b';
+                document.getElementById('apiKey').value = 'cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6';
+                config.businessId = 'bc7e1824-49b4-4056-aabe-b045a1f79e3b';
+                config.apiKey = 'cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6';
             }
-        });
+        };
     </script>
 </body>
 </html> 
@@ -8623,11 +8581,284 @@ If the customer seems urgent or upset, express understanding and promise quick a
 </html> 
 
 ================================================================================
+File: enhanced_dashboard.html
+Path: .\backend\templates\enhanced_dashboard.html
+Size: 10751
+Modified: 2025-05-04T01:54:58.653957
+Created: 2025-05-04T01:36:36.033553
+Hash: 8d4e3a798b25bb08f0a7e9543ee03e235922ba364eae90c35a5eeed93a2c17c0
+Lines: 263
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICMP Monitoring Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        .dashboard-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .dashboard-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .plot-container {
+            width: 100%;
+            height: 400px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        .stat-card p {
+            margin: 10px 0 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-card">
+            <h2>Overview</h2>
+            <div class="stats-grid" id="overview-stats"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Performance Trends</h2>
+            <div class="plot-container" id="trend-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Pattern Analysis</h2>
+            <div class="plot-container" id="pattern-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Error Analysis</h2>
+            <div class="plot-container" id="error-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Template Performance</h2>
+            <div class="plot-container" id="template-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Processing Pipeline</h2>
+            <div class="plot-container" id="pipeline-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>AI Performance</h2>
+            <div class="plot-container" id="ai-plot"></div>
+        </div>
+        <div class="dashboard-card">
+            <h2>Error Patterns</h2>
+            <div class="plot-container" id="error-pattern-plot"></div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchDashboardData() {
+            try {
+                const response = await fetch('/api/monitoring/all');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('API Response:', data);  // Log the response
+                console.log('AI Performance Data:', data.ai_performance);  // Log AI performance data specifically
+                
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Invalid response format');
+                }
+                
+                updateDashboard(data);
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                // Show error message in all plots
+                showErrorPlot('trend-plot', 'Performance Trends');
+                showErrorPlot('pattern-plot', 'Pattern Analysis');
+                showErrorPlot('error-plot', 'Error Analysis');
+                showErrorPlot('template-plot', 'Template Performance');
+                showErrorPlot('pipeline-plot', 'Processing Pipeline');
+                showErrorPlot('ai-plot', 'AI Performance');
+                showErrorPlot('error-pattern-plot', 'Error Patterns');
+            }
+        }
+
+        function updateAIPerformance(data) {
+            console.log('updateAIPerformance called with:', data);  // Log the data
+            if (!data) {
+                console.error('AI performance data is missing');
+                showErrorPlot('ai-plot', 'AI Performance');
+                return;
+            }
+
+            try {
+                // The data structure is data.data.ai_plot
+                if (data.data && data.data.ai_plot && typeof data.data.ai_plot === 'string') {
+                    console.log('AI plot data:', data.data.ai_plot);  // Log the plot data
+                    const aiPlotData = JSON.parse(data.data.ai_plot);
+                    if (!aiPlotData.data || !aiPlotData.layout) {
+                        throw new Error('Invalid plot data structure');
+                    }
+                    Plotly.newPlot('ai-plot', aiPlotData.data, aiPlotData.layout);
+                } else {
+                    console.error('AI plot data is missing or invalid');
+                    showErrorPlot('ai-plot', 'AI Performance');
+                }
+            } catch (e) {
+                console.error('Error parsing AI plot data:', e);
+                showErrorPlot('ai-plot', 'AI Performance');
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update overview stats
+            if (data.overview) {
+                const overviewStats = document.getElementById('overview-stats');
+                overviewStats.innerHTML = `
+                    <div class="stat-card">
+                        <h3>Total Extractions</h3>
+                        <p>${data.overview.total_extractions || 0}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Success Rate</h3>
+                        <p>${((data.overview.success_rate || 0) * 100).toFixed(1)}%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Recent Extractions</h3>
+                        <p>${data.overview.recent_extractions || 0}</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Recent Success Rate</h3>
+                        <p>${((data.overview.recent_success_rate || 0) * 100).toFixed(1)}%</p>
+                    </div>
+                `;
+            }
+
+            // Update plots
+            if (data.performance_trends?.trend_plot) {
+                try {
+                    const trendPlotData = JSON.parse(data.performance_trends.trend_plot);
+                    Plotly.newPlot('trend-plot', trendPlotData.data, trendPlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing trend plot data:', e);
+                    showErrorPlot('trend-plot', 'Performance Trends');
+                }
+            }
+            if (data.pattern_analysis?.pattern_plot) {
+                try {
+                    const patternPlotData = JSON.parse(data.pattern_analysis.pattern_plot);
+                    Plotly.newPlot('pattern-plot', patternPlotData.data, patternPlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing pattern plot data:', e);
+                    showErrorPlot('pattern-plot', 'Pattern Analysis');
+                }
+            }
+            if (data.error_analysis?.error_plot) {
+                try {
+                    const errorPlotData = JSON.parse(data.error_analysis.error_plot);
+                    Plotly.newPlot('error-plot', errorPlotData.data, errorPlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing error plot data:', e);
+                    showErrorPlot('error-plot', 'Error Analysis');
+                }
+            }
+            if (data.template_performance?.template_plot) {
+                try {
+                    const templatePlotData = JSON.parse(data.template_performance.template_plot);
+                    Plotly.newPlot('template-plot', templatePlotData.data, templatePlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing template plot data:', e);
+                    showErrorPlot('template-plot', 'Template Performance');
+                }
+            }
+            if (data.pipeline_metrics?.pipeline_plot) {
+                try {
+                    const pipelinePlotData = JSON.parse(data.pipeline_metrics.pipeline_plot);
+                    Plotly.newPlot('pipeline-plot', pipelinePlotData.data, pipelinePlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing pipeline plot data:', e);
+                    showErrorPlot('pipeline-plot', 'Processing Pipeline');
+                }
+            }
+            if (data.error_patterns?.error_pattern_plot) {
+                try {
+                    const errorPatternPlotData = JSON.parse(data.error_patterns.error_pattern_plot);
+                    Plotly.newPlot('error-pattern-plot', errorPatternPlotData.data, errorPatternPlotData.layout);
+                } catch (e) {
+                    console.error('Error parsing error pattern plot data:', e);
+                    showErrorPlot('error-pattern-plot', 'Error Patterns');
+                }
+            }
+
+            // Update AI performance separately
+            if (data.ai_performance) {
+                console.log('Passing AI performance data:', data.ai_performance);
+                updateAIPerformance(data.ai_performance);
+            } else {
+                console.error('AI performance data is missing in the response');
+                showErrorPlot('ai-plot', 'AI Performance');
+            }
+        }
+
+        function showErrorPlot(containerId, title) {
+            Plotly.newPlot(containerId, [{
+                type: 'scatter',
+                mode: 'text',
+                text: ['Error loading data'],
+                textposition: 'middle center',
+                showlegend: false
+            }], {
+                title: title,
+                xaxis: {visible: false},
+                yaxis: {visible: false}
+            });
+        }
+
+        // Initial fetch
+        fetchDashboardData();
+
+        // Refresh every 30 seconds
+        setInterval(fetchDashboardData, 30000);
+    </script>
+</body>
+</html> 
+
+================================================================================
 File: index.html
 Path: .\front-end\build\index.html
 Size: 644
-Modified: 2025-04-19T15:46:53.331010
-Created: 2025-04-19T15:46:53.330013
+Modified: 2025-05-09T13:24:34.326231
+Created: 2025-05-09T18:24:32.411789
 Hash: ccf28357dcab781c80c1602991683c90f65ee50d9cb9d019e24591c22d6fe11a
 Lines: 1
 ================================================================================
@@ -8636,10 +8867,10 @@ Lines: 1
 ================================================================================
 File: llm_calls.html
 Path: .\front-end\build\llm_calls.html
-Size: 49622
-Modified: 2025-04-12T20:05:10.204258
-Created: 2025-04-19T15:27:02.813012
-Hash: 759827deca2b9392fef5969bd448331c12765f296cf07d4465ce08f1371af230
+Size: 49621
+Modified: 2025-05-09T13:24:34.375372
+Created: 2025-05-09T18:24:32.427596
+Hash: 3b03e977d4219a57cc38e69ea2cd0ba21cd92102b51912ed5e1c854fcf0f7e45
 Lines: 1231
 ================================================================================
 <!DOCTYPE html>
@@ -9872,16 +10103,16 @@ Lines: 1231
         }
     </script>
 </body>
-</html> 
+</html>
 
 ================================================================================
 File: index.html
 Path: .\front-end\public\index.html
-Size: 1732
-Modified: 2025-03-28T20:53:49.300789
-Created: 2025-03-28T18:53:29.978142
-Hash: 307f07b92069c7c77fa7c51a0a2d5103619a48f010cfb4bb678ac94cbbf22c3f
-Lines: 44
+Size: 1730
+Modified: 2025-05-09T13:24:34.495768
+Created: 2025-05-09T18:24:32.509653
+Hash: 8345056bd993c30b3f3e900d13849401fb060581fc3d48bdf0f398862b37c598
+Lines: 43
 ================================================================================
 <!DOCTYPE html>
 <html lang="en">
@@ -9927,873 +10158,543 @@ Lines: 44
   </body>
 </html>
 
-
 ================================================================================
-File: debugger.html
-Path: .\frontend\public\debugger.html
-Size: 36501
-Modified: 2025-04-25T12:58:31.554542
-Created: 2025-04-25T12:58:31.553543
-Hash: 0ff73ee22731f67db09b3de3abaa3a40d3c88d3678ce450120e737902ec81a56
-Lines: 860
+File: dashboard.html
+Path: .\templates\dashboard.html
+Size: 7639
+Modified: 2025-05-03T19:49:18.173793
+Created: 2025-05-03T19:49:15.923873
+Hash: 19860db9915cf06bc37836cff8798fff74ac1eb7b0ff268748d00d035a6cbfd4
+Lines: 214
 ================================================================================
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICMP Message Processing Debugger</title>
+    <title>Data Extraction Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Custom CSS -->
     <style>
-        :root {
-            --primary-color: #007bff;
-            --primary-hover: #0056b3;
-            --error-color: #dc3545;
-            --success-color: #28a745;
-            --border-color: #ddd;
-            --bg-light: #f5f5f5;
-            --text-color: #333;
-        }
-
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6; 
-            padding: 0;
-            margin: 0;
-            display: flex;
-            background-color: var(--bg-light);
-            color: var(--text-color);
-        }
-
-        .main-content {
-            flex: 1;
-            max-width: 1200px;
-            padding: 20px;
-            margin: 0 auto;
+        .dashboard-card {
             background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            min-height: 100vh;
-        }
-
-        label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        input[type="text"], 
-        input[type="password"], 
-        textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-size: 14px;
-            transition: border-color 0.2s;
-        }
-
-        input[type="text"]:focus,
-        input[type="password"]:focus,
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-        }
-
-        textarea { 
-            height: 120px; 
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: background-color 0.2s;
-            margin-right: 10px;
-        }
-
-        button:hover { 
-            background-color: var(--primary-hover);
-        }
-        
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 10px;
-            margin: 20px 0;
-        }
-
-        #responseArea {
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            background-color: white;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: monospace;
-            font-size: 14px;
-            line-height: 1.4;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .error { 
-            color: var(--error-color);
-            border-color: var(--error-color);
-            background-color: #fff5f5;
-        }
-
-        .success {
-            color: var(--success-color);
-            border-color: var(--success-color);
-            background-color: #f0fff4;
-        }
-
-        h1, h2, h3 {
-            color: var(--text-color);
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
             margin-bottom: 20px;
         }
-
-        .section-divider {
-            margin: 30px 0;
-            border: none;
-            border-top: 1px solid var(--border-color);
+        .stat-card {
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
         }
-
-        .process-step {
-            margin: 20px 0;
-            padding: 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background-color: white;
-        }
-
-        .step-header {
-            font-weight: bold;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .step-content {
-            padding: 10px;
-            background-color: #f8f9fa;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-
-        .prompt-box, .response-box {
-            font-family: monospace;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-
-        .prompt-box {
-            background-color: #f0f8ff;
-            border: 1px solid #b8daff;
-        }
-
-        .response-box {
-            background-color: #f0fff4;
-            border: 1px solid #c3e6cb;
-        }
-
-        .system-prompt {
-            font-style: italic;
-            color: #6c757d;
-            background-color: #f8f9fa;
-            padding: 8px;
-            border-radius: 4px;
-            margin: 5px 0;
-        }
-
-        .text-muted {
-            color: #6c757d;
-            font-size: 0.9em;
-        }
-
-        .logged-in {
-            color: var(--success-color);
+        .stat-value {
+            font-size: 2rem;
             font-weight: bold;
         }
-
-        .logged-out {
-            color: var(--error-color);
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.8;
         }
-
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 10px;
-            }
-            
-            .button-group {
-                flex-direction: column;
-            }
-            
-            button {
-                width: 100%;
-                margin-bottom: 5px;
-            }
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
         }
     </style>
 </head>
-<body>
-    <div class="main-content">
-        <h1>ICMP Message Processing Debugger</h1>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <h1 class="mb-4">Data Extraction Dashboard</h1>
         
-        <!-- Login Section -->
-        <h2>Login</h2>
-        <div class="login-section">
-            <div class="form-group">
-                <label for="businessId">Business ID</label>
-                <input id="businessId" type="text" placeholder="Enter Business ID">
-            </div>
-            
-            <div class="form-group">
-                <label for="ownerId">Owner ID</label>
-                <input id="ownerId" type="text" placeholder="Enter Owner ID">
-                <button onclick="lookupOwner()">Look Up Owner</button>
-            </div>
-            
-            <div class="form-group">
-                <label for="apiKey">API Key</label>
-                <input id="apiKey" type="password" placeholder="Enter API Key">
-            </div>
-            
-            <div class="button-group">
-                <button id="loginButton" onclick="login()">Login</button>
-                <span id="loginStatus" class="logged-out">Not logged in</span>
-            </div>
-            <div id="networkStatus" class="text-muted">Ready</div>
-        </div>
-        
-        <hr class="section-divider">
-        
-        <!-- Message Sending Section -->
-        <h2>Send Message</h2>
-        <div class="message-section">
-            <div class="form-group">
-                <label for="userId">Message Sender ID</label>
-                <input id="userId" type="text" placeholder="Enter User ID or generate new">
-                <button onclick="document.getElementById('userId').value = generateUUID()">Generate New</button>
-            </div>
-            
-            <div class="form-group">
-                <label for="messageContent">Message Content</label>
-                <textarea id="messageContent" placeholder="Enter your message"></textarea>
-            </div>
-            
-            <div class="button-group">
-                <button id="sendButton" onclick="sendMessageAndDebug()">Send & Debug</button>
-            </div>
-            
-            <div id="responseArea">
-                <div class="text-muted">Send a message to see the response</div>
-            </div>
-        </div>
-        
-        <hr class="section-divider">
-        
-        <!-- Process Steps Section -->
-        <div class="process-steps">
-            <div class="process-step">
-                <div class="step-header">Stage 1: Intent Detection</div>
-                <div class="step-content">
-                    <div class="prompt-box" id="intentPrompt"></div>
-                    <div class="response-box" id="intentResponse"></div>
+        <!-- Overview Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-extractions">-</div>
+                    <div class="stat-label">Total Extractions</div>
                 </div>
             </div>
-            
-            <div class="process-step">
-                <div class="step-header">Stage 2: Data Extraction</div>
-                <div class="step-content">
-                    <div class="prompt-box" id="extractionPrompt"></div>
-                    <div class="response-box" id="extractionResponse"></div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="success-rate">-</div>
+                    <div class="stat-label">Success Rate</div>
                 </div>
             </div>
-            
-            <div class="process-step">
-                <div class="step-header">Stage 3: Response Generation</div>
-                <div class="step-content">
-                    <div class="prompt-box" id="responsePrompt"></div>
-                    <div class="response-box" id="responseResponse"></div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-patterns">-</div>
+                    <div class="stat-label">Total Patterns</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="high-confidence">-</div>
+                    <div class="stat-label">High Confidence Patterns</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Trends -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <h3>Performance Trends</h3>
+                    <div id="trends-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pattern Analysis -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <h3>Pattern Analysis</h3>
+                    <div id="patterns-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Analysis -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>Error Distribution</h3>
+                    <div id="errors-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>Template Performance</h3>
+                    <div id="templates-plot" style="height: 400px;"></div>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Refresh Button -->
+    <button class="btn btn-primary refresh-btn" onclick="refreshDashboard()">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading">
+        <div class="spinner-border loading-spinner text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Custom JS -->
     <script>
-        // Constants
-        const API_BASE_URL = 'http://127.0.0.1:5000';
-        const DEFAULT_BUSINESS_ID = '7ae167a0-d864-43b9-bdaf-fcba35b33f27';
-        const DEFAULT_API_KEY = 'da828cae6a3e46228aa09d65ba9066e3';
-        
-        // State management
-        let isLoggedIn = false;
-        let currentLogId = null;
-        let lastRequestData = null;
-        let lastResponseData = null;
-        
-        // Initialize the app
-        function init() {
-            // Check if we're already logged in
-            const savedApiKey = localStorage.getItem('businessApiKey');
-            if (savedApiKey) {
-                document.getElementById('apiKey').value = savedApiKey;
-                
-                const savedBusinessId = localStorage.getItem('businessId');
-                const savedOwnerId = localStorage.getItem('ownerId');
-                
-                if (savedBusinessId) {
-                    document.getElementById('businessId').value = savedBusinessId;
-                }
-                
-                if (savedOwnerId) {
-                    document.getElementById('ownerId').value = savedOwnerId;
-                }
-                
-                if (savedApiKey && savedBusinessId && savedOwnerId) {
-                    isLoggedIn = true;
-                    document.getElementById('loginStatus').textContent = 'Logged in as Owner';
-                    document.getElementById('loginStatus').className = 'logged-in';
-                    document.getElementById('loginButton').textContent = 'Logged In';
-                    document.getElementById('loginButton').disabled = true;
-                }
-            }
-            
-            if (!document.getElementById('businessId').value) {
-                document.getElementById('businessId').value = DEFAULT_BUSINESS_ID;
-            }
-            
-            if (!document.getElementById('userId').value) {
-                document.getElementById('userId').value = generateUUID();
-            }
+        // Show loading overlay
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
         }
-        
-        // Call init when the page loads
-        window.addEventListener('DOMContentLoaded', init);
-        
-        // Utility function to generate a UUID
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
+
+        // Hide loading overlay
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
         }
-        
-        // Login function
-        async function login() {
-            const businessId = document.getElementById('businessId').value.trim();
-            const ownerId = document.getElementById('ownerId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            if (!businessId || !ownerId || !apiKey) {
-                showError('Business ID, Owner ID, and API Key are required to login');
-                return;
-            }
-            
-            const loginData = {
-                userId: ownerId,
-                businessId: businessId,
-                businessApiKey: apiKey
-            };
-            
-            updateStatus('Logging in...');
-            
+
+        // Update overview stats
+        function updateOverview(data) {
+            document.getElementById('total-extractions').textContent = data.total_extractions;
+            document.getElementById('success-rate').textContent = (data.success_rate * 100).toFixed(1) + '%';
+            document.getElementById('total-patterns').textContent = data.total_patterns;
+            document.getElementById('high-confidence').textContent = data.high_confidence_patterns;
+        }
+
+        // Update trends plot
+        function updateTrends(data) {
+            const trendData = JSON.parse(data.trend_plot);
+            Plotly.newPlot('trends-plot', trendData.data, trendData.layout);
+        }
+
+        // Update patterns plot
+        function updatePatterns(data) {
+            const patternData = JSON.parse(data.pattern_plot);
+            Plotly.newPlot('patterns-plot', patternData.data, patternData.layout);
+        }
+
+        // Update errors plot
+        function updateErrors(data) {
+            const errorData = JSON.parse(data.error_plot);
+            Plotly.newPlot('errors-plot', errorData.data, errorData.layout);
+        }
+
+        // Update templates plot
+        function updateTemplates(data) {
+            const templateData = JSON.parse(data.template_plot);
+            Plotly.newPlot('templates-plot', templateData.data, templateData.layout);
+        }
+
+        // Fetch all dashboard data
+        async function fetchDashboardData() {
+            showLoading();
             try {
-                const response = await fetch(`${API_BASE_URL}/api/verify-owner`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(loginData),
-                    credentials: 'include',
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        const errorData = await response.json();
-                        throw new Error(`Login failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
-                    } else {
-                        const text = await response.text();
-                        throw new Error(`Login failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
-                    }
-                }
-                
+                const response = await fetch('/api/dashboard/all');
                 const data = await response.json();
                 
-                if (data.success) {
-                    isLoggedIn = true;
-                    showSuccess('Login successful! Owner verification confirmed.');
-                    document.getElementById('loginStatus').textContent = 'Logged in as Owner';
-                    document.getElementById('loginStatus').className = 'logged-in';
-                    document.getElementById('loginButton').textContent = 'Logged In';
-                    document.getElementById('loginButton').disabled = true;
-                    
-                    localStorage.setItem('businessApiKey', apiKey);
-                    localStorage.setItem('businessId', businessId);
-                    localStorage.setItem('ownerId', ownerId);
-                    
-                    fetchRecentLogs();
-                } else {
-                    throw new Error(data.error || 'Login failed: Not a business owner');
-                }
-                
+                updateOverview(data.overview);
+                updateTrends(data.performance_trends);
+                updatePatterns(data.pattern_analysis);
+                updateErrors(data.error_analysis);
+                updateTemplates(data.template_performance);
             } catch (error) {
-                console.error('Login error:', error);
-                isLoggedIn = false;
-                showError(`Login failed: ${error.message}`);
-                document.getElementById('loginStatus').textContent = 'Not logged in';
-                document.getElementById('loginStatus').className = 'logged-out';
+                console.error('Error fetching dashboard data:', error);
+            } finally {
+                hideLoading();
             }
         }
+
+        // Refresh dashboard
+        function refreshDashboard() {
+            fetchDashboardData();
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDashboardData();
+            // Refresh every 5 minutes
+            setInterval(fetchDashboardData, 300000);
+        });
+    </script>
+</body>
+</html> 
+
+================================================================================
+File: enhanced_dashboard.html
+Path: .\templates\enhanced_dashboard.html
+Size: 11104
+Modified: 2025-05-04T01:59:47.129357
+Created: 2025-05-03T20:07:32.314536
+Hash: d24171db32fa25d1cdb36d13ffe3bc55f822fd886089e8ccf81a6f4d3b22fff0
+Lines: 307
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Monitoring Dashboard</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Plotly.js - Updated to latest version -->
+    <script src="https://cdn.plot.ly/plotly-2.27.1.min.js"></script>
+    <!-- Custom CSS -->
+    <style>
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .loading-spinner {
+            width: 3rem;
+            height: 3rem;
+        }
+        .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .metric-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .error-card {
+            background: #fff5f5;
+            border-left: 4px solid #dc3545;
+        }
+        .success-card {
+            background: #f0fff4;
+            border-left: 4px solid #28a745;
+        }
+        .warning-card {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <h1 class="mb-4">Enhanced Monitoring Dashboard</h1>
         
-        // Send message and debug function
-        async function sendMessageAndDebug() {
-            if (!isLoggedIn) {
-                showError('You must login first before sending messages');
-                return;
-            }
-            
-            const businessId = document.getElementById('businessId').value.trim();
-            const userId = document.getElementById('userId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            const message = document.getElementById('messageContent').value.trim();
-            
-            if (!businessId || !userId || !apiKey || !message) {
-                showError('Business ID, User ID, API Key, and message content are required');
-                return;
-            }
-            
-            const messageData = {
-                business_id: businessId,
-                user_id: userId,
-                message: message
-            };
-            
-            lastRequestData = messageData;
-            
-            updateStatus('Sending message...');
-            
+        <!-- Overview Stats -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-extractions">-</div>
+                    <div class="stat-label">Total Extractions</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="success-rate">-</div>
+                    <div class="stat-label">Success Rate</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="total-patterns">-</div>
+                    <div class="stat-label">Total Patterns</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-value" id="high-confidence">-</div>
+                    <div class="stat-label">High Confidence Patterns</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Trends -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <h3>Performance Trends</h3>
+                    <div id="trends-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Pipeline -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <h3>Processing Pipeline</h3>
+                    <div id="pipeline-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Performance -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <h3>AI Performance</h3>
+                    <div id="ai-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Analysis -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>Error Distribution</h3>
+                    <div id="errors-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="dashboard-card">
+                    <h3>Error Patterns</h3>
+                    <div id="error-patterns-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pattern Analysis -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <h3>Pattern Analysis</h3>
+                    <div id="patterns-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Template Performance -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="dashboard-card">
+                    <h3>Template Performance</h3>
+                    <div id="templates-plot" style="height: 400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refresh Button -->
+    <button class="btn btn-primary refresh-btn" onclick="refreshDashboard()">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+    </button>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading">
+        <div class="spinner-border loading-spinner text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <!-- Custom JS -->
+    <script>
+        // Show loading overlay
+        function showLoading() {
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
+
+        // Hide loading overlay
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        // Update overview stats
+        function updateOverview(data) {
+            document.getElementById('total-extractions').textContent = data.total_extractions;
+            document.getElementById('success-rate').textContent = (data.success_rate * 100).toFixed(1) + '%';
+            document.getElementById('total-patterns').textContent = data.total_patterns;
+            document.getElementById('high-confidence').textContent = data.high_confidence_patterns;
+        }
+
+        // Update trends plot
+        function updateTrends(data) {
+            const trendData = JSON.parse(data.trend_plot);
+            Plotly.newPlot('trends-plot', trendData.data, trendData.layout);
+        }
+
+        // Update pipeline plot
+        function updatePipeline(data) {
+            const pipelineData = JSON.parse(data.pipeline_plot);
+            Plotly.newPlot('pipeline-plot', pipelineData.data, pipelineData.layout);
+        }
+
+        // Update AI performance plot
+        function updateAIPerformance(data) {
+            const aiData = JSON.parse(data.ai_plot);
+            Plotly.newPlot('ai-plot', aiData.data, aiData.layout);
+        }
+
+        // Update patterns plot
+        function updatePatterns(data) {
+            const patternData = JSON.parse(data.pattern_plot);
+            Plotly.newPlot('patterns-plot', patternData.data, patternData.layout);
+        }
+
+        // Update errors plot
+        function updateErrors(data) {
+            const errorData = JSON.parse(data.error_plot);
+            Plotly.newPlot('errors-plot', errorData.data, errorData.layout);
+        }
+
+        // Update error patterns plot
+        function updateErrorPatterns(data) {
+            const patternData = JSON.parse(data.error_pattern_plot);
+            Plotly.newPlot('error-patterns-plot', patternData.data, patternData.layout);
+        }
+
+        // Update templates plot
+        function updateTemplates(data) {
+            const templateData = JSON.parse(data.template_plot);
+            Plotly.newPlot('templates-plot', templateData.data, templateData.layout);
+        }
+
+        // Fetch all dashboard data
+        async function fetchDashboardData() {
+            showLoading();
             try {
-                const startTime = performance.now();
-                
-                const response = await fetch(`${API_BASE_URL}/api/message`, {
-                    method: 'POST',
+                // Use the correct API endpoint for the local server
+                const response = await fetch('http://localhost:5000/api/monitoring/all', {
                     headers: {
-                        'Content-Type': 'application/json',
                         'Accept': 'application/json',
-                        'businessapikey': apiKey
-                    },
-                    body: JSON.stringify(messageData),
-                    credentials: 'include',
-                    mode: 'cors'
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
                 if (!response.ok) {
-                    let errorText = '';
-                    try {
-                        const errorData = await response.json();
-                        errorText = errorData.error || 'Unknown error';
-                    } catch (jsonError) {
-                        errorText = await response.text();
-                    }
-                    
-                    throw new Error(`Message failed! status: ${response.status}, message: ${errorText}`);
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const data = await response.json();
                 
-                lastResponseData = data;
-                
-                const endTime = performance.now();
-                const totalTime = Math.round(endTime - startTime);
-                
-                if (data.success) {
-                    showSuccess('Message sent successfully!');
-                    
-                    const responseArea = document.getElementById('responseArea');
-                    if (data.chat_window) {
-                        const { user_message, ai_response } = data.chat_window;
-                        responseArea.innerHTML = `
-                            <div class="process-step">
-                                <div class="step-header">User Message:</div>
-                                <div class="prompt-box">${user_message.content}</div>
-                            </div>
-                            <div class="process-step">
-                                <div class="step-header">AI Response:</div>
-                                <div class="response-box">${data.response}</div>
-                            </div>
-                        `;
-                    } else {
-                        responseArea.innerHTML = `
-                            <div class="response-box">${data.response}</div>
-                        `;
-                    }
-                    
-                    if (data.process_log_id) {
-                        currentLogId = data.process_log_id;
-                        setTimeout(() => fetchProcessLog(data.process_log_id), 500);
-                    } else {
-                        showError('No process log ID returned. Detailed debugging not available.');
-                    }
-                    
-                    setTimeout(fetchRecentLogs, 1000);
-                } else {
-                    showError(data.error || 'Unknown error sending message');
-                }
-                
+                updateOverview(data.overview);
+                updateTrends(data.performance_trends);
+                updatePipeline(data.pipeline_metrics);
+                updateAIPerformance(data.ai_performance);
+                updatePatterns(data.pattern_analysis);
+                updateErrors(data.error_analysis);
+                updateErrorPatterns(data.error_patterns);
+                updateTemplates(data.template_performance);
             } catch (error) {
-                console.error('Message error:', error);
-                showError(`Failed to send message: ${error.message}`);
+                console.error('Error fetching dashboard data:', error);
+                alert('Error loading dashboard data. Please make sure the backend server is running.');
+            } finally {
+                hideLoading();
             }
         }
-        
-        // Helper functions
-        function showError(message) {
-            const responseArea = document.getElementById('responseArea');
-            responseArea.innerHTML = `<div class="error">${message}</div>`;
-            updateStatus(`Error: ${message}`, true);
+
+        // Refresh dashboard
+        function refreshDashboard() {
+            fetchDashboardData();
         }
-        
-        function showSuccess(message) {
-            updateStatus(message, false);
-        }
-        
-        function updateStatus(message, isError = false) {
-            const statusElement = document.getElementById('networkStatus');
-            statusElement.textContent = message;
-            statusElement.className = isError ? 'error' : 'success';
-        }
-        
-        // Fetch process log with details
-        async function fetchProcessLog(logId) {
-            if (!logId) {
-                showError('No process log ID provided');
-                return;
-            }
-            
-            if (!isLoggedIn) {
-                showError('You must be logged in to fetch logs');
-                return;
-            }
-            
-            const businessId = document.getElementById('businessId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/message/logs/${logId}?business_id=${businessId}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'businessapikey': apiKey
-                    },
-                    credentials: 'include',
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`Failed to fetch log: ${errorData.error || response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('Process log data received:', data);
-                
-                // The API might return the log directly or nested in a property
-                const log = data.log || data;
-                
-                if (log && log.processing_steps) {
-                    console.log('Processing steps found:', log.processing_steps);
-                    // Process steps into the different stages
-                    let intentStep = null;
-                    let extractionStep = null;
-                    let responseStep = null;
-                    
-                    if (log.processing_steps && log.processing_steps.length > 0) {
-                        for (const step of log.processing_steps) {
-                            console.log('Processing step:', step.step, step);
-                            if (step.step === 'intent_detection' || step.step === 'stage_selection') {
-                                intentStep = step;
-                            } else if (step.step === 'data_extraction') {
-                                extractionStep = step;
-                                console.log('Data extraction step found:', extractionStep);
-                            } else if (step.step === 'response_generation') {
-                                responseStep = step;
-                            }
-                        }
-                    }
-                    
-                    // Update intent detection section
-                    if (intentStep) {
-                        document.getElementById('intentPrompt').textContent = intentStep.prompt || 'No prompt available';
-                        document.getElementById('intentResponse').textContent = intentStep.response || 'No response available';
-                    } else {
-                        document.getElementById('intentPrompt').textContent = 'Intent detection step not found in logs';
-                        document.getElementById('intentResponse').textContent = 'No response available';
-                    }
-                    
-                    // Update data extraction section
-                    if (extractionStep) {
-                        console.log('Setting data extraction content:', extractionStep);
-                        
-                        // First, see if we have prompt and response fields directly in the step
-                        let promptContent = extractionStep.prompt || 'No prompt available';
-                        let responseContent = extractionStep.response || 'No response available';
-                        
-                        // If missing direct prompt/response but we have extracted_data, check there
-                        if ((promptContent === 'No prompt available' || promptContent === 'N/A') && 
-                            (responseContent === 'No response available' || responseContent === 'N/A') && 
-                            extractionStep.extracted_data) {
-                            
-                            const extractedData = extractionStep.extracted_data;
-                            
-                            // Check for prompt/response fields in the extracted data
-                            if (typeof extractedData === 'object') {
-                                // If prompt/response fields exist in extracted_data, use them
-                                if (extractedData.prompt) {
-                                    promptContent = extractedData.prompt;
-                                }
-                                
-                                if (extractedData.response) {
-                                    responseContent = extractedData.response;
-                                } else if (extractedData._template_info && extractedData._template_info.template_content) {
-                                    // If no response but we have template info, use that for prompt
-                                    promptContent = extractedData._template_info.template_content;
-                                    
-                                    // Format the extracted data itself as response
-                                    const displayData = {...extractedData};
-                                    // Remove metadata fields for cleaner display
-                                    delete displayData._template_info;
-                                    delete displayData.prompt;
-                                    delete displayData.response;
-                                    responseContent = JSON.stringify(displayData, null, 2);
-                                } else {
-                                    // No special fields, display the whole extracted data
-                                    responseContent = JSON.stringify(extractedData, null, 2);
-                                }
-                            } else {
-                                // Not an object, use as-is
-                                responseContent = String(extractedData);
-                            }
-                        }
-                        
-                        document.getElementById('extractionPrompt').textContent = promptContent;
-                        document.getElementById('extractionResponse').textContent = responseContent;
-                        
-                        // Only show warning if we still don't have proper content
-                        if ((promptContent === 'No prompt available' || promptContent === 'N/A') && 
-                            (responseContent === 'No response available' || responseContent === 'N/A')) {
-                            // Add warning about missing data extraction template
-                            const extractionContent = document.querySelector('.process-step:nth-child(2) .step-content');
-                            if (extractionContent) {
-                                // Check if a warning already exists
-                                if (!extractionContent.querySelector('.extraction-warning')) {
-                                    const warningMsg = document.createElement('div');
-                                    warningMsg.className = 'extraction-warning';
-                                    warningMsg.style.color = '#dc3545';
-                                    warningMsg.style.fontWeight = 'bold';
-                                    warningMsg.style.marginBottom = '10px';
-                                    warningMsg.textContent = 'WARNING: Data extraction template appears to be empty or not configured properly. Check backend configuration.';
-                                    
-                                    extractionContent.prepend(warningMsg);
-                                }
-                            }
-                        } else {
-                            // Remove warning if it exists but we have valid data now
-                            const extractionContent = document.querySelector('.process-step:nth-child(2) .step-content');
-                            const existingWarning = extractionContent?.querySelector('.extraction-warning');
-                            if (existingWarning) {
-                                existingWarning.remove();
-                            }
-                        }
-                    } else {
-                        document.getElementById('extractionPrompt').textContent = 'Data extraction step not found in logs';
-                        document.getElementById('extractionResponse').textContent = 'No response available';
-                    }
-                    
-                    // Update response generation section
-                    if (responseStep) {
-                        document.getElementById('responsePrompt').textContent = responseStep.prompt || 'No prompt available';
-                        document.getElementById('responseResponse').textContent = responseStep.response || 'No response available';
-                    } else {
-                        document.getElementById('responsePrompt').textContent = 'Response generation step not found in logs';
-                        document.getElementById('responseResponse').textContent = 'No response available';
-                    }
-                } else {
-                    showError(log.error || 'Log data not found');
-                }
-                
-            } catch (error) {
-                console.error('Error fetching process log:', error);
-                showError(`Failed to fetch process log: ${error.message}`);
-            }
-        }
-        
-        // Look up owner ID function
-        async function lookupOwner() {
-            const businessId = document.getElementById('businessId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            if (!businessId || !apiKey) {
-                showError('Business ID and API Key are required to look up owner');
-                return;
-            }
-            
-            const lookupData = {
-                businessId: businessId,
-                businessApiKey: apiKey
-            };
-            
-            updateStatus('Looking up owner...');
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/lookup-owner`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(lookupData),
-                    credentials: 'include',
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        const errorData = await response.json();
-                        throw new Error(`Lookup failed! status: ${response.status}, message: ${errorData.error || 'Unknown error'}`);
-                    } else {
-                        const text = await response.text();
-                        throw new Error(`Lookup failed! status: ${response.status}, message: ${text || 'Unknown error'}`);
-                    }
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    document.getElementById('ownerId').value = data.owner_id;
-                    showSuccess(`Owner ID found: ${data.owner_id}`);
-                } else {
-                    throw new Error(data.error || 'Failed to find owner ID');
-                }
-                
-            } catch (error) {
-                console.error('Lookup error:', error);
-                showError(`Failed to look up owner ID: ${error.message}`);
-            }
-        }
-        
-        // Fetch recent process logs
-        async function fetchRecentLogs() {
-            if (!isLoggedIn) {
-                return;
-            }
-            
-            const businessId = document.getElementById('businessId').value.trim();
-            const apiKey = document.getElementById('apiKey').value.trim();
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/message/logs/recent?business_id=${businessId}&limit=5`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'businessapikey': apiKey
-                    },
-                    credentials: 'include',
-                    mode: 'cors'
-                });
-                
-                if (!response.ok) {
-                    console.error('Error fetching recent logs:', response.statusText);
-                    return;
-                }
-                
-                const data = await response.json();
-                const logs = Array.isArray(data) ? data : data.logs || [];
-                
-                if (logs.length > 0) {
-                    displayRecentLogs(logs);
-                }
-            } catch (error) {
-                console.error('Failed to fetch recent logs:', error);
-            }
-        }
-        
-        // Display recent logs in the UI
-        function displayRecentLogs(logs) {
-            if (!logs || logs.length === 0) {
-                return;
-            }
-            
-            // Create or update the recent logs area if it doesn't exist
-            let recentLogsArea = document.getElementById('recentLogsArea');
-            if (!recentLogsArea) {
-                // Create the recent logs section if it doesn't exist
-                const processSteps = document.querySelector('.process-steps');
-                
-                const recentLogsSection = document.createElement('div');
-                recentLogsSection.className = 'recent-logs-section';
-                recentLogsSection.innerHTML = `
-                    <hr class="section-divider">
-                    <h2>Recent Message Logs</h2>
-                    <div id="recentLogsArea" class="recent-logs"></div>
-                `;
-                
-                // Insert after process steps
-                processSteps.parentNode.insertBefore(recentLogsSection, processSteps.nextSibling);
-                recentLogsArea = document.getElementById('recentLogsArea');
-            }
-            
-            // Generate HTML for recent logs
-            let html = '<ul class="log-list" style="list-style: none; padding: 0;">';
-            
-            logs.forEach(log => {
-                const truncatedMessage = log.original_message?.length > 50 
-                    ? log.original_message.substring(0, 50) + '...'
-                    : log.original_message || 'No message';
-                    
-                const timestamp = log.start_time 
-                    ? new Date(log.start_time).toLocaleString()
-                    : 'Unknown time';
-                    
-                html += `
-                    <li style="padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;"
-                        onclick="fetchProcessLog('${log.log_id}')">
-                        <strong>Message:</strong> ${truncatedMessage}<br>
-                        <strong>Time:</strong> ${timestamp}<br>
-                        <span class="text-muted">Log ID: ${log.log_id}</span>
-                    </li>
-                `;
-            });
-            
-            html += '</ul>';
-            recentLogsArea.innerHTML = html;
-        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchDashboardData();
+            // Refresh every 5 minutes
+            setInterval(fetchDashboardData, 300000);
+        });
     </script>
 </body>
 </html> 
@@ -11157,69 +11058,395 @@ Lines: 346
 ================================================================================
 File: index.html
 Path: .\WEBSITE\index.html
-Size: 1576
-Modified: 2025-04-26T03:29:06.425453
+Size: 12191
+Modified: 2025-04-27T18:20:14.479071
 Created: 2025-04-26T03:29:04.617794
-Hash: 43d3399e698f609ae27198f14067e76fca6905863d280931ebb365e9ad212502
-Lines: 59
+Hash: 462fab92ef142db9135726d97639153c7acf7b4d33c8243b689b3150c7112ab7
+Lines: 385
 ================================================================================
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ask Sameer - Welcome</title>
+    <title>AskSameer - Your Smart Virtual Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* General Styles */
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            overflow-x: hidden;
+        }
+        h1, h2, h3 {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        p {
+            line-height: 1.8;
+            font-size: 18px;
+        }
+        a {
+            text-decoration: none;
+            color: #3498db;
+        }
+        a:hover {
+            color: #2980b9;
+        }
+
+        /* Header Section */
+        header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 150px 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        header h1 {
+            font-size: 4rem;
+            margin: 0;
+            animation: fadeInDown 2s ease-in-out;
+        }
+        header p {
+            font-size: 1.5rem;
+            animation: fadeInUp 2s ease-in-out;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 100px 20px;
+            background: white;
+            text-align: center;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
         }
-        .header {
-            text-align: center;
-            padding: 40px 0;
-            background-color: #fff;
+        .feature-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+        .feature-card {
+            background: white;
+            padding: 30px;
             border-radius: 10px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
         }
-        h1 {
-            color: #333;
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        .feature-card i {
+            font-size: 3em;
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.5rem;
+        }
+        .feature-card p {
+            color: #666;
             margin: 0;
-            font-size: 2.5em;
+            font-size: 1rem;
         }
-        .subtitle {
-            color: #666;
-            font-size: 1.2em;
-            margin-top: 10px;
-        }
-        .footer {
+
+        /* CTA Section */
+        .cta-section {
             text-align: center;
-            padding: 20px;
+            padding: 100px 20px;
+            background: #f4f4f4;
+        }
+        .cta-section h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: fadeIn 2s ease-in-out;
+        }
+        .cta-section p {
+            max-width: 600px;
+            margin: 0 auto;
             color: #666;
         }
-        .footer a {
-            color: #333;
-            text-decoration: none;
+
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 50px 20px;
         }
-        .footer a:hover {
-            text-decoration: underline;
+        footer p {
+            margin: 10px 0;
+            font-size: 1rem;
+        }
+        footer a {
+            color: #3498db;
+            margin: 0 10px;
+        }
+        footer a:hover {
+            color: #2980b9;
+        }
+
+        /* Chat Window */
+        .chat-window {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .user-message {
+            background: #3498db;
+            color: white;
+            margin-left: 20px;
+        }
+        .bot-message {
+            background: #f1f1f1;
+            margin-right: 20px;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .chat-input button {
+            padding: 8px 15px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .chat-input button:hover {
+            background: #2980b9;
+        }
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1001;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        .chat-toggle:hover {
+            transform: scale(1.1);
+        }
+        .chat-window.hidden {
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(50px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div class="header">
+    <header>
         <h1>Welcome to Ask Sameer</h1>
-        <p class="subtitle">Your trusted source for information and assistance</p>
+        <p>Your trusted source for information and assistance</p>
+    </header>
+
+    <div class="features">
+        <div class="feature-cards">
+            <div class="feature-card">
+                <i class="fas fa-brain"></i>
+                <h3>AI-Powered Assistance</h3>
+                <p>Get instant, intelligent responses to your questions using advanced AI technology.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-clock"></i>
+                <h3>24/7 Availability</h3>
+                <p>Access help and information whenever you need it, day or night.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-shield-alt"></i>
+                <h3>Secure & Private</h3>
+                <p>Your conversations are protected with enterprise-grade security.</p>
+            </div>
+        </div>
     </div>
 
-    <div class="footer">
-        <p>&copy; 2024 Ask Sameer. All rights reserved.</p>
-        <p><a href="/privacy_policy.html">Privacy Policy</a></p>
+    <div class="cta-section">
+        <h2>Start a Conversation</h2>
+        <p>Click the chat icon in the bottom right corner to begin chatting with Sameer.</p>
     </div>
+
+    <footer>
+        <p>&copy; 2024 Ask Sameer. All rights reserved.</p>
+        <p>
+            <a href="/privacy_policy.html">Privacy Policy</a> | 
+            <a href="/terms_of_service.html">Terms of Service</a>
+        </p>
+    </footer>
+
+    <!-- Floating Chat Window -->
+    <div class="chat-toggle">
+      <i class="fas fa-comments"></i>
+    </div>
+    <div class="chat-window hidden">
+      <div class="chat-messages">
+        <div class="message bot-message">
+          <p>Hi! I'm Sameer. How can I assist you today?</p>
+        </div>
+      </div>
+      <div class="chat-input">
+        <input type="text" placeholder="Type your message..." id="messageInput">
+        <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+
+    <script>
+      // Chat functionality
+      const chatWindow = document.querySelector('.chat-window');
+      const chatToggle = document.querySelector('.chat-toggle');
+      const chatMessages = document.querySelector('.chat-messages');
+      const messageInput = document.getElementById('messageInput');
+
+      // Toggle chat window
+      chatToggle.addEventListener('click', () => {
+        chatWindow.classList.toggle('hidden');
+        chatToggle.style.display = chatWindow.classList.contains('hidden') ? 'flex' : 'none';
+      });
+
+      // Handle Enter key in input
+      messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+
+      async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        // Add user message to chat
+        addMessage(message, 'user');
+        messageInput.value = '';
+
+        const maxRetries = 3;
+        let retryCount = 0;
+
+        while (retryCount < maxRetries) {
+          try {
+            // Send message to backend
+            const response = await fetch('https://icmp-events-api.onrender.com/api/message', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'businessapikey': '1c89b999d0e4e0793e88daec19b40cf43fb37e305d5f03307defd18462b66af6'
+              },
+              body: JSON.stringify({
+                message: message,
+                business_id: '274d3059-062d-46be-96c0-ceb6c11e9cab',
+                user_id: 'website-user'
+              }),
+              mode: 'cors'
+            });
+
+            if (!response.ok) {
+              const errorData = await response.json().catch(() => ({}));
+              console.error('Server error:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorData
+              });
+              
+              if (retryCount < maxRetries - 1) {
+                retryCount++;
+                console.log(`Retrying request (${retryCount}/${maxRetries})...`);
+                await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
+                continue;
+              }
+              
+              throw new Error(errorData.error || `Server responded with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            // Add bot response to chat
+            if (data.response) {
+              addMessage(data.response, 'bot');
+            } else {
+              addMessage("I apologize, but I'm having trouble processing your request at the moment. Please try again later.", 'bot');
+            }
+            
+            // If we get here, the request was successful
+            break;
+            
+          } catch (error) {
+            console.error('Error details:', error);
+            
+            if (retryCount < maxRetries - 1) {
+              retryCount++;
+              console.log(`Retrying request (${retryCount}/${maxRetries})...`);
+              await new Promise(resolve => setTimeout(resolve, 1000 * retryCount)); // Exponential backoff
+              continue;
+            }
+            
+            addMessage("I apologize, but I'm having trouble connecting to the server. Please try again later.", 'bot');
+            break;
+          }
+        }
+      }
+
+      function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        messageDiv.innerHTML = `<p>${text}</p>`;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+    </script>
 </body>
 </html> 
 
@@ -11301,6 +11528,178 @@ Lines: 71
 
     <h2>8. Changes to This Policy</h2>
     <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.</p>
+</body>
+</html> 
+
+================================================================================
+File: terms_of_service.html
+Path: .\WEBSITE\terms_of_service.html
+Size: 5733
+Modified: 2025-04-27T15:34:35.779935
+Created: 2025-04-27T15:29:34.562586
+Hash: 634a4800cd85f2f42ac1a3115c70647e3a4a8039758c8ce0f87ddf74ac119092
+Lines: 162
+================================================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - AskSameer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.8;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        
+        /* Navigation Bar */
+        nav {
+            background: rgba(44, 62, 80, 0.9);
+            padding: 15px 0;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+        nav a {
+            color: white;
+            margin: 0 20px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+        nav a:hover {
+            color: #3498db;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 80px auto 0;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #34495e;
+            font-size: 1.8rem;
+            margin-top: 30px;
+        }
+
+        .section {
+            background: white;
+            margin: 20px 0;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 50px;
+        }
+
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <a href="/asksameer.html">Home</a>
+        <a href="/asksameer.html#about">About Us</a>
+        <a href="/asksameer.html#mission">Our Mission</a>
+        <a href="/asksameer.html#contact">Contact</a>
+    </nav>
+
+    <div class="container">
+        <h1>Terms of Service</h1>
+        
+        <div class="section">
+            <p>Last updated: April 27, 2024</p>
+            <p>Please read these Terms of Service ("Terms", "Terms of Service") carefully before using AskSameer services operated by us.</p>
+        </div>
+
+        <div class="section">
+            <h2>1. Terms</h2>
+            <p>By accessing our service, you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the service.</p>
+        </div>
+
+        <div class="section">
+            <h2>2. Use License</h2>
+            <p>Permission is granted to temporarily access AskSameer services for personal use only.</p>
+            <p>This is the grant of a license, not a transfer of title, and under this license you may not:</p>
+            <ul>
+                <li>modify or copy the materials;</li>
+                <li>use the materials for any commercial purpose;</li>
+                <li>attempt to decompile or reverse engineer any software contained in the service;</li>
+                <li>remove any copyright or other proprietary notations from the materials;</li>
+                <li>transfer the materials to another person or "mirror" the materials on any other server.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>3. Service Usage</h2>
+            <p>Our service is provided with reasonable care and skill. However, we do not guarantee that:</p>
+            <ul>
+                <li>your use of the service will be uninterrupted or error-free;</li>
+                <li>the service will be available at all times;</li>
+                <li>errors in the service will be corrected.</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>4. Data Privacy</h2>
+            <p>Your use of our service is also governed by our Privacy Policy. For Facebook users, we provide data deletion capabilities as required by Facebook's Platform Terms.</p>
+            <p>To request deletion of your Facebook data, please visit: <a href="https://icmp-events-api.onrender.com/privacy/facebook/delete">Data Deletion Request</a></p>
+        </div>
+
+        <div class="section">
+            <h2>5. Limitations</h2>
+            <p>In no event shall AskSameer be liable for any damages arising out of the use or inability to use our services.</p>
+        </div>
+
+        <div class="section">
+            <h2>6. Revisions and Errata</h2>
+            <p>We reserve the right to make changes to our service, policies, and these Terms of Service at any time without notice.</p>
+        </div>
+
+        <div class="section">
+            <h2>7. Contact Us</h2>
+            <p>If you have any questions about these Terms, please contact us at:</p>
+            <p>Email: info@asksameer.com</p>
+            <p>Phone: +962 7777 753704</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2025 AskSameer. All rights reserved.</p>
+        <p>
+            <a href="/privacy_policy.html">Privacy Policy</a> | 
+            <a href="/terms_of_service.html">Terms of Service</a>
+        </p>
+    </footer>
 </body>
 </html> 
 

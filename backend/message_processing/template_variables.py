@@ -1,60 +1,47 @@
 """
-Template variable management system.
+Template variable system for message processing.
 
-This module provides a centralized system for registering, retrieving, and 
-generating values for template variables used in the messaging system.
+This module provides functionality for managing and processing template variables
+used in message templates.
 """
 
 import logging
-import inspect
-from typing import Dict, Any, Callable, List, Optional, Set
-import re
+from typing import Dict, Any, Optional, Set, Callable
+from datetime import datetime
+from functools import wraps
 
 log = logging.getLogger(__name__)
 
 class TemplateVariableProvider:
-    """
-    Manages template variables and their providers.
+    """Provider for template variables."""
     
-    This class serves as a registry for template variables and methods that 
-    can generate their values at runtime based on context.
-    """
-    
-    # Registry of variable providers
-    _providers: Dict[str, Callable] = {}
-    
-    # Cache of variable names extracted from templates
-    _variable_cache: Dict[str, Set[str]] = {}
+    _providers = {}
+    _provider_metadata = {}
     
     @classmethod
-    def register_provider(cls, variable_name: str):
+    def register_provider(cls, variable_name: str, description: str = None, auth_requirement: str = None):
         """
-        Decorator to register a method as a provider for a specific variable.
+        Decorator to register a provider function for a template variable.
         
         Args:
-            variable_name: The name of the template variable
+            variable_name: Name of the variable
+            description: Optional description of the variable
+            auth_requirement: Optional authentication requirement
             
         Returns:
             Decorator function
         """
-        def decorator(func):
-            cls._providers[variable_name] = func
-            log.debug(f"Registered provider for variable: {variable_name}")
-            return func
+        def decorator(provider_func: Callable):
+            @wraps(provider_func)
+            def wrapper(*args, **kwargs):
+                return provider_func(*args, **kwargs)
+            cls._providers[variable_name] = wrapper
+            cls._provider_metadata[variable_name] = {
+                'description': description,
+                'auth_requirement': auth_requirement
+            }
+            return wrapper
         return decorator
-    
-    @classmethod
-    def get_provider(cls, variable_name: str) -> Optional[Callable]:
-        """
-        Get the provider function for a variable.
-        
-        Args:
-            variable_name: The name of the template variable
-            
-        Returns:
-            Provider function or None if not found
-        """
-        return cls._providers.get(variable_name)
     
     @classmethod
     def is_variable_registered(cls, variable_name: str) -> bool:
@@ -62,64 +49,51 @@ class TemplateVariableProvider:
         Check if a variable has a registered provider.
         
         Args:
-            variable_name: The name of the template variable
+            variable_name: Name of the variable to check
             
         Returns:
-            True if the variable has a provider, False otherwise
+            bool: True if variable has a provider, False otherwise
         """
         return variable_name in cls._providers
     
     @classmethod
-    def get_all_variable_names(cls) -> List[str]:
+    def get_variable_value(
+        cls,
+        variable_name: str,
+        context: Dict[str, Any]
+    ) -> Any:
         """
-        Get all registered variable names.
+        Get the value of a template variable.
         
+        Args:
+            variable_name: Name of the variable
+            context: Context data for variable generation
+            
         Returns:
-            List of registered variable names
+            The variable value
+            
+        Raises:
+            KeyError: If variable has no provider
         """
-        return list(cls._providers.keys())
+        if variable_name not in cls._providers:
+            raise KeyError(f"No provider registered for variable: {variable_name}")
+            
+        return cls._providers[variable_name](context)
     
     @classmethod
     def extract_variables_from_template(cls, template_content: str) -> Set[str]:
         """
-        Extract all variable names from a template.
+        Extract variable names from a template.
         
         Args:
-            template_content: The template text with variables in {variable_name} or {{variable_name}} format
+            template_content: The template text
             
         Returns:
             Set of variable names found in the template
         """
-        if not template_content:
-            return set()
-            
-        # Cache check
-        if template_content in cls._variable_cache:
-            return cls._variable_cache[template_content]
-            
-        # Extract variables using regex - handle both single and double curly braces
-        single_brace_pattern = r'{([^{}]+)}'
-        double_brace_pattern = r'{{([^{}]+)}}'
-        
-        # Get matches for both patterns
-        single_vars = set(re.findall(single_brace_pattern, template_content))
-        double_vars = set(re.findall(double_brace_pattern, template_content))
-        
-        # Filter out single brace matches that are part of double braces
-        # This is important to avoid duplicate variables
-        filtered_single_vars = set()
-        for var in single_vars:
-            # Check if this variable is not part of a double brace pattern
-            if not any(f"{{{{{var}}}}}" in template_content for var in [var]):
-                filtered_single_vars.add(var)
-        
-        # Combine all variables
-        variables = filtered_single_vars.union(double_vars)
-        
-        # Cache the result
-        cls._variable_cache[template_content] = variables
-        
-        return variables
+        import re
+        pattern = r'\{([a-zA-Z_][a-zA-Z0-9_]*)\}'
+        return set(re.findall(pattern, template_content))
     
     @classmethod
     def validate_template_variables(cls, template_content: str) -> Dict[str, bool]:
@@ -159,7 +133,7 @@ class TemplateVariableProvider:
         Returns:
             Dictionary mapping variable names to their values
         """
-        result = {}
+        variable_values = {}
         
         # Default context object that gets passed to all providers
         base_context = {
@@ -167,35 +141,52 @@ class TemplateVariableProvider:
             'business_id': business_id,
             'user_id': user_id,
             'conversation_id': conversation_id,
-            'message_content': message_content
+            'message_content': message_content,
+            'timestamp': datetime.utcnow()
         }
         
-        # If specific variables requested, only process those
-        variables_to_process = template_vars or cls.get_all_variable_names()
+        # Get variables to process
+        variables_to_process = template_vars or cls._providers.keys()
         
-        # Generate values for each requested variable
+        # Generate values for each variable
         for var_name in variables_to_process:
-            provider = cls.get_provider(var_name)
-            if provider:
-                try:
-                    # Get the parameters the provider expects
-                    sig = inspect.signature(provider)
-                    params = {}
-                    
-                    # Only pass parameters that the provider function expects
-                    for param_name in sig.parameters:
-                        if param_name in base_context:
-                            params[param_name] = base_context[param_name]
-                    
-                    # Call the provider with appropriate parameters
-                    value = provider(**params)
-                    result[var_name] = value
-                except Exception as e:
-                    log.error(f"Error generating value for variable '{var_name}': {str(e)}")
-                    result[var_name] = f"[Error: {str(e)}]"
-            else:
-                # No provider found
-                log.warning(f"No provider found for variable: {var_name}")
-                result[var_name] = f"[Undefined variable: {var_name}]"
+            try:
+                if cls.is_variable_registered(var_name):
+                    variable_values[var_name] = cls.get_variable_value(var_name, base_context)
+            except Exception as e:
+                log.error(f"Error generating value for variable {var_name}: {str(e)}")
+                variable_values[var_name] = None
         
-        return result
+        return variable_values
+
+# Register standard variable providers
+def register_standard_providers():
+    """Register standard variable providers."""
+    
+    @TemplateVariableProvider.register_provider('timestamp')
+    def timestamp_provider(context: Dict[str, Any]) -> str:
+        """Provide current timestamp."""
+        return context['timestamp'].isoformat()
+    
+    @TemplateVariableProvider.register_provider('business_id')
+    def business_id_provider(context: Dict[str, Any]) -> str:
+        """Provide business ID."""
+        return context['business_id']
+    
+    @TemplateVariableProvider.register_provider('user_id')
+    def user_id_provider(context: Dict[str, Any]) -> str:
+        """Provide user ID."""
+        return context['user_id']
+    
+    @TemplateVariableProvider.register_provider('conversation_id')
+    def conversation_id_provider(context: Dict[str, Any]) -> str:
+        """Provide conversation ID."""
+        return context['conversation_id']
+    
+    @TemplateVariableProvider.register_provider('message_content')
+    def message_content_provider(context: Dict[str, Any]) -> str:
+        """Provide message content."""
+        return context['message_content']
+
+# Register standard providers on module import
+register_standard_providers()

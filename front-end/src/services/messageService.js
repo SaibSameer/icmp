@@ -38,7 +38,6 @@ const handleApiResponse = async (response) => {
  * @param {Object} options - Additional options
  * @param {string} options.conversationId - Optional conversation ID
  * @param {string} options.agentId - Optional agent ID
- * @param {string} options.senderType - Optional sender type ('user', 'staff', 'assistant', or 'ai')
  * @returns {Promise<Object>} - Response data
  */
 export const sendMessage = async (message, businessId, userId, options = {}) => {
@@ -46,8 +45,7 @@ export const sendMessage = async (message, businessId, userId, options = {}) => 
     const requestData = {
       business_id: businessId,
       user_id: userId,
-      message: message,
-      sender_type: options.senderType || 'user' // Default to 'user' if not specified
+      message: message
     };
     
     // Add optional fields if provided
@@ -59,7 +57,7 @@ export const sendMessage = async (message, businessId, userId, options = {}) => 
       requestData.agent_id = options.agentId;
     }
     
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/message`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/api/messages`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(requestData)
@@ -75,14 +73,25 @@ export const sendMessage = async (message, businessId, userId, options = {}) => 
 /**
  * Fetch conversation history for a business
  * @param {string} businessId - Business ID
- * @returns {Promise<Array>} - Array of conversations
+ * @returns {Promise<Array>} - Conversation history
  */
 export const fetchConversationHistory = async (businessId) => {
   try {
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/conversations?business_id=${businessId}`, {
-      headers: getAuthHeaders()
-    });
-    return await handleApiResponse(response);
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/api/conversations?business_id=${businessId}`,
+      {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      }
+    );
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Fetch conversation history error:', error);
     throw error;
@@ -90,14 +99,16 @@ export const fetchConversationHistory = async (businessId) => {
 };
 
 /**
- * Test the connection to the API
- * @returns {Promise<Object>} - Response data
+ * Test backend connection
+ * @returns {Promise<Object>} - Connection test result
  */
 export const testConnection = async () => {
   try {
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/health`, {
+    const response = await fetch(`${API_CONFIG.BASE_URL}/health`, {
+      method: 'GET',
       headers: getAuthHeaders()
     });
+    
     return await handleApiResponse(response);
   } catch (error) {
     console.error('Test connection error:', error);
@@ -106,27 +117,52 @@ export const testConnection = async () => {
 };
 
 /**
- * Stop or resume AI responses for a conversation or user
- * @param {string} conversationId - Conversation ID
- * @param {string} userId - Optional user ID
- * @param {string} action - 'stop', 'resume', or 'status'
- * @param {number} duration - Optional duration in hours
- * @returns {Promise<Object>} - Response data
+ * Fetch user message counts for a business
+ * @param {string} businessId - Business ID
+ * @returns {Promise<Array>} - Array of { user_id, message_count }
  */
-export const stopAIResponses = async (conversationId, userId = null, action = 'stop', duration = null) => {
+export const fetchUserMessageCounts = async (businessId) => {
   try {
-    const response = await fetch(`${API_CONFIG.BASE_URL}/api/conversations/${conversationId}/ai-control`, {
-      method: action === 'status' ? 'GET' : 'POST',
-      headers: getAuthHeaders(),
-      body: action !== 'status' ? JSON.stringify({
-        action,
-        user_id: userId,
-        duration
-      }) : undefined
-    });
-    return await handleApiResponse(response);
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/api/user-stats/message-counts?business_id=${businessId}`,
+      {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
   } catch (error) {
-    console.error('Stop AI responses error:', error);
+    console.error('Fetch user message counts error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch messages for a specific user
+ * @param {string} businessId - Business ID
+ * @param {string} userId - User ID
+ * @returns {Promise<Array>} - Array of message objects
+ */
+export const fetchUserMessages = async (businessId, userId) => {
+  try {
+    const response = await fetch(
+      `${API_CONFIG.BASE_URL}/api/messages/user/${userId}?business_id=${businessId}`,
+      {
+        method: 'GET',
+        headers: getAuthHeaders(),
+        credentials: 'include'
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Fetch user messages error:', error);
     throw error;
   }
 };
@@ -135,5 +171,6 @@ export default {
   sendMessage,
   fetchConversationHistory,
   testConnection,
-  stopAIResponses
+  fetchUserMessageCounts,
+  fetchUserMessages
 };

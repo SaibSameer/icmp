@@ -3,18 +3,19 @@
 // API Configuration
 const API_CONFIG = {
   // Base URL for API requests
-  BASE_URL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000',
+  BASE_URL: process.env.REACT_APP_API_URL || process.env.REACT_APP_API_BASE_URL || 'https://icmp-events-api.onrender.com',
   
   // API endpoints
   ENDPOINTS: {
     LOGIN: '/api/save-config',
     MESSAGE: '/api/message',
-    CONVERSATIONS: '/api/conversations',
+    CONVERSATIONS: '/api/v1/conversations',
     BUSINESSES: '/businesses',
     STAGES: '/api/stages',
-    TEMPLATES: '/templates',
+    TEMPLATES: '/api/templates',
     AGENTS: '/agents',
-    DEBUG: '/debug'
+    DEBUG: '/debug',
+    VARIABLES: '/api/template-variables'
   },
   
   // Default values
@@ -24,16 +25,6 @@ const API_CONFIG = {
     USER_ID: '00000000-0000-0000-0000-000000000000'
   }
 };
-
-// Enhanced debugging for environment variables
-console.log('Environment Variables Debug:');
-console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
-console.log('REACT_APP_API_BASE_URL:', process.env.REACT_APP_API_BASE_URL);
-console.log('All environment variables:', process.env);
-console.log('API Configuration:', {
-  baseUrl: API_CONFIG.BASE_URL,
-  endpoints: API_CONFIG.ENDPOINTS
-});
 
 // Authentication settings
 const AUTH_CONFIG = {
@@ -46,7 +37,8 @@ const AUTH_CONFIG = {
   STORAGE_KEYS: {
     USER_ID: 'userId',
     BUSINESS_ID: 'businessId',
-    BUSINESS_API_KEY: 'businessApiKey'
+    BUSINESS_API_KEY: 'businessApiKey',
+    ADMIN_API_KEY: 'adminApiKey'
   }
 };
 
@@ -64,4 +56,10 @@ const UI_CONFIG = {
   }
 };
 
-export { API_CONFIG, AUTH_CONFIG, UI_CONFIG };
+// Development settings
+const DEV_CONFIG = {
+  ENABLE_LOGGING: process.env.NODE_ENV === 'development',
+  API_URL: process.env.REACT_APP_API_URL || 'http://localhost:5000'
+};
+
+export { API_CONFIG, AUTH_CONFIG, UI_CONFIG, DEV_CONFIG };

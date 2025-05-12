@@ -53,7 +53,7 @@ def get_business(business_path_id):
         cursor.execute("""
             SELECT business_id, api_key, owner_id, business_name, 
                    business_description, address, phone_number, website,
-                   first_stage_id, internal_api_key
+                   first_stage_id, internal_api_key, business_information
             FROM businesses
             WHERE business_id = %s;
         """, (business_id_to_fetch,))
@@ -72,7 +72,8 @@ def get_business(business_path_id):
             "phone_number": business_tuple[6] or '',
             "website": business_tuple[7] or '',
             "first_stage_id": str(business_tuple[8]) if business_tuple[8] else None,
-            "internal_api_key": business_tuple[9] if len(business_tuple) > 9 and business_tuple[9] else None
+            "internal_api_key": business_tuple[9] if len(business_tuple) > 9 and business_tuple[9] else None,
+            "business_information": business_tuple[10] or ''
         }
         
         response = jsonify(business_data)
@@ -130,7 +131,7 @@ def update_business(business_path_id):
         return jsonify({"error_code": "INVALID_REQUEST", "message": "Request must be JSON and contain data"}), 400
 
     allowed_update_fields = [
-        'business_name', 'business_description', 'address', 'phone_number', 'website', 'first_stage_id', 'owner_id'
+        'business_name', 'business_description', 'address', 'phone_number', 'website', 'first_stage_id', 'owner_id', 'business_information'
     ]
     update_fields = {}
     validation_errors = []

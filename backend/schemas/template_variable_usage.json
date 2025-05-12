@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Template Variable Usage",
+  "description": "Represents the usage of a variable in a template.",
+  "type": "object",
+  "properties": {
+    "usage_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the usage."
+    },
+    "template_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the template."
+    },
+    "variable_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the variable."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the usage was created."
+    }
+  },
+  "required": [
+    "usage_id",
+    "template_id",
+    "variable_id"
+  ],
+  "additionalProperties": false
+} 

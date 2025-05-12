@@ -1,0 +1,97 @@
+.llm-call-window {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.llm-call-window-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.llm-call-window-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.refresh-button {
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.refresh-button:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.refresh-button i {
+    font-size: 1.1em;
+}
+
+.llm-call-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.llm-call-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.llm-call-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.llm-call-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.llm-call-list::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+.loading-state,
+.error-state,
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px;
+    color: #666;
+    font-size: 0.95em;
+}
+
+.loading-state i {
+    color: #0066cc;
+}
+
+.error-state {
+    color: #c5221f;
+}
+
+.empty-state {
+    color: #666;
+}
+
+.loading-state i,
+.error-state i,
+.empty-state i {
+    font-size: 1.2em;
+} 

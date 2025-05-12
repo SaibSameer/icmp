@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "LLM Call",
+  "description": "Represents a call to a Language Learning Model.",
+  "type": "object",
+  "properties": {
+    "call_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the LLM call."
+    },
+    "message_id": {
+      "type": ["string", "null"],
+      "format": "uuid",
+      "description": "Globally unique identifier for the associated message."
+    },
+    "response": {
+      "type": "string",
+      "description": "Response from the LLM."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the call was created."
+    },
+    "completion_time": {
+      "type": "number",
+      "description": "Time taken to complete the call in seconds."
+    },
+    "tokens_used": {
+      "type": "integer",
+      "description": "Number of tokens used in the call."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "input_text": {
+      "type": "string",
+      "description": "Input text sent to the LLM."
+    },
+    "system_prompt": {
+      "type": "string",
+      "description": "System prompt used for the call."
+    },
+    "call_type": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Type of the LLM call."
+    }
+  },
+  "required": [
+    "call_id",
+    "business_id",
+    "input_text"
+  ],
+  "additionalProperties": false
+} 

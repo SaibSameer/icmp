@@ -3,6 +3,11 @@
 ## Overview (In Progress)
 This document describes the test isolation strategy for the ICMP Events API system. Test isolation implementation is currently in progress.
 
+**Update 2025-05-12:**
+- Major import/module errors in tests have been resolved.
+- Stubs for error handling (ErrorUtils, template_system, etc.) have been added.
+- Test isolation and cleanup procedures can now proceed without import blockers.
+
 ## Database Isolation
 
 ### Test Database

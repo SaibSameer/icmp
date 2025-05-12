@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Agent",
+  "description": "Represents an agent in the system.",
+  "type": "object",
+  "properties": {
+    "agent_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the agent."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "agent_name": {
+      "type": "string",
+      "description": "Name of the agent."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the agent was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the agent was last updated."
+    }
+  },
+  "required": [
+    "agent_id",
+    "business_id",
+    "agent_name"
+  ],
+  "additionalProperties": false
+} 

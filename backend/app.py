@@ -29,11 +29,19 @@ load_dotenv(env_path)
 
 # Import modules from our app
 from backend.auth import require_api_key, require_auth
-from backend.db import get_db_connection, release_db_connection, execute_query, CONNECTION_POOL
+from backend.database.db import (
+    get_db_connection,
+    release_db_connection,
+    execute_query,
+    CONNECTION_POOL
+)
+from backend.db.connection_utils import initialize_connection_pool
 from backend.config import Config
-from backend.messenger import setup_messenger_routes
-from backend.whatsapp import setup_whatsapp_routes
-from backend.message_processing.ai_control_service import ai_control_service  # Import AI control service
+from backend.message_processing.messenger import setup_messenger_routes
+from backend.message_processing.whatsapp import setup_whatsapp_routes
+from backend.message_processing.ai_control_service import ai_control_service
+from backend.message_processing.message_handler import MessageHandler
+from backend.error_handling import register_error_handlers
 
 # Routes imports
 from backend.routes.message_handling import bp as message_bp
@@ -51,9 +59,9 @@ from backend.routes.template_variables import template_variables_bp
 from backend.routes.llm import llm_bp
 from backend.routes.data_extraction import data_extraction_bp
 from backend.routes.privacy import privacy_bp
-
-# Import here to avoid circular imports
-from create_default_stage import create_default_stage
+from backend.routes.template_test import bp as template_test_bp
+from backend.routes.message_simulator import bp as message_simulator_bp
+from backend.routes.user_stats import bp as user_stats_bp
 
 # Set up logging
 logging.basicConfig(
@@ -71,6 +79,8 @@ def initialize_default_stage():
     """Create default stage if one doesn't exist."""
     try:
         log.info("Creating default stage if needed...")
+        # Import here to avoid circular imports
+        from backend.message_processing.stages.create_default_stage import create_default_stage
         default_stage_id = create_default_stage()
         log.info(f"Default stage ID: {default_stage_id}")
         return default_stage_id
@@ -82,31 +92,18 @@ def initialize_default_stage():
 def create_app(test_config=None):
     # Create and configure the app
     app = Flask(__name__)
-    CORS(app, 
-         supports_credentials=True,
-         resources={
-             r"/*": {
-                 "origins": [
-                     "http://localhost:3000", 
-                     "http://127.0.0.1:3000",
-                     "http://localhost:8000", 
-                     "http://127.0.0.1:8000",
-                     "http://192.168.0.105:8000",
-                     "https://icmp-events-api.onrender.com",
-                     "https://icmp-events-frontend.onrender.com",
-                     "https://icmp.onrender.com",
-                     "https://icmp-api.onrender.com",
-                     "https://*.onrender.com",  # Allow all Render subdomains
-                     "null",
-                     "file://"  # Allow requests from file:// protocol
-                 ],
-                 "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                 "allow_headers": ["Content-Type", "Authorization", "businessapikey", "Accept", "Origin"],
-                 "expose_headers": ["Content-Type", "Authorization", "businessapikey"],
-                 "supports_credentials": True,
-                 "max_age": 3600  # Cache preflight requests for 1 hour
-             }
-         })
+    
+    # Configure CORS
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": ["http://localhost:3000"],
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization", "X-API-Key", "businessapikey", "Accept", "Origin"],
+            "expose_headers": ["Content-Type", "Authorization", "businessapikey", "X-API-Key"],
+            "supports_credentials": True,
+            "max_age": 3600  # Cache preflight requests for 1 hour
+        }
+    })
     
     # Configure schema validation
     app.config['SCHEMAS'] = {}
@@ -205,11 +202,9 @@ def create_app(test_config=None):
     def save_config():
         if request.method == 'OPTIONS':
             return '', 204  # Return a 204 No Content response for preflight requests
-        
         try:
             data = request.get_json()
             log.info(f"Received data: {data}")
-            
             # Validate required fields
             required_fields = ['userId', 'businessId', 'businessApiKey']
             missing_fields = [field for field in required_fields if field not in data]
@@ -219,12 +214,10 @@ def create_app(test_config=None):
                     'error': 'Missing required fields',
                     'missing_fields': missing_fields
                 }), 400
-            
             # Extract fields and trim whitespace
             user_id = data.get('userId', '').strip()
             business_id = data.get('businessId', '').strip()
             business_api_key = data.get('businessApiKey', '').strip()
-            
             # Validate fields
             if not all([user_id, business_id, business_api_key]):
                 log.error("Empty or invalid fields")
@@ -236,12 +229,10 @@ def create_app(test_config=None):
                         'businessApiKey': bool(business_api_key)
                     }
                 }), 400
-            
             # Save to database
             conn = get_db_connection()
             try:
                 cursor = conn.cursor()
-                
                 # Check if user exists
                 cursor.execute(
                     """
@@ -251,7 +242,6 @@ def create_app(test_config=None):
                     """, (user_id,)
                 )
                 user_exists = cursor.fetchone() is not None
-                
                 if not user_exists:
                     # Create a minimal user record if it doesn't exist
                     cursor.execute(
@@ -260,7 +250,6 @@ def create_app(test_config=None):
                         VALUES (%s, %s, %s, %s);
                         """, (user_id, 'User', 'User', f"{user_id}@example.com")
                     )
-                
                 # Check if business exists
                 cursor.execute(
                     """
@@ -270,7 +259,6 @@ def create_app(test_config=None):
                     """, (business_id,)
                 )
                 business_exists = cursor.fetchone() is not None
-                
                 if not business_exists:
                     # Create a new business with the user as owner
                     cursor.execute(
@@ -288,10 +276,8 @@ def create_app(test_config=None):
                         WHERE business_id = %s;
                         """, (business_api_key, user_id, business_id)
                     )
-                
                 conn.commit()
                 log.info(f"Successfully saved configuration for user {user_id} and business {business_id}")
-                
                 # Set the businessApiKey cookie
                 response = jsonify({
                     'message': 'Configuration saved successfully',
@@ -299,7 +285,6 @@ def create_app(test_config=None):
                     'business_id': business_id,
                     'success': True
                 })
-                
                 # Set the cookie with HttpOnly flag for security
                 response.set_cookie(
                     'businessApiKey',
@@ -309,26 +294,13 @@ def create_app(test_config=None):
                     samesite='Lax',
                     max_age=86400  # 24 hours
                 )
-                
                 return response
-                
-            except Exception as e:
-                conn.rollback()
-                log.error(f"Database error: {str(e)}")
-                return jsonify({
-                    'error': 'Database error',
-                    'details': str(e)
-                }), 500
             finally:
                 if conn:
                     release_db_connection(conn)
-            
         except Exception as e:
-            log.error(f"Error processing request: {str(e)}")
-            return jsonify({
-                'error': 'Invalid request',
-                'details': str(e)
-            }), 400
+            log.error(f"Error in save_config: {str(e)}", exc_info=True)
+            return jsonify({'error': 'Server error', 'details': str(e)}), 500
 
     @app.route('/api/lookup-owner', methods=['POST', 'OPTIONS'])
     def lookup_owner():
@@ -493,12 +465,12 @@ def create_app(test_config=None):
 
     # Register blueprints
     log.info("--- Registering blueprints ---")
-    app.register_blueprint(message_bp)
-    app.register_blueprint(conversation_bp, url_prefix='/api')
+    app.register_blueprint(message_bp, url_prefix='/api/messages')
     app.register_blueprint(routing_bp, url_prefix='/api/routing')
     app.register_blueprint(templates_bp, url_prefix='/api/templates')
     app.register_blueprint(stages_bp, url_prefix='/api/stages')
-    app.register_blueprint(template_admin_bp, url_prefix='/api/admin/templates')
+    app.register_blueprint(template_admin_bp, url_prefix='/api/template-admin')
+    app.register_blueprint(conversation_bp, url_prefix='/api/conversations')
     app.register_blueprint(businesses_bp, url_prefix='/api/businesses')
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(config_bp, url_prefix='/api/config')
@@ -508,6 +480,9 @@ def create_app(test_config=None):
     app.register_blueprint(llm_bp, url_prefix='/api/llm')
     app.register_blueprint(data_extraction_bp, url_prefix='/api/data-extraction')
     app.register_blueprint(privacy_bp, url_prefix='/api/privacy')
+    app.register_blueprint(template_test_bp, url_prefix='/api/template-test')
+    app.register_blueprint(message_simulator_bp, url_prefix='/api/simulate')
+    app.register_blueprint(user_stats_bp)
     
     # Setup Facebook Messenger routes
     setup_messenger_routes(app)
@@ -523,15 +498,13 @@ def create_app(test_config=None):
     if not CONNECTION_POOL:
         log.info("--- Initializing Database Connection Pool ---")
         try:
-            # Attempt to get a connection to initialize the pool
-            conn = get_db_connection()
-            if conn:
-                release_db_connection(conn)
-                log.info("Database connection pool initialized successfully.")
-            else:
-                log.error("Failed to get initial database connection for pool.")
+            initialize_connection_pool()
+            log.info("Database connection pool initialized successfully.")
         except Exception as e:
             log.error(f"Error initializing database connection pool: {str(e)}", exc_info=True)
+
+    # Register error handlers
+    register_error_handlers(app)
 
     log.info("--- Flask App Initialization Complete ---")
     return app

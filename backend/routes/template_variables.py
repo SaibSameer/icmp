@@ -7,7 +7,7 @@ available template variables and their usage.
 
 import logging
 from flask import jsonify, request, Blueprint, g
-from backend.auth import require_api_key, require_internal_key
+from backend.auth import require_api_key, require_internal_key, validate_internal_key, validate_business_key
 from backend.db import get_db_connection, release_db_connection
 from backend.message_processing.template_variables import TemplateVariableProvider
 import psycopg2.extras
@@ -156,22 +156,40 @@ def delete_variable(variable_id):
         if conn: release_db_connection(conn)
 
 @template_variables_bp.route('/available/', methods=['GET'])
-@require_internal_key
 def list_registered_variables():
     """List variables registered in the TemplateVariableProvider."""
-    # Get business context from g (might be needed by provider later)
-    if not hasattr(g, 'business_id'):
-        log.error("Business context (g.business_id) not found after @require_internal_key.")
-        return jsonify({"error_code": "SERVER_ERROR", "message": "Authentication context missing"}), 500
-    business_id = g.business_id
-    log.info(f"Fetching available registered variables for business {business_id}")
     try:
-        # Pass context if provider needs it
-        provider = TemplateVariableProvider(business_id=business_id) 
-        available_vars = provider.get_available_variables()
+        # Get authentication context
+        auth_header = request.headers.get("Authorization")
+        provided_key = None
+        if auth_header and auth_header.startswith("Bearer "):
+            provided_key = auth_header.split(" ", 1)[1]
+
+        # Get all registered variables
+        provider = TemplateVariableProvider()
+        all_vars = provider.get_all_variable_names()
+        
+        # Filter variables based on their individual authentication requirements
+        available_vars = []
+        for var_name in all_vars:
+            var_info = provider.get_provider(var_name)
+            auth_req = var_info.get('auth_requirement', 'internal_key')
+            
+            if auth_req == 'none':
+                # No authentication required
+                available_vars.append(var_name)
+            elif auth_req == 'business_key' and provided_key:
+                # Check if it's a valid business key
+                if validate_business_key(provided_key):
+                    available_vars.append(var_name)
+            elif auth_req == 'internal_key' and provided_key:
+                # Check if it's a valid internal key
+                if validate_internal_key(provided_key):
+                    available_vars.append(var_name)
+        
         return jsonify(available_vars), 200
     except Exception as e:
-        log.error(f"Error listing registered variables for business {business_id}: {str(e)}", exc_info=True)
+        log.error(f"Error listing registered variables: {str(e)}", exc_info=True)
         return jsonify({"error": "Failed to list registered variables", "details": str(e)}), 500
 
 @template_variables_bp.route('/by-template/<template_id>/', methods=['GET'])

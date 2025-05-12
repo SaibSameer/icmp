@@ -3,7 +3,11 @@ import logging
 
 log = logging.getLogger(__name__)
 
-@TemplateVariableProvider.register_provider('conversation_history')
+@TemplateVariableProvider.register_provider(
+    'conversation_history',
+    description='Provides the history of messages in a conversation',
+    auth_requirement='business_key'
+)
 def provide_conversation_history(conn, conversation_id: str, **kwargs) -> str:
     """
     Generate a formatted conversation history.

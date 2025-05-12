@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Template",
+  "description": "Represents a template for various purposes.",
+  "type": "object",
+  "properties": {
+    "template_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the template."
+    },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
+    "template_name": {
+      "type": "string",
+      "maxLength": 255,
+      "description": "Name of the template."
+    },
+    "template_type": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Type of the template."
+    },
+    "content": {
+      "type": "string",
+      "description": "Content of the template."
+    },
+    "system_prompt": {
+      "type": "string",
+      "description": "System prompt for the template."
+    },
+    "is_default": {
+      "type": "boolean",
+      "description": "Whether this is a default template.",
+      "default": false
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the template was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the template was last updated."
+    }
+  },
+  "required": [
+    "template_id",
+    "business_id",
+    "template_name",
+    "template_type"
+  ],
+  "additionalProperties": false
+} 

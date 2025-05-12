@@ -33,11 +33,6 @@ function StagesList() {
     const adminApiKey = sessionStorage.getItem('adminApiKey');
 
     useEffect(() => {
-        if (!agentId) {
-            setError('Agent ID is required for this view.');
-            setLoading(false);
-            return;
-        }
         if (!businessId) {
             setError('Business ID is required for this view.');
             setLoading(false);
@@ -55,7 +50,13 @@ function StagesList() {
             setError(null);
 
             try {
-                const apiUrl = `${API_CONFIG.BASE_URL}/api/stages?business_id=${businessId}&agent_id=${agentId}`;
+                // Build the URL with proper handling of agentId
+                let apiUrl = `${API_CONFIG.BASE_URL}/api/stages?business_id=${businessId}`;
+                if (agentId && agentId !== 'null') {
+                    apiUrl += `&agent_id=${agentId}`;
+                }
+                
+                console.log('Fetching stages from:', apiUrl);
                 const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
@@ -219,7 +220,7 @@ function StagesList() {
         // Prevent the ListItemButton click from triggering
         event.stopPropagation();
         // Navigate to the edit page
-        navigate(`/business/${businessId}/stages/${stageId}/edit${agentId ? `?agent_id=${agentId}` : ''}`);
+        navigate(`/business/${businessId}/stages/${stageId}/edit?agent_id=${agentId}`);
     };
 
     console.log('[StagesList Render] Component rendering. businessId:', businessId, 'agentId:', agentId);
@@ -297,17 +298,7 @@ function StagesList() {
                                 <ListItemButton>
                                     <ListItemText
                                         primary={stage.stage_name}
-                                        secondary={
-                                            <React.Fragment>
-                                                <Typography component="span" variant="body2" color="text.primary">
-                                                    {stage.stage_description}
-                                                </Typography>
-                                                <br />
-                                                <Typography component="span" variant="body2" color="text.secondary">
-                                                    Type: {stage.stage_type} | Created: {new Date(stage.created_at).toLocaleDateString()}
-                                                </Typography>
-                                            </React.Fragment>
-                                        }
+                                        secondary={`Type: ${stage.stage_type} | ID: ${stage.stage_id}`}
                                     />
                                 </ListItemButton>
                             </ListItem>

@@ -8,7 +8,11 @@ from ..template_variables import TemplateVariableProvider
 
 log = logging.getLogger(__name__)
 
-@TemplateVariableProvider.register_provider('last_10_messages')
+@TemplateVariableProvider.register_provider(
+    'last_10_messages',
+    description='Provides the last 10 messages in a conversation',
+    auth_requirement='business_key'
+)
 def provide_last_10_messages(conn, conversation_id: str, **kwargs) -> str:
     try:
         cursor = conn.cursor()

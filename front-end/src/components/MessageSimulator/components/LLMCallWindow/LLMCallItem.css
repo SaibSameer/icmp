@@ -1,0 +1,110 @@
+.llm-call-item {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.llm-call-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.llm-call-type {
+    background: #f0f7ff;
+    color: #0066cc;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.llm-call-time {
+    color: #666;
+    font-size: 0.9em;
+}
+
+.llm-call-content {
+    margin-bottom: 12px;
+}
+
+.llm-call-input,
+.llm-call-response {
+    margin-bottom: 8px;
+}
+
+.llm-call-input h4,
+.llm-call-response h4 {
+    color: #333;
+    font-size: 0.95em;
+    margin-bottom: 4px;
+}
+
+.llm-call-input p,
+.llm-call-response p {
+    color: #444;
+    font-size: 0.9em;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.llm-call-metrics {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.metric {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.metric i {
+    color: #999;
+}
+
+.status {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.status.success {
+    background: #e6f4ea;
+    color: #137333;
+}
+
+.status.error {
+    background: #fce8e6;
+    color: #c5221f;
+}
+
+.status.pending {
+    background: #fef7e0;
+    color: #b06000;
+}
+
+.llm-call-error {
+    margin-top: 8px;
+    padding: 8px;
+    background: #fce8e6;
+    color: #c5221f;
+    border-radius: 4px;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.llm-call-error i {
+    font-size: 1.1em;
+} 

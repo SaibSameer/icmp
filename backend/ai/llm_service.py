@@ -25,11 +25,12 @@ class LLMService:
     with support for different agents and conversation contexts.
     """
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, db_pool=None, api_key: Optional[str] = None):
         """
         Initialize the LLM service.
         
         Args:
+            db_pool: Database connection pool
             api_key: Optional API key for the language model service
         """
         self.api_key = api_key or os.environ.get('OPENAI_API_KEY')
@@ -41,7 +42,7 @@ class LLMService:
         self._conversation_store: Dict[str, List[Dict[str, str]]] = {}
         
         # Initialize database connection pool
-        self.db_pool = CONNECTION_POOL
+        self.db_pool = db_pool or CONNECTION_POOL
         log.info("LLMService initialized with database connection pool")
         
         # Log database connection pool status

@@ -1,196 +1,200 @@
-import { API_CONFIG } from '../config';
+import { API_CONFIG, AUTH_CONFIG } from '../config';
 import { getAuthHeaders } from './authService';
 import { normalizeUUID } from '../hooks/useConfig';
+import axios from 'axios';
 
-// Fetch templates
-export const fetchTemplates = async (businessId, agentId = null) => {
-  try {
-    const normalizedBusinessId = normalizeUUID(businessId);
-    let url = `${API_CONFIG.BASE_URL}/templates?business_id=${normalizedBusinessId}`;
-    
-    if (agentId) {
-      const normalizedAgentId = normalizeUUID(agentId);
-      url += `&agent_id=${normalizedAgentId}`;
-      console.log(`Fetching templates for business: ${normalizedBusinessId}, agent: ${normalizedAgentId}`);
-    } else {
-      console.log(`Fetching templates for business: ${normalizedBusinessId}`);
+const templateService = {
+    // Template Variables
+    getTemplateVariables: async () => {
+        try {
+            console.log('Starting getTemplateVariables...');
+            const headers = getAuthHeaders();
+            console.log('Auth headers:', headers);
+            console.log('API URL:', `${API_CONFIG.BASE_URL}/api/template-variables/available/`);
+            
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/template-variables/available/`, {
+                method: 'GET',
+                credentials: 'include',
+                headers: headers
+            });
+
+            console.log('API Response status:', response.status);
+            console.log('API Response headers:', Object.fromEntries(response.headers.entries()));
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('API Error response:', errorData);
+                throw new Error(errorData.message || 'Failed to fetch template variables');
+            }
+
+            const data = await response.json();
+            console.log('Raw API response data:', data);
+
+            const normalizedData = data.map(variable => {
+                if (typeof variable === 'string') {
+                    return {
+                        variable_id: variable,
+                        variable_name: variable,
+                        description: '',
+                        example_value: ''
+                    };
+                }
+                return {
+                    ...variable,
+                    variable_id: variable.id || variable.variable_id,
+                    variable_name: variable.name || variable.variable_name,
+                    description: variable.description || '',
+                    example_value: variable.example || variable.example_value || ''
+                };
+            });
+
+            console.log('Normalized variables data:', normalizedData);
+            return normalizedData;
+        } catch (error) {
+            console.error('Error in getTemplateVariables:', error);
+            console.error('Error stack:', error.stack);
+            throw error;
+        }
+    },
+
+    // Templates
+    getTemplates: async (businessId, agentId = null) => {
+        try {
+            const normalizedBusinessId = normalizeUUID(businessId);
+            let url = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TEMPLATES}?business_id=${normalizedBusinessId}`;
+            
+            if (agentId) {
+                const normalizedAgentId = normalizeUUID(agentId);
+                url += `&agent_id=${normalizedAgentId}`;
+            }
+
+            const response = await fetch(url, {
+                method: 'GET',
+                credentials: 'include',
+                headers: getAuthHeaders()
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to fetch templates');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error in getTemplates:', error);
+            throw error;
+        }
+    },
+
+    getTemplate: async (templateId, businessId) => {
+        try {
+            const normalizedBusinessId = normalizeUUID(businessId);
+            const response = await fetch(
+                `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TEMPLATES}/${templateId}?business_id=${normalizedBusinessId}`,
+                {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: getAuthHeaders()
+                }
+            );
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to fetch template');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error in getTemplate:', error);
+            throw error;
+        }
+    },
+
+    createTemplate: async (templateData) => {
+        try {
+            const normalizedData = {
+                ...templateData,
+                business_id: normalizeUUID(templateData.business_id),
+                agent_id: templateData.agent_id ? normalizeUUID(templateData.agent_id) : null
+            };
+            
+            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TEMPLATES}`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(normalizedData)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to create template');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error in createTemplate:', error);
+            throw error;
+        }
+    },
+
+    updateTemplate: async (templateId, templateData) => {
+        try {
+            const normalizedData = {
+                ...templateData,
+                business_id: normalizeUUID(templateData.business_id),
+                agent_id: templateData.agent_id ? normalizeUUID(templateData.agent_id) : null
+            };
+            
+            const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TEMPLATES}/${templateId}`, {
+                method: 'PUT',
+                credentials: 'include',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(normalizedData)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to update template');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error in updateTemplate:', error);
+            throw error;
+        }
+    },
+
+    testTemplate: async (businessId, agentId, templateContent) => {
+        try {
+            const normalizedBusinessId = normalizeUUID(businessId);
+            const normalizedAgentId = agentId ? normalizeUUID(agentId) : null;
+            
+            const response = await fetch(`${API_CONFIG.BASE_URL}/api/template-test`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    ...getAuthHeaders(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    business_id: normalizedBusinessId,
+                    agent_id: normalizedAgentId,
+                    template_content: templateContent,
+                    test_mode: true
+                })
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to test template');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error in testTemplate:', error);
+            throw error;
+        }
     }
-
-    const response = await fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch templates');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in fetchTemplates:', error);
-    throw error;
-  }
 };
 
-// Get a template by ID
-export const getTemplate = async (templateId, businessId) => {
-  try {
-    const normalizedBusinessId = normalizeUUID(businessId);
-    
-    console.log(`Fetching template ${templateId} for business: ${normalizedBusinessId}`);
-    const response = await fetch(`${API_CONFIG.BASE_URL}/templates/${templateId}?business_id=${normalizedBusinessId}`, {
-      method: 'GET',
-      credentials: 'include',
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch template');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in getTemplate:', error);
-    throw error;
-  }
-};
-
-// Create a new template
-export const createTemplate = async (templateData) => {
-  try {
-    // Make sure business_id and agent_id are normalized
-    const normalizedData = {
-      ...templateData,
-      business_id: normalizeUUID(templateData.business_id),
-      agent_id: templateData.agent_id ? normalizeUUID(templateData.agent_id) : null
-    };
-    
-    // Log the normalized data for debugging
-    console.log('Creating template with data:', {
-      original: templateData.business_id,
-      normalized: normalizedData.business_id
-    });
-    
-    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TEMPLATES}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(normalizedData)
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to create template');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in createTemplate:', error);
-    throw error;
-  }
-};
-
-// Update an existing template
-export const updateTemplate = async (templateId, templateData) => {
-  try {
-    // Make sure business_id and agent_id are normalized
-    const normalizedData = {
-      ...templateData,
-      business_id: normalizeUUID(templateData.business_id),
-      agent_id: templateData.agent_id ? normalizeUUID(templateData.agent_id) : null
-    };
-    
-    // Log the normalized data for debugging
-    console.log(`Updating template ${templateId}:`, {
-      original: templateData.business_id,
-      normalized: normalizedData.business_id
-    });
-    
-    const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TEMPLATES}/${templateId}`, {
-      method: 'PUT',
-      credentials: 'include',
-      headers: getAuthHeaders(),
-      body: JSON.stringify(normalizedData)
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to update template');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in updateTemplate:', error);
-    throw error;
-  }
-};
-
-// Delete a template
-export const deleteTemplate = async (templateId, businessId) => {
-  try {
-    const normalizedBusinessId = normalizeUUID(businessId);
-    
-    console.log(`Deleting template ${templateId} for business: ${normalizedBusinessId}`);
-    const response = await fetch(`${API_CONFIG.BASE_URL}/templates/${templateId}?business_id=${normalizedBusinessId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-      headers: getAuthHeaders()
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to delete template');
-    }
-
-    return true;
-  } catch (error) {
-    console.error('Error in deleteTemplate:', error);
-    throw error;
-  }
-};
-
-// Duplicate a template
-export const duplicateTemplate = async (templateData) => {
-  try {
-    // Make sure business_id and agent_id are normalized
-    const normalizedData = {
-      ...templateData,
-      business_id: normalizeUUID(templateData.business_id),
-      agent_id: normalizeUUID(templateData.agent_id),
-      template_name: `${templateData.template_name} (Copy)`
-    };
-    
-    console.log('Duplicating template as:', normalizedData);
-    return await createTemplate(normalizedData);
-  } catch (error) {
-    console.error('Error in duplicateTemplate:', error);
-    throw error;
-  }
-};
-
-export const getTemplateVariables = async () => {
-  try {
-    const response = await fetch('http://localhost:5000/api/template-variables/', {
-      method: 'GET',
-      credentials: 'include',
-      headers: {
-        ...getAuthHeaders(),
-        'Authorization': 'Bearer cd0fd3314e8f1fe7cef737db4ac21778ccc7d5a97bbb33d9af17612e337231d6',
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to fetch template variables');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error in getTemplateVariables:', error);
-    throw error;
-  }
-};
+export default templateService;

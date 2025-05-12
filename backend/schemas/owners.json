@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Owner",
+  "description": "Represents an owner of a business.",
+  "type": "object",
+  "properties": {
+    "owner_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the owner."
+    },
+    "first_name": {
+      "type": "string",
+      "description": "Owner's first name."
+    },
+    "last_name": {
+      "type": "string",
+      "description": "Owner's last name."
+    },
+    "email": {
+      "type": "string",
+      "description": "Owner's email address."
+    },
+    "phone_number": {
+      "type": "string",
+      "description": "Owner's phone number."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the owner was created."
+    }
+  },
+  "required": [
+    "owner_id",
+    "first_name",
+    "last_name",
+    "email",
+    "created_at"
+  ],
+  "additionalProperties": false
+} 

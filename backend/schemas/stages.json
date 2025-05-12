@@ -4,68 +4,69 @@
   "description": "Represents a stage in a conversation flow.",
   "type": "object",
   "properties": {
-    "business_id": {
-      "type": "string",
-      "format": "uuid",
-      "description": "Globally unique identifier for the business.",
-      "note": "Used for multi-tenancy. All data associated with a business is partitioned by this ID. Ensures data isolation."
-    },
-    "stage_id":{
+    "stage_id": {
       "type": "string",
       "format": "uuid",
       "description": "Globally unique identifier for the stage."
     },
+    "business_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Globally unique identifier for the business."
+    },
     "agent_id": {
       "type": ["string", "null"],
       "format": "uuid",
-      "description": "Globally unique identifier for the agent. Null if applicable to all agents.",
-      "note": "Allows associating a stage with a specific agent. If null, the stage is a general stage applicable to all agents."
+      "description": "Globally unique identifier for the agent. Null if applicable to all agents."
     },
     "stage_name": {
       "type": "string",
-      "description": "Human-readable name for the stage.",
-      "note": "Provides a clear label for identifying and managing the stage."
+      "description": "Human-readable name for the stage."
     },
     "stage_description": {
       "type": "string",
-      "description": "Detailed description of the stage's purpose.",
-      "note": "Explains the stage's function and role within the conversation flow."
+      "description": "Detailed description of the stage's purpose."
     },
     "stage_type": {
       "type": "string",
-      "description": "Category of the stage (e.g., information, transactional, support).",
-      "note": "Allows grouping and filtering stages based on their general function."
+      "maxLength": 50,
+      "description": "Category of the stage (e.g., information, transactional, support)."
     },
     "stage_selection_template_id": {
       "type": "string",
+      "format": "uuid",
       "description": "Template ID for the stage selection prompt."
     },
     "data_extraction_template_id": {
       "type": "string",
+      "format": "uuid",
       "description": "Template ID for the data extraction prompt."
     },
     "response_generation_template_id": {
       "type": "string",
+      "format": "uuid",
       "description": "Template ID for the response generation prompt."
     },
-    "data_retrieval_config": {
-        "type": "object",
-        "description": "Configuration for data retrieval actions within the stage.",
-        "properties": {
-            "method": {"type": "string", "enum": ["prompt_user", "database_query", "api_call", "none"]},
-            "config": {"type": "object", "additionalProperties": true}
-        },
-        "required": ["method"]
+    "is_active": {
+      "type": "boolean",
+      "description": "Whether the stage is currently active.",
+      "default": true
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the stage was created."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the stage was last updated."
     }
   },
   "required": [
+    "stage_id",
     "business_id",
-    "stage_name",
-    "stage_description",
-    "stage_type",
-    "stage_selection_template_id",
-    "data_extraction_template_id",
-    "response_generation_template_id"
+    "stage_name"
   ],
   "additionalProperties": false
 }
